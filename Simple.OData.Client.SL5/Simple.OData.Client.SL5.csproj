@@ -137,6 +137,9 @@
     <Compile Include="..\Simple.OData.Client.Core\Adapter\CommandFormatterBase.cs">
       <Link>Adapter\CommandFormatterBase.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\EdmTypeMap.cs">
+      <Link>Adapter\EdmTypeMap.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Adapter\FunctionFormat.cs">
       <Link>Adapter\FunctionFormat.cs</Link>
     </Compile>
@@ -380,6 +383,9 @@
     <Compile Include="..\Simple.OData.Client.V3.Adapter\EdmDeltaModel.cs">
       <Link>AdapterV3\EdmDeltaModel.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.V3.Adapter\EdmTypeMap.cs">
+      <Link>AdapterV3\EdmTypeMap.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.V3.Adapter\Metadata.cs">
       <Link>AdapterV3\Metadata.cs</Link>
     </Compile>
@@ -409,6 +415,9 @@
     </Compile>
     <Compile Include="..\Simple.OData.Client.V4.Adapter\EdmDeltaModel.cs">
       <Link>AdapterV4\EdmDeltaModel.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\EdmTypeMap.cs">
+      <Link>AdapterV4\EdmTypeMap.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.V4.Adapter\Metadata.cs">
       <Link>AdapterV4\Metadata.cs</Link>

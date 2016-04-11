@@ -51,6 +51,7 @@
     <Compile Include="BatchWriter.cs" />
     <Compile Include="CommandFormatter.cs" />
     <Compile Include="EdmDeltaModel.cs" />
+    <Compile Include="EdmTypeMap.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="ODataAdapter.cs" />
     <Compile Include="ODataRequestMessage.cs" />
