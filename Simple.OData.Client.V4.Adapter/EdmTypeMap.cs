@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.OData.Edm;
 using Microsoft.Spatial;
+using Simple.OData.Client.Extensions;
 
 namespace Simple.OData.Client.V4.Adapter
 {
@@ -12,7 +13,10 @@ namespace Simple.OData.Client.V4.Adapter
 	{
 		public IEnumerable<Type> GetTypes(object propertyType)
 		{
-			return Map.Where(x => x.Value == (((IEdmTypeReference)propertyType).Definition as IEdmPrimitiveType).PrimitiveKind).Select(m => m.Key);
+			var types = Map.Where(x => x.Value == (((IEdmTypeReference)propertyType).Definition as IEdmPrimitiveType).PrimitiveKind).Select(m => m.Key);
+			if (((IEdmTypeReference)propertyType).IsNullable)
+				types = types.Where(t => !t.IsValue() || Nullable.GetUnderlyingType(t) != null);
+			return types;
 		}
 
 		protected static readonly Dictionary<Type, EdmPrimitiveTypeKind> Map = new[]
