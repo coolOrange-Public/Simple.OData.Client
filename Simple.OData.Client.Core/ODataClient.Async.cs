@@ -194,7 +194,7 @@ namespace Simple.OData.Client
         [Obsolete("This method is obsolete. Use GetMetadataAsync(Uri baseUri, ICredentials credentials, CancellationToken cancellationToken) overload.")]
         public static async Task<T> GetMetadataAsync<T>(string urlBase, ICredentials credentials, CancellationToken cancellationToken)
         {
-            var session = Session.FromSettings(new ODataClientSettings(urlBase, credentials));
+            var session = Client.Session.FromSettings(new ODataClientSettings(urlBase, credentials));
             await session.ResolveAdapterAsync(cancellationToken);
             return (T)session.Adapter.Model;
         }
@@ -211,7 +211,7 @@ namespace Simple.OData.Client
         /// </returns>
         public static async Task<T> GetMetadataAsync<T>(Uri baseUri, ICredentials credentials, CancellationToken cancellationToken)
         {
-            var session = Session.FromSettings(new ODataClientSettings(baseUri, credentials));
+			var session = Client.Session.FromSettings(new ODataClientSettings(baseUri, credentials));
             await session.ResolveAdapterAsync(cancellationToken);
             return (T)session.Adapter.Model;
         }
@@ -293,7 +293,7 @@ namespace Simple.OData.Client
         [Obsolete("This method is obsolete. Use GetMetadataDocumentAsync(Uri baseUri, ICredentials credentials, CancellationToken cancellationToken) overload.")]
         public static async Task<string> GetMetadataAsStringAsync(string urlBase, ICredentials credentials, CancellationToken cancellationToken)
         {
-            var session = Session.FromSettings(new ODataClientSettings(urlBase, credentials));
+			var session = Client.Session.FromSettings(new ODataClientSettings(urlBase, credentials));
             await session.ResolveAdapterAsync(cancellationToken);
             return session.MetadataCache.MetadataDocument;
         }
@@ -307,7 +307,7 @@ namespace Simple.OData.Client
         /// <returns>The service metadata.</returns>
         public static async Task<string> GetMetadataDocumentAsync(Uri baseUri, ICredentials credentials, CancellationToken cancellationToken)
         {
-            var session = Session.FromSettings(new ODataClientSettings(baseUri, credentials));
+			var session = Client.Session.FromSettings(new ODataClientSettings(baseUri, credentials));
             await session.ResolveAdapterAsync(cancellationToken);
             return session.MetadataCache.MetadataDocument;
         }

@@ -12,6 +12,8 @@ namespace Simple.OData.Client
     /// </summary>
     public interface IODataClient
     {
+		ISession Session { get; }
+
         /// <summary>
         /// Returns an instance of a fluent OData client for the specified collection.
         /// </summary>

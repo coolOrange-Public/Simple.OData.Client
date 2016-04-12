@@ -43,7 +43,7 @@ namespace Simple.OData.Client
         public ODataClient(ODataClientSettings settings)
         {
             _settings = settings;
-            _session = Session.FromSettings(_settings);
+            _session = Client.Session.FromSettings(_settings);
             _requestRunner = new RequestRunner(_session);
         }
 
@@ -59,11 +59,11 @@ namespace Simple.OData.Client
 
         internal ODataClient(ODataClient client, ODataResponse batchResponse)
         {
-            _session = client.Session;
+            _session = client.Session as Session;
             _batchResponse = batchResponse;
         }
 
-        internal Session Session { get { return _session; } }
+        public ISession Session { get { return _session; } }
         internal ODataResponse BatchResponse { get { return _batchResponse; } }
         internal bool IsBatchRequest { get { return _lazyBatchWriter != null; } }
         internal bool IsBatchResponse { get { return _batchResponse != null; } }
@@ -79,7 +79,7 @@ namespace Simple.OData.Client
         /// </returns>
         public static T ParseMetadataString<T>(string metadataString)
         {
-            var session = Session.FromMetadata(new Uri("http://localhost/" + metadataString.GetHashCode() + "$metadata"), metadataString);
+            var session = Client.Session.FromMetadata(new Uri("http://localhost/" + metadataString.GetHashCode() + "$metadata"), metadataString);
             return (T)session.Adapter.Model;
         }
 
