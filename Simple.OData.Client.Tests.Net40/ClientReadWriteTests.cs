@@ -14,7 +14,7 @@ namespace Simple.OData.Client.Tests
         public async Task InsertEntryWithResult()
         {
             var product = await _client.InsertEntryAsync("Products", new Entry() { { "ProductName", "Test1" }, { "UnitPrice", 18m } }, true);
-
+			
             Assert.Equal("Test1", product["ProductName"]);
         }
 

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Data.Edm;
 using Microsoft.Data.Edm.Library.Values;
+using Microsoft.Data.OData;
 
 #pragma warning disable 1591
 
@@ -12,13 +14,84 @@ namespace Simple.OData.Client.V3.Adapter
         private readonly ISession _session;
         private readonly IEdmModel _model;
 
+		internal IEdmTypeMap EdmTypeMap = new EdmTypeMap();
+
         public Metadata(ISession session, IEdmModel model)
         {
             _session = session;
             _model = model;
         }
 
-        public override ISession Session { get { return _session; } }
+	    public override bool HasStream(string collectionName)
+	    {
+			return _model.HasDefaultStream(GetEntityType(collectionName));	    
+	    }
+
+	    public override string GetNavigationPropertyMultiplicity(string collectionName, string propertyName)
+	    {
+		    return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => navigationProperty.Multiplicity().ToString());
+	    }
+
+		public override string GetNavigationPropertyPartnerMultiplicity(string collectionName, string propertyName)
+		{
+			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => navigationProperty.Partner.Multiplicity().ToString());
+		}
+
+		T ExecuteOnNavigationProperty<T>(string collectionName, string propertyName, Func<IEdmNavigationProperty, T> execution)
+		{
+				var navigationProperty = GetNavigationProperty(GetEntityType(collectionName).Name, propertyName);
+				return execution.Invoke(navigationProperty);
+		}
+		
+	    public override bool PropertyIsNullable(string collectionName, string propertyName)
+	    {
+		    return GetPropertyByName(collectionName, propertyName).Type.IsNullable;
+	    }
+
+	    public override string GetPropertyDefaultValue(string collectionName, string propertyName)
+	    {
+		    var property = GetPropertyByName(collectionName, propertyName);
+		    if (property is IEdmStructuralProperty)
+			    return (property as IEdmStructuralProperty).DefaultValueString;
+		    return null;
+	    }
+
+	    public override Type GetPropertyType(string collectionName, string propertyName)
+	    {
+		    var property = GetPropertyByName(collectionName, propertyName);
+		    if (property.PropertyKind == EdmPropertyKind.Navigation)
+		    {
+			    return property.Type.Definition.TypeKind == EdmTypeKind.Collection
+				    ? typeof(IEnumerable<object>)
+				    : typeof(object);
+		    }
+			return EdmTypeMap.GetTypes(property.Type).FirstOrDefault();
+	    }
+
+		IEdmProperty GetPropertyByName(string collectionName, string propertyName)
+		{
+			var property = GetEntityType(collectionName).DeclaredProperties.FirstOrDefault(x => x.Name == propertyName);
+			if (property == default(IEdmProperty))
+				throw new UnresolvableObjectException(propertyName, string.Format("Property [{0}] not found", propertyName));
+			return property;
+		}
+
+	    public override IEnumerable<string> GetEntitySetNames()
+	    {
+		    return GetEntitySets().Select(x => x.Name);
+	    }
+
+	    public override IEnumerable<string> GetEntityTypeNames()
+	    {
+			return GetEntityTypes().Select(x => x.Name);
+	    }
+
+	    public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
+		{
+			return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
+	    }
+
+	    public override ISession Session { get { return _session; } }
 
         public override string GetEntityCollectionExactName(string collectionName)
         {

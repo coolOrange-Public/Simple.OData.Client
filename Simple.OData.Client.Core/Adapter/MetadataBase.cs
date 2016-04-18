@@ -8,7 +8,18 @@ namespace Simple.OData.Client
 {
     public abstract class MetadataBase : IMetadata
     {
-        public abstract ISession Session { get; }
+	    public abstract bool HasStream(string collectionName);
+	    public abstract string GetNavigationPropertyMultiplicity(string collectionName, string propertyName);
+	    public abstract string GetNavigationPropertyPartnerMultiplicity(string collectionName, string propertyName);
+	    public abstract bool PropertyIsNullable(string collectionName, string propertyName);
+	    public abstract string GetPropertyDefaultValue(string collectionName, string propertyName);
+	    public abstract Type GetPropertyType(string collectionName, string propertyName);
+	    public abstract IEnumerable<string> GetEntitySetNames();
+	    public abstract IEnumerable<string> GetEntityTypeNames();
+	    public abstract IEnumerable<string> GetNavigationPropertyNames(string collectionName);
+
+
+	    public abstract ISession Session { get; }
 
         public abstract string GetEntityCollectionExactName(string collectionName);
         public abstract string GetDerivedEntityTypeExactName(string collectionName, string entityTypeName);

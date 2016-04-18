@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OData.Edm;
 
@@ -17,7 +18,52 @@ namespace Simple.OData.Client.V4.Adapter
             _model = model;
         }
 
-        public override ISession Session { get { return _session; } }
+	    public override bool HasStream(string collectionName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override string GetNavigationPropertyMultiplicity(string collectionName, string propertyName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override string GetNavigationPropertyPartnerMultiplicity(string collectionName, string propertyName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override bool PropertyIsNullable(string collectionName, string propertyName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override string GetPropertyDefaultValue(string collectionName, string propertyName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override Type GetPropertyType(string collectionName, string propertyName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override IEnumerable<string> GetEntitySetNames()
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override IEnumerable<string> GetEntityTypeNames()
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public override ISession Session { get { return _session; } }
 
         public override string GetEntityCollectionExactName(string collectionName)
         {
