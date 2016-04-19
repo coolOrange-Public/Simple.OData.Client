@@ -89,6 +89,11 @@ namespace Simple.OData.Client.V4.Adapter
 			return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
 		}
 
+	    public override string GetEntityTypeName(string entitySetName)
+	    {
+			return GetEntitySet(entitySetName).EntityType().Name;
+	    }
+
 	    public override ISession Session { get { return _session; } }
 
         public override string GetEntityCollectionExactName(string collectionName)

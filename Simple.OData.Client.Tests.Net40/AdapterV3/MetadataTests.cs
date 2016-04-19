@@ -623,6 +623,43 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			Assert.Throws<UnresolvableObjectException>(() => metadata.HasStream("31"));
 		}
 
+		[Fact]
+		public void GetEntityTypeName_From_EntitySet_Will_Return_Right_one()
+		{
+			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
+			var entityType = CreateEntityType("Material");
+			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+
+			var entitySet = CreateEntitySet("Materials");
+			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			var entityContainer = CreateEntityContainer(entitySet.Object);
+
+			var edmModel = new Mock<IEdmModel>();
+			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
+
+			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			Assert.Same("Material", metadata.GetEntityTypeName("Materials"));
+		}
+
+		[Fact]
+		public void GetEntityTypeName_From__Invalid_EntitySet_Will_Throw_Exception()
+		{
+			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
+			var entityType = CreateEntityType("Material");
+			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+
+			var entitySet = CreateEntitySet("Materials");
+			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			var entityContainer = CreateEntityContainer(entitySet.Object);
+
+			var edmModel = new Mock<IEdmModel>();
+			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
+
+			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			Assert.Throws<UnresolvableObjectException>(()=>metadata.GetEntityTypeName("Material"));
+		}
+
+
 		IEdmModel CreateStreamableModel(bool streamAble)
 		{
 			#region Metadata
