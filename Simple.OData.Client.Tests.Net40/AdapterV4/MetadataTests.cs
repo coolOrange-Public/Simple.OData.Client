@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Microsoft.Data.Edm;
-using Microsoft.Data.Edm.Csdl;
+	using Microsoft.OData.Edm;
+	using Microsoft.OData.Edm.Csdl;
 using Moq;
-using Simple.OData.Client.V3.Adapter;
+using Simple.OData.Client.V4.Adapter;
 using Xunit;
 
-namespace Simple.OData.Client.Tests.AdapterV3
+namespace Simple.OData.Client.Tests.AdapterV4
 {
-	public class MetadataTestsv3
+	public class MetadataTestsv4
 	{
 		[Fact]
 		public void GetEntitySetNames_Model_With_One_EntitySet_Returns_One_EntitySetName()
@@ -75,8 +74,14 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmnavigationProperty.Object });
 
+
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
+
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.Setup(x => x.ElementType).Returns(entityType.Object);
+			entitySet.Setup(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
@@ -98,9 +103,14 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmnavigationProperty.Object });
+			
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
 
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.Setup(x => x.ElementType).Returns(entityType.Object);
+			entitySet.Setup(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
@@ -118,8 +128,13 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
+
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.Setup(x => x.ElementType).Returns(entityType.Object);
+			entitySet.Setup(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
@@ -153,8 +168,13 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new List<IEdmProperty> { edmNormalProperty.Object, edmnavigationProperty.Object });
 
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
+
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
@@ -249,9 +269,14 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
 
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
@@ -275,8 +300,13 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
 
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
+
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
 			var edmModel = new Mock<IEdmModel>();
@@ -355,9 +385,14 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			
+			var edmTypeReference2 = new Mock<IEdmTypeReference>();
+			edmTypeReference2.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference2.Object);
 
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
 			var edmModel = new Mock<IEdmModel>();
@@ -413,9 +448,14 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			
+			var edmTypeReference2 = new Mock<IEdmTypeReference>();
+			edmTypeReference2.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference2.Object);
 
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
 			var edmModel = new Mock<IEdmModel>();
@@ -448,17 +488,19 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		#region     Metadata string
 
 		const string MetadataMaterialService = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
-<edmx:Edmx Version=""1.0"" xmlns:edmx=""http://schemas.microsoft.com/ado/2007/06/edmx"">
-    <edmx:DataServices xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" m:DataServiceVersion=""1.0"">
-        <Schema Namespace=""ErpServices.Services.MaterialService.Entities"" xmlns:d=""http://schemas.microsoft.com/ado/2007/08/dataservices"" xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" xmlns=""http://schemas.microsoft.com/ado/2006/04/edm"">
-            <EntityType Name=""Material"">
+<edmx:Edmx xmlns:edmx=""http://docs.oasis-open.org/odata/ns/edmx""
+           Version=""4.0"">
+  <edmx:DataServices>
+    <Schema xmlns=""http://docs.oasis-open.org/odata/ns/edm""
+            Namespace=""ErpServices.Services.MaterialService.Entities"">
+      <EntityType Name=""Material"">
                 <Key>
                     <PropertyRef Name=""Number"" />        
                 </Key>
                 <Property Name=""Number"" Type=""Edm.String"" Nullable=""false"" />
                 <Property Name=""UnitOfMeasure"" Type=""Edm.String"" Nullable=""true"" />
                 <Property Name=""Type"" Type=""Edm.String"" Nullable=""true"" />
-                <NavigationProperty Name=""Descriptions"" Relationship=""ErpServices.Services.MaterialService.Entities.Material_Descriptions"" FromRole=""Material"" ToRole=""Descriptions""/>
+                <NavigationProperty Name=""Descriptions"" Nullable=""true"" Type=""Collection(ErpServices.Services.MaterialService.Entities.MaterialDescription)"" Partner=""Material""/>
             </EntityType>
             <EntityType Name=""MaterialDescription"">
                 <Key>
@@ -468,30 +510,25 @@ namespace Simple.OData.Client.Tests.AdapterV3
                 <Property Name=""Number"" Type=""Edm.String"" Nullable=""false"" />
                 <Property Name=""Language"" Type=""Edm.String"" Nullable=""false"" />
                 <Property Name=""Description"" Type=""Edm.String"" Nullable=""true"" />      
+				<NavigationProperty Name=""Material"" Nullable=""true"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Partner=""Descriptions""/>
             </EntityType>            
-            <Association Name=""Material_Descriptions"">
-                <End Role=""Material"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Multiplicity=""*"" />
-                <End Role=""Descriptions"" Type=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" Multiplicity=""*"" />      
-            </Association>    
-        </Schema>
-        <Schema Namespace=""MaterialServiceAutoGenerated"" xmlns:d=""http://schemas.microsoft.com/ado/2007/08/dataservices"" xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" xmlns=""http://schemas.microsoft.com/ado/2006/04/edm"">
-            <EntityContainer Name=""MaterialServiceAutoGenerated"" m:IsDefaultEntityContainer=""true"">
-                <EntitySet Name=""Materials"" EntityType=""ErpServices.Services.MaterialService.Entities.Material"" />
-                <EntitySet Name=""MaterialDescriptions"" EntityType=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" />
-                <AssociationSet Name=""Material_Descriptions"" Association=""ErpServices.Services.MaterialService.Entities.Material_Descriptions"">
-                    <End Role=""Material"" EntitySet=""Materials"" />
-                    <End Role=""Descriptions"" EntitySet=""MaterialDescriptions"" />        
-                </AssociationSet>      
+            <EntityContainer Name=""MaterialServiceAutoGenerated"" >
+                <EntitySet Name=""Materials"" EntityType=""ErpServices.Services.MaterialService.Entities.Material"" >
+					<NavigationPropertyBinding Path=""Descriptions"" Target=""MaterialDescriptions"" />
+				</EntitySet>
+                <EntitySet Name=""MaterialDescriptions"" EntityType=""ErpServices.Services.MaterialService.Entities.MaterialDescription"">
+					<NavigationPropertyBinding Path=""Material"" Target=""Materials"" />
+				</EntitySet>
             </EntityContainer>    
-        </Schema>  
-    </edmx:DataServices>
+    </Schema>
+  </edmx:DataServices>
 </edmx:Edmx>";
 		#endregion
 
 		[Fact]
 		public void GetNavigationPropertyPartnerMultiplicity_With_EntitySetName_And_Valid_Property_Returns_Correct_Multiplicity()
 		{
-			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.Many;
+			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;
 			var edmModel = ParseMetadata(MetadataMaterialService);
 
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
@@ -501,17 +538,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		[Fact]
 		public void GetNavigationPropertyPartnerMultiplicity_With_EntityTypeName_And_Valid_Property_Returns_Correct_Multiplicity()
 		{
-			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;
-			var metadataDocument =
-				MetadataMaterialService.Replace(
-					@"<End Role=""Material"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Multiplicity=""*"" />",
-					@"<End Role=""Material"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Multiplicity=""*"" />").
-				Replace(
-					@"<End Role=""Descriptions"" Type=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" Multiplicity=""*"" />",
-					@"<End Role=""Descriptions"" Type=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" Multiplicity=""0..1"" />");
-			var edmModel = ParseMetadata(metadataDocument);
+			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.Many;
+			var edmModel = ParseMetadata(MetadataMaterialService);
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
-			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyPartnerMultiplicity("Material", "Descriptions"));
+			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyPartnerMultiplicity("MaterialDescription", "Material"));
 		}
 
 		[Fact]
@@ -551,17 +581,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		[Fact]
 		public void GetNavigationPropertyMultiplicity_With_EntityTypeName_And_Valid_Property_Returns_Correct_Multiplicity()
 		{
-			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;
-			var metadataDocument =
-				MetadataMaterialService.Replace(
-					@"<End Role=""Material"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Multiplicity=""*"" />",
-					@"<End Role=""Material"" Type=""ErpServices.Services.MaterialService.Entities.Material"" Multiplicity=""0..1"" />").
-				Replace(
-					@"<End Role=""Descriptions"" Type=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" Multiplicity=""*"" />",
-					@"<End Role=""Descriptions"" Type=""ErpServices.Services.MaterialService.Entities.MaterialDescription"" Multiplicity=""*"" />");
-			var edmModel = ParseMetadata(metadataDocument);
+			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;;
+			var edmModel = ParseMetadata(MetadataMaterialService);
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
-			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyMultiplicity("Material", "Descriptions"));
+			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyMultiplicity("MaterialDescription", "Material"));
 		}
 
 		[Fact]
@@ -628,22 +651,23 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			#region Metadata
 
 			var metadataString = @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
-<edmx:Edmx Version=""1.0"" xmlns:edmx=""http://schemas.microsoft.com/ado/2007/06/edmx"">
-    <edmx:DataServices xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" m:DataServiceVersion=""1.0"">
-        <Schema Namespace=""ErpServices.Services.DocumentInfoRecordService.Entities"" xmlns:d=""http://schemas.microsoft.com/ado/2007/08/dataservices"" xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" xmlns=""http://schemas.microsoft.com/ado/2006/04/edm"">
-            <EntityType Name=""DocumentInfoRecordOriginal"" m:HasStream=""" + streamAble.ToString().ToLower() + @""">
+<edmx:Edmx xmlns:edmx=""http://docs.oasis-open.org/odata/ns/edmx""
+           Version=""4.0"">
+  <edmx:DataServices>
+    <Schema xmlns=""http://docs.oasis-open.org/odata/ns/edm""
+            Namespace=""ErpServices.Services.DocumentInfoRecordService.Entities"">
+            <EntityType Name=""DocumentInfoRecordOriginal"" HasStream=""" + streamAble.ToString().ToLower() + @""">
                 <Key>
                     <PropertyRef Name=""Description"" />        
                 </Key>
                 <Property Name=""Description"" Type=""Edm.String"" Nullable=""false"" />
                 <Property Name=""Value"" Type=""Edm.Binary"" Nullable=""true"" />      
             </EntityType>    
-        </Schema>
-        <Schema Namespace=""DocumentInfoRecordServiceAutoGenerated"" xmlns:d=""http://schemas.microsoft.com/ado/2007/08/dataservices"" xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"" xmlns=""http://schemas.microsoft.com/ado/2006/04/edm"">
-            <EntityContainer Name=""DocumentInfoRecordServiceAutoGenerated"" m:IsDefaultEntityContainer=""true"">
+        
+            <EntityContainer Name=""DocumentInfoRecordServiceAutoGenerated"" >
                 <EntitySet Name=""DocumentInfoRecordOriginalCollection"" EntityType=""ErpServices.Services.DocumentInfoRecordService.Entities.DocumentInfoRecordOriginal"" />      
-            </EntityContainer>    
-        </Schema>  
+            </EntityContainer>  
+		</Schema>
     </edmx:DataServices>
 </edmx:Edmx>";
 
