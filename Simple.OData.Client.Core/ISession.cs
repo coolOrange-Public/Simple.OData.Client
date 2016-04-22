@@ -24,6 +24,11 @@ namespace Simple.OData.Client
         /// </summary>
         IMetadata Metadata { get; }
 
+	    /// <summary>
+	    /// Gets MetadataCache
+	    /// </summary>
+		MetadataCache MetadataCache { get;  }
+
         /// <summary>
         /// Gets the word pluralizer.
         /// </summary>

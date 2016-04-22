@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Simple.OData.Client
 {
-    class MetadataCache
+    public class MetadataCache
     {
         public static readonly SimpleDictionary<string, MetadataCache> Instances = new SimpleDictionary<string, MetadataCache>();
 
