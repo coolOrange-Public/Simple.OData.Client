@@ -16,6 +16,7 @@ namespace Simple.OData.Client
 		IEnumerable<string> GetEntitySetNames();
 		IEnumerable<string> GetEntityTypeNames();
 		IEnumerable<string> GetNavigationPropertyNames(string collectionName);
+		IEnumerable<string> GetPropertyNames(string collectionName);
 		string GetEntityTypeName(string entitySetName);
 		
 

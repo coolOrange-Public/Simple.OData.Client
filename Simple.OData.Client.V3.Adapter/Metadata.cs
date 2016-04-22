@@ -91,6 +91,12 @@ namespace Simple.OData.Client.V3.Adapter
 			return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
 	    }
 
+	    public override IEnumerable<string> GetPropertyNames(string collectionName)
+	    {
+		    var keys = GetDeclaredKeyPropertyNames(collectionName);
+		    return GetEntityType(collectionName).StructuralProperties().Where(x => !keys.Contains(x.Name)).Select(x=>x.Name);
+	    }
+
 	    public override string GetEntityTypeName(string entitySetName)
 	    {
 		    return GetEntitySet(entitySetName).ElementType.Name;
