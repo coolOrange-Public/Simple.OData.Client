@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Solutions\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\Solutions\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="..\Solutions\packages\xunit.core.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.core.props" Condition="Exists('..\Solutions\packages\xunit.core.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.core.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -16,7 +17,8 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>39eedba2</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,16 +56,16 @@
       <HintPath>..\Solutions\packages\Microsoft.Data.Services.Client.5.7.0\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.OData.Core, Version=6.14.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\Solutions\packages\Microsoft.OData.Core.6.14.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.OData.Core.dll</HintPath>
+    <Reference Include="Microsoft.OData.Core, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.OData.Core.6.15.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.OData.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.OData.Edm, Version=6.14.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\Solutions\packages\Microsoft.OData.Edm.6.14.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.OData.Edm.dll</HintPath>
+    <Reference Include="Microsoft.OData.Edm, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.OData.Edm.6.15.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.OData.Edm.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Spatial, Version=6.14.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\Solutions\packages\Microsoft.Spatial.6.14.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.Spatial.dll</HintPath>
+    <Reference Include="Microsoft.Spatial, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Spatial.6.15.0\lib\portable-net40+sl5+wp8+win8+wpa\Microsoft.Spatial.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Moq, Version=4.2.1408.717, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
@@ -113,6 +115,12 @@
     </Compile>
     <Compile Include="..\CommonAssemblyVersion.cs">
       <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Tests.Core\Entities\Address.cs">
+      <Link>Entities\Address.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Tests.Core\Entities\AddressType.cs">
+      <Link>Entities\AddressType.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Tests.Core\Entities\Category.cs">
       <Link>Entities\Category.cs</Link>
@@ -274,6 +282,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\Solutions\packages\xunit.core.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\xunit.core.2.1.0\build\portable-net45+win8+wp8+wpa81\xunit.core.props'))" />
+    <Error Condition="!Exists('..\Solutions\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
