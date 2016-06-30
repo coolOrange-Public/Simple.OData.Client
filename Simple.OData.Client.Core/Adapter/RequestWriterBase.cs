@@ -28,7 +28,7 @@ namespace Simple.OData.Client
         public async Task<ODataRequest> CreateGetRequestAsync(string commandText, bool scalarResult)
         {
             await WriteEntryContentAsync(
-                RestVerbs.Get, Utils.ExtractCollectionName(commandText), commandText, null, true);
+                RestVerbs.Get, new []{Utils.ExtractCollectionName(commandText)}, commandText, null, true);
 
             var request = new ODataRequest(RestVerbs.Get, _session, commandText)
             {
@@ -49,7 +49,7 @@ namespace Simple.OData.Client
             return request;
         }
 
-        public async Task<ODataRequest> CreateInsertRequestAsync(string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired)
+        public async Task<ODataRequest> CreateInsertRequestAsync(IEnumerable<string> collections, string commandText, IDictionary<string, object> entryData, bool resultRequired)
         {
             var segments = commandText.Split('/');
             if (segments.Count() > 1 && segments.Last().Contains("."))
@@ -58,31 +58,32 @@ namespace Simple.OData.Client
             }
 
             var entryContent = await WriteEntryContentAsync(
-                RestVerbs.Post, collection, commandText, entryData, resultRequired);
+                RestVerbs.Post, collections, commandText, entryData, resultRequired);
 
             var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData, entryContent)
             {
-                ResultRequired = resultRequired,
+                ResultRequired = resultRequired
             };
             AssignHeaders(request);
             return request;
         }
 
-        public async Task<ODataRequest> CreateUpdateRequestAsync(string collection, string entryIdent, IDictionary<string, object> entryKey, IDictionary<string, object> entryData, bool resultRequired)
-        {
-            var entityCollection = _session.Metadata.GetEntityCollection(collection);
+		public async Task<ODataRequest> CreateUpdateRequestAsync(IEnumerable<string> collections, string entryIdent, IDictionary<string, object> entryKey, IDictionary<string, object> entryData, bool resultRequired)
+		{
+			var mainCollection = collections.FirstOrDefault();
+			var entityCollection = _session.Metadata.GetEntityCollection(mainCollection);
             var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData);
 
             var hasPropertiesToUpdate = entryDetails.Properties.Count > 0;
             var usePatch = _session.Settings.PreferredUpdateMethod == ODataUpdateMethod.Patch || !hasPropertiesToUpdate;
-            if (HasUpdatedKeyProperties(collection, entryKey, entryData))
+			if (HasUpdatedKeyProperties(mainCollection, entryKey, entryData))
                 usePatch = false;
 
             var entryContent = await WriteEntryContentAsync(
-                usePatch ? RestVerbs.Patch : RestVerbs.Put, collection, entryIdent, entryData, resultRequired);
+				usePatch ? RestVerbs.Patch : RestVerbs.Put, collections, entryIdent, entryData, resultRequired);
 
             var updateMethod = usePatch ? RestVerbs.Patch : RestVerbs.Put;
-            var checkOptimisticConcurrency = _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection);
+            var checkOptimisticConcurrency = _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(mainCollection);
             var request = new ODataRequest(updateMethod, _session, entryIdent, entryData, entryContent)
             {
                 ResultRequired = resultRequired,
@@ -95,7 +96,7 @@ namespace Simple.OData.Client
         public async Task<ODataRequest> CreateDeleteRequestAsync(string collection, string entryIdent)
         {
             await WriteEntryContentAsync(
-                RestVerbs.Delete, collection, entryIdent, null, false);
+                RestVerbs.Delete, new []{collection}, entryIdent, null, false);
 
             var request = new ODataRequest(RestVerbs.Delete, _session, entryIdent)
             {
@@ -125,7 +126,7 @@ namespace Simple.OData.Client
         public async Task<ODataRequest> CreateUnlinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent)
         {
             var associationName = _session.Metadata.GetNavigationPropertyExactName(collection, linkName);
-            await WriteEntryContentAsync(RestVerbs.Delete, collection, entryIdent, null, false);
+            await WriteEntryContentAsync(RestVerbs.Delete, new []{collection}, entryIdent, null, false);
 
             var commandText = FormatLinkPath(entryIdent, associationName, linkIdent);
             var request = new ODataRequest(RestVerbs.Delete, _session, commandText)
@@ -169,7 +170,7 @@ namespace Simple.OData.Client
             return request;
         }
 
-        protected abstract Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired);
+        protected abstract Task<Stream> WriteEntryContentAsync(string method, IEnumerable<string> collections, string commandText, IDictionary<string, object> entryData, bool resultRequired);
         protected abstract Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent);
         protected abstract Task<Stream> WriteFunctionContentAsync(string method, string commandText);
         protected abstract Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, IDictionary<string, object> parameters);

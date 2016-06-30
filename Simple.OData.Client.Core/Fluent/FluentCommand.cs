@@ -120,6 +120,11 @@ namespace Simple.OData.Client
             }
         }
 
+	    public IEnumerable<string> DeepAssocations
+	    {
+		    get { return _details.DeepAssociations; }
+	    }
+
         public string DynamicPropertiesContainerName
         {
             get { return _details.DynamicPropertiesContainerName; }
@@ -503,13 +508,22 @@ namespace Simple.OData.Client
             return this;
         }
 
-        public FluentCommand Set(IDictionary<string, object> value)
-        {
-            if (IsBatchResponse) return this;
+		public FluentCommand Set(IDictionary<string, object> value)
+		{
+			if (IsBatchResponse) return this;
 
-            _details.EntryData = value;
-            return this;
-        }
+			_details.EntryData = value;
+			return this;
+		}
+
+		public FluentCommand Set(IDictionary<string, object> value, IEnumerable<string> assocations)
+		{
+			if (IsBatchResponse) return this;
+
+			_details.EntryData = value;
+			_details.DeepAssociations.AddRange(assocations);
+			return this;
+		}
 
         public FluentCommand Set(params ODataExpression[] value)
         {

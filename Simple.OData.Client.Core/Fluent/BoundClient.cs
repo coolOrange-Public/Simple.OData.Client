@@ -94,12 +94,14 @@ namespace Simple.OData.Client
 
         public IBoundClient<T> Set(IDictionary<string, object> value, IEnumerable<string> associationsToSetByValue)
         {
-            throw new NotImplementedException();
+	        this.Command.Set(value, associationsToSetByValue);
+	        return this;
         }
 
         public IBoundClient<T> Set(IDictionary<string, object> value, params string[] associationsToSetByValue)
         {
-            throw new NotImplementedException();
+			this.Command.Set(value, associationsToSetByValue);
+			return this;
         }
 
         public IBoundClient<T> Set(T entry, Expression<Func<T, object>> associationsToSetByValue)

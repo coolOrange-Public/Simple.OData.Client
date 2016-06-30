@@ -16,57 +16,48 @@ namespace Simple.OData.Client.V3.Adapter
     {
         private readonly IEdmModel _model;
 		readonly IEdmTypeMap _edmTypeMap = new EdmTypeMap();
+	    private IEnumerable<string> _deepAssociations;
 
-        public RequestWriter(ISession session, IEdmModel model, Lazy<IBatchWriter> deferredBatchWriter)
+	    public RequestWriter(ISession session, IEdmModel model, Lazy<IBatchWriter> deferredBatchWriter)
             : base(session, deferredBatchWriter)
         {
             _model = model;
         }
 
-        protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired)
+        protected override async Task<Stream> WriteEntryContentAsync(string method, IEnumerable<string> collections, string commandText, IDictionary<string, object> entryData, bool resultRequired)
         {
+	        var mainCollection = collections.FirstOrDefault();
+			_deepAssociations = collections.Skip(1);
+
 #if SILVERLIGHT
             IODataRequestMessage
 #else
             IODataRequestMessageAsync
 #endif
             message = IsBatch
-                ? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired)
+				? await CreateBatchOperationMessageAsync(method, mainCollection, entryData, commandText, resultRequired)
                 : new ODataRequestMessage();
 
             if (method == RestVerbs.Get || method == RestVerbs.Delete)
                 return null;
 
             var entityType = _model.FindDeclaredType(
-                _session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
+				_session.Metadata.GetQualifiedTypeName(mainCollection)) as IEdmEntityType;
             var model = method == RestVerbs.Patch ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
 
-            using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
-            {
-                var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
-                //var entityCollection = _session.Metadata.GetEntityCollection(collection);
-                var entityCollection = _session.Metadata.NavigateToCollection(collection);
-                var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
+	        using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
+	        {
+		        var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
+				var entityCollection = _session.Metadata.NavigateToCollection(mainCollection);
+		        var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
+		        var entryWriter = messageWriter.CreateODataEntryWriter();
+		        var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
 
-                var entryWriter = messageWriter.CreateODataEntryWriter();
-                var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
+		        entryWriter.WriteStart(entry);
+				WriteNavigationLinks(entryDetails, entry, _deepAssociations, entryWriter);
+		        entryWriter.WriteEnd();
 
-                entryWriter.WriteStart(entry);
-
-                if (entryDetails.Links != null)
-                {
-                    foreach (var link in entryDetails.Links)
-                    {
-                        if (link.Value.Any(x => x.LinkData != null))
-                        {
-                            WriteLink(entryWriter, entry, link.Key, link.Value);
-                        }
-                    }
-                }
-
-                entryWriter.WriteEnd();
-
-                if (IsBatch)
+	        if (IsBatch)
                     return null;
 
 #if SILVERLIGHT
@@ -76,6 +67,36 @@ namespace Simple.OData.Client.V3.Adapter
 #endif
             }
         }
+
+	    void WriteNavigationLinks(EntryDetails entryDetails, Microsoft.Data.OData.ODataEntry entry, IEnumerable<string> deepAssociations,
+		    ODataWriter entryWriter)
+		{
+			if (entryDetails.Links == null)
+				return;
+		    var navigationLinks = new Dictionary<string, List<ReferenceLink>>();
+		    var navigationLinksWithContent = new Dictionary<string, List<ReferenceLink>>();
+		    foreach (var link in entryDetails.Links)
+		    {
+			    if (link.Value.Any(x => x.LinkData != null))
+			    {
+				    foreach (var referenceLink in link.Value)
+				    {
+					    var navigationTypeName = _session.Metadata.GetNavigationPropertyPartnerTypeName(entry.TypeName,
+						    referenceLink.LinkName);
+					    var navigationCollectionName = _session.Metadata.GetEntityCollectionExactName(navigationTypeName);
+					    if (deepAssociations.Contains(navigationCollectionName))
+						    navigationLinksWithContent[link.Key] = link.Value;
+					    else
+						    navigationLinks[link.Key] = link.Value;
+				    }
+			    }
+		    }
+
+		    foreach (var link in navigationLinksWithContent)
+			    WriteLinkWithContent(entryWriter, entry, link.Key, link.Value);
+		    foreach (var link in navigationLinks)
+			    WriteLink(entryWriter, entry, link.Key, link.Value);
+	    }
 
 #pragma warning disable 1998
         protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
@@ -297,7 +318,7 @@ namespace Simple.OData.Client.V3.Adapter
         }
 
 #if SILVERLIGHT
-        private async Task<IODataRequestMessage> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
+        private async Task<IODataRequestMessage> CreateBatchOperationMessageAsync(string method, string collections, IDictionary<string, object> entryData, string commandText, bool resultRequired)
 #else
         private async Task<IODataRequestMessageAsync> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
 #endif
@@ -314,25 +335,40 @@ namespace Simple.OData.Client.V3.Adapter
             return message;
         }
 
+
+	    void WriteLinkWithContent(ODataWriter entryWriter, Microsoft.Data.OData.ODataEntry entry, string linkName,
+		    IEnumerable<ReferenceLink> links)
+	    {
+			IEdmEntityType linkType;
+			var navigationLink = CreateNavigationLink(entry, linkName, out linkType);
+			entryWriter.WriteStart(navigationLink);
+			if (navigationLink.IsCollection == true)
+				entryWriter.WriteStart(new ODataFeed());
+
+			foreach (var referenceLink in links)
+			{
+				var navigationTypeName = _session.Metadata.GetNavigationPropertyPartnerTypeName(entry.TypeName, referenceLink.LinkName);
+				var navigationCollectionName = _session.Metadata.GetEntityCollectionExactName(navigationTypeName);
+				var linkEntryDetails = _session.Metadata.ParseEntryDetails(navigationCollectionName, referenceLink.LinkData as Dictionary<string, object>, referenceLink.ContentId);
+				var navigationEntityType = _model.FindDeclaredType(_session.Metadata.GetQualifiedTypeName(navigationCollectionName)) as IEdmEntityType;
+				var linkEntry = CreateODataEntry(navigationEntityType.FullName(), linkEntryDetails.Properties);
+
+				entryWriter.WriteStart(linkEntry);
+				WriteNavigationLinks(linkEntryDetails, linkEntry, _deepAssociations, entryWriter);
+				entryWriter.WriteEnd();
+			}
+			entryWriter.WriteEnd();
+			entryWriter.WriteEnd();
+	    }
+
         private void WriteLink(ODataWriter entryWriter, Microsoft.Data.OData.ODataEntry entry, string linkName, IEnumerable<ReferenceLink> links)
-        {
-            var navigationProperty = (_model.FindDeclaredType(entry.TypeName) as IEdmEntityType).NavigationProperties()
-                .BestMatch(x => x.Name, linkName, _session.Pluralizer);
-            bool isCollection = navigationProperty.Type.Definition.TypeKind == EdmTypeKind.Collection;
-
-            var linkType = GetNavigationPropertyEntityType(navigationProperty);
-            var linkTypeWithKey = linkType;
-            while (linkTypeWithKey.DeclaredKey == null && linkTypeWithKey.BaseEntityType() != null)
-            {
-                linkTypeWithKey = linkTypeWithKey.BaseEntityType();
-            }
-
-            entryWriter.WriteStart(new ODataNavigationLink()
-            {
-                Name = linkName,
-                IsCollection = isCollection,
-                Url = new Uri(ODataNamespace.Related + linkType, UriKind.Absolute),
-            });
+		{
+			IEdmEntityType linkType;
+			var navigationLink = CreateNavigationLink(entry, linkName, out linkType);
+			var linkTypeWithKey = linkType;
+			while (linkTypeWithKey.DeclaredKey == null && linkTypeWithKey.BaseEntityType() != null)
+				linkTypeWithKey = linkTypeWithKey.BaseEntityType();
+			entryWriter.WriteStart(navigationLink);
 
             foreach (var referenceLink in links)
             {
@@ -363,6 +399,20 @@ namespace Simple.OData.Client.V3.Adapter
 
             entryWriter.WriteEnd();
         }
+
+		ODataNavigationLink CreateNavigationLink(Microsoft.Data.OData.ODataEntry entry, string linkName, out IEdmEntityType entityType)
+		{
+			var navigationProperty = (_model.FindDeclaredType(entry.TypeName) as IEdmEntityType).NavigationProperties()
+				.BestMatch(x => x.Name, linkName, _session.Pluralizer);
+			bool isCollection = navigationProperty.Type.Definition.TypeKind == EdmTypeKind.Collection;
+			entityType = GetNavigationPropertyEntityType(navigationProperty);
+			return new ODataNavigationLink
+			{
+				Name = linkName,
+				IsCollection = isCollection,
+				Url = new Uri(ODataNamespace.Related + entityType, UriKind.Absolute)
+			};
+		}
 
         private static IEdmEntityType GetNavigationPropertyEntityType(IEdmNavigationProperty navigationProperty)
         {
