@@ -16,7 +16,6 @@ namespace Simple.OData.Client.V4.Adapter
 {
     public class RequestWriter : RequestWriterBase
     {
-	    private IEnumerable<string> _deepAssociations;
         private readonly IEdmModel _model;
 		readonly IEdmTypeMap _edmTypeMap = new EdmTypeMap();
 
@@ -29,7 +28,7 @@ namespace Simple.OData.Client.V4.Adapter
 		protected override async Task<Stream> WriteEntryContentAsync(string method, IEnumerable<string> collections, string commandText, IDictionary<string, object> entryData, bool resultRequired)
 		{
 			var mainCollection = collections.FirstOrDefault();
-			_deepAssociations = collections.Skip(1);
+			var deepAssociations = collections.Skip(1);
             IODataRequestMessageAsync message = IsBatch
 				? await CreateBatchOperationMessageAsync(method, mainCollection, entryData, commandText, resultRequired)
                 : new ODataRequestMessage();
@@ -52,7 +51,7 @@ namespace Simple.OData.Client.V4.Adapter
                 var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
 
                 await entryWriter.WriteStartAsync(entry);
-				await WriteNavigationLinks(entryDetails, entry, _deepAssociations, entryWriter);
+				await WriteNavigationLinks(entryDetails, entry, deepAssociations, entryWriter);
                 await entryWriter.WriteEndAsync();
                 return IsBatch ? null : await message.GetStreamAsync();
             }
@@ -82,7 +81,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 			}
 			foreach (var link in navigationLinksWithContent)
-				await WriteLinkWithContent(entryWriter, entry, link.Key, link.Value);
+				await WriteLinkWithContent(entryWriter, entry, link.Key, link.Value, deepAssociations);
 			foreach (var link in navigationLinks)
 				await WriteLinkAsync(entryWriter, entry, link.Key, link.Value);
 		}
@@ -234,8 +233,7 @@ namespace Simple.OData.Client.V4.Adapter
             return message;
         }
 
-		async Task WriteLinkWithContent(ODataWriter entryWriter, Microsoft.OData.Core.ODataEntry entry, string linkName,
-			IEnumerable<ReferenceLink> links)
+		async Task WriteLinkWithContent(ODataWriter entryWriter, Microsoft.OData.Core.ODataEntry entry, string linkName, IEnumerable<ReferenceLink> links, IEnumerable<string> deepAssociations)
 		{
 			IEdmEntityType linkType;
 			var navigationLink = CreateNavigationLink(entry, linkName, out linkType);
@@ -252,7 +250,7 @@ namespace Simple.OData.Client.V4.Adapter
 				var linkEntry = CreateODataEntry(navigationEntityType.FullName(), linkEntryDetails.Properties);
 
 				await entryWriter.WriteStartAsync(linkEntry);
-				await WriteNavigationLinks(linkEntryDetails, linkEntry, _deepAssociations, entryWriter);
+				await WriteNavigationLinks(linkEntryDetails, linkEntry, deepAssociations, entryWriter);
 				await entryWriter.WriteEndAsync();
 			}
 			if (navigationLink.IsCollection == true)
