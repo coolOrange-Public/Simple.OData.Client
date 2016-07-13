@@ -17,15 +17,15 @@ namespace Simple.OData.Client
 
 #pragma warning disable 1591
 
-		public IUnboundClient<T> Set(object value)
+		public IUnboundClient<T> Set(object value, bool deep = false)
 		{
-			this.Command.Set(value);
+			this.Command.Set(value, deep);
 			return this;
 		}
 
-		public IUnboundClient<T> Set(IDictionary<string, object> value)
+		public IUnboundClient<T> Set(IDictionary<string, object> value, bool deep = false)
 		{
-			this.Command.Set(value);
+			this.Command.Set(value, deep);
 			return this;
 		}
 
@@ -37,27 +37,13 @@ namespace Simple.OData.Client
 
 		public IUnboundClient<T> Set(bool deep, params ODataExpression[] value)
 		{
-			throw new NotImplementedException();
+			this.Command.Set(value, deep);
+			return this;
 		}
 
-		public IUnboundClient<T> Set(object value, bool deep)
+		public IUnboundClient<T> Set(T entry, bool deep = false)
 		{
-			throw new NotImplementedException();
-		}
-
-		public IUnboundClient<T> Set(IDictionary<string, object> value, bool deep)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IUnboundClient<T> Set(T entry, bool deep)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IUnboundClient<T> Set(T entry)
-		{
-			this.Command.Set(entry);
+			this.Command.Set(entry, deep);
 			return this;
 		}
 
