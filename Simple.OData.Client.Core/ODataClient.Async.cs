@@ -1043,7 +1043,7 @@ namespace Simple.OData.Client
             await _session.ResolveAdapterAsync(cancellationToken);
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-            return await ExecuteInsertEntryAsync(new FluentCommand(command).Set(entryData), resultRequired, cancellationToken);
+            return await ExecuteInsertEntryAsync(new FluentCommand(command).Set(entryData, command.Deep), resultRequired, cancellationToken);
         }
 
         internal async Task<IDictionary<string, object>> UpdateEntryAsync(FluentCommand command, bool resultRequired, CancellationToken cancellationToken)

@@ -25,66 +25,34 @@ namespace Simple.OData.Client.V4.Adapter
             _model = model;
         }
 
-		protected override async Task<Stream> WriteEntryContentAsync(string method, IEnumerable<string> collections, string commandText, IDictionary<string, object> entryData, bool resultRequired)
+		protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired, bool deep)
 		{
-			var mainCollection = collections.FirstOrDefault();
-			var deepAssociations = collections.Skip(1);
             IODataRequestMessageAsync message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, mainCollection, entryData, commandText, resultRequired)
+				? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired)
                 : new ODataRequestMessage();
 
             if (method == RestVerbs.Get || method == RestVerbs.Delete)
                 return null;
 
             var entityType = _model.FindDeclaredType(
-				_session.Metadata.GetQualifiedTypeName(mainCollection)) as IEdmEntityType;
+				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
             var model = method == RestVerbs.Patch ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
 
             using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
             {
                 var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
-                //var entityCollection = _session.Metadata.GetEntityCollection(collections);
-				var entityCollection = _session.Metadata.NavigateToCollection(mainCollection);
+				var entityCollection = _session.Metadata.NavigateToCollection(collection);
                 var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
 
                 var entryWriter = await messageWriter.CreateODataEntryWriterAsync();
                 var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
 
                 await entryWriter.WriteStartAsync(entry);
-				await WriteNavigationLinks(entryDetails, entry, deepAssociations, entryWriter);
+				await WriteNavigationLinks(entryDetails, entry, deep, entryWriter);
                 await entryWriter.WriteEndAsync();
                 return IsBatch ? null : await message.GetStreamAsync();
             }
         }
-
-		async Task WriteNavigationLinks(EntryDetails entryDetails, Microsoft.OData.Core.ODataEntry entry, IEnumerable<string> deepAssociations,
-			ODataWriter entryWriter)
-		{
-			if (entryDetails.Links == null)
-				return;
-			var navigationLinks = new Dictionary<string, List<ReferenceLink>>();
-			var navigationLinksWithContent = new Dictionary<string, List<ReferenceLink>>();
-			foreach (var link in entryDetails.Links)
-			{
-				if (link.Value.Any(x => x.LinkData != null))
-				{
-					foreach (var referenceLink in link.Value)
-					{
-						var navigationTypeName = _session.Metadata.GetNavigationPropertyPartnerTypeName(entry.TypeName,
-							referenceLink.LinkName);
-						var navigationCollectionName = _session.Metadata.GetEntityCollectionExactName(navigationTypeName);
-						if (deepAssociations.Contains(navigationCollectionName))
-							navigationLinksWithContent[link.Key] = link.Value;
-						else
-							navigationLinks[link.Key] = link.Value;
-					}
-				}
-			}
-			foreach (var link in navigationLinksWithContent)
-				await WriteLinkWithContent(entryWriter, entry, link.Key, link.Value, deepAssociations);
-			foreach (var link in navigationLinks)
-				await WriteLinkAsync(entryWriter, entry, link.Key, link.Value);
-		}
 
         protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
         {
@@ -233,7 +201,23 @@ namespace Simple.OData.Client.V4.Adapter
             return message;
         }
 
-		async Task WriteLinkWithContent(ODataWriter entryWriter, Microsoft.OData.Core.ODataEntry entry, string linkName, IEnumerable<ReferenceLink> links, IEnumerable<string> deepAssociations)
+		async Task WriteNavigationLinks(EntryDetails entryDetails, Microsoft.OData.Core.ODataEntry entry, bool deep, ODataWriter entryWriter)
+		{
+			if (entryDetails.Links == null)
+				return;
+
+			foreach (var link in entryDetails.Links)
+				if (link.Value.Any(x => x.LinkData != null))
+				{
+
+					if (deep)
+						await WriteEntryAsync(entryWriter, entry, link.Key, link.Value);
+					else
+						await WriteLinkAsync(entryWriter, entry, link.Key, link.Value);
+				}
+		}
+
+		async Task WriteEntryAsync(ODataWriter entryWriter, Microsoft.OData.Core.ODataEntry entry, string linkName, IEnumerable<ReferenceLink> links)
 		{
 			IEdmEntityType linkType;
 			var navigationLink = CreateNavigationLink(entry, linkName, out linkType);
@@ -250,7 +234,7 @@ namespace Simple.OData.Client.V4.Adapter
 				var linkEntry = CreateODataEntry(navigationEntityType.FullName(), linkEntryDetails.Properties);
 
 				await entryWriter.WriteStartAsync(linkEntry);
-				await WriteNavigationLinks(linkEntryDetails, linkEntry, deepAssociations, entryWriter);
+				await WriteNavigationLinks(linkEntryDetails, linkEntry, true, entryWriter);
 				await entryWriter.WriteEndAsync();
 			}
 			if (navigationLink.IsCollection == true)

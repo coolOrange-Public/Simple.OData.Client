@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using Simple.OData.Client.Extensions;
+﻿using System.Collections.Generic;
 
 namespace Simple.OData.Client
 {
@@ -61,53 +57,35 @@ namespace Simple.OData.Client
             return this;
         }
 
-        public IBoundClient<T> Set(T entry)
+	    public IBoundClient<T> Set(bool deep, params ODataExpression[] value)
+	    {
+			this.Command.Set(deep, value);
+			return this;
+		}
+
+	    public IBoundClient<T> Set(T entry)
         {
             this.Command.Set(entry);
             return this;
         }
 
-        public IBoundClient<T> Set(T entry, params ODataExpression[] associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBoundClient<T> Set(object value, IEnumerable<string> associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBoundClient<T> Set(object value, params string[] associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBoundClient<T> Set(object value, params ODataExpression[] associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBoundClient<T> Set(object value, Expression<Func<T, object>> associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBoundClient<T> Set(IDictionary<string, object> value, IEnumerable<string> associationsToSetByValue)
-        {
-	        this.Command.Set(value, associationsToSetByValue);
-	        return this;
-        }
-
-        public IBoundClient<T> Set(IDictionary<string, object> value, params string[] associationsToSetByValue)
-        {
-			this.Command.Set(value, associationsToSetByValue);
+		public IBoundClient<T> Set(object value, bool deep)
+		{
+			this.Command.Set(value, deep);
 			return this;
-        }
+		}
 
-        public IBoundClient<T> Set(T entry, Expression<Func<T, object>> associationsToSetByValue)
-        {
-            throw new NotImplementedException();
-        }
+		public IBoundClient<T> Set(IDictionary<string, object> value, bool deep)
+		{
+			this.Command.Set(value, deep);
+			return this;
+		}
+
+		public IBoundClient<T> Set(T entry, bool deep)
+		{
+			this.Command.Set(entry, deep);
+			return this;
+		}
 
         public IBoundClient<U> As<U>(string derivedCollectionName = null)
         where U : class

@@ -18,8 +18,7 @@ namespace Simple.OData.Client
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-                .CreateInsertRequestAsync(new []{command.QualifiedEntityCollectionName}.Union(command.DeepAssocations),
-				commandText, entryData, resultRequired);
+                .CreateInsertRequestAsync(command.QualifiedEntityCollectionName, commandText, entryData, resultRequired, command.Deep);
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var result = await ExecuteRequestWithResultAsync(request, cancellationToken,
@@ -45,7 +44,7 @@ namespace Simple.OData.Client
             var entryData = command.CommandData;
             var entryIdent = await FormatEntryKeyAsync(command, cancellationToken);
 
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter).CreateUpdateRequestAsync(new[] { collectionName }.Union(command.DeepAssocations), entryIdent, entryKey, entryData, resultRequired);
+			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter).CreateUpdateRequestAsync(collectionName, entryIdent, entryKey, entryData, resultRequired);
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var result = await ExecuteRequestWithResultAsync(request, cancellationToken,

@@ -120,11 +120,6 @@ namespace Simple.OData.Client
 			}
 		}
 
-		public IEnumerable<string> DeepAssocations
-		{
-			get { return _details.DeepAssociations; }
-		}
-
 		public string DynamicPropertiesContainerName
 		{
 			get { return _details.DynamicPropertiesContainerName; }
@@ -496,7 +491,7 @@ namespace Simple.OData.Client
 			return this;
 		}
 
-		public FluentCommand Set(object value)
+		public FluentCommand Set(object value, bool deep = false)
 		{
 			if (IsBatchResponse) return this;
 
@@ -505,23 +500,16 @@ namespace Simple.OData.Client
 				.ToDictionary();
 			if (_details.BatchEntries != null)
 				_details.BatchEntries.GetOrAdd(value, _details.EntryData);
+			_details.Deep = deep;
 			return this;
 		}
 
-		public FluentCommand Set(IDictionary<string, object> value)
+		public FluentCommand Set(IDictionary<string, object> value, bool deep = false)
 		{
 			if (IsBatchResponse) return this;
 
 			_details.EntryData = value;
-			return this;
-		}
-
-		public FluentCommand Set(IDictionary<string, object> value, IEnumerable<string> assocations)
-		{
-			if (IsBatchResponse) return this;
-
-			_details.EntryData = value;
-			_details.DeepAssociations.AddRange(assocations);
+			_details.Deep = deep;
 			return this;
 		}
 
@@ -533,6 +521,14 @@ namespace Simple.OData.Client
 			if (_details.BatchEntries != null)
 				_details.BatchEntries.GetOrAdd(value, _details.EntryData);
 			return this;
+		}
+
+		public FluentCommand Set(bool deep, params ODataExpression[] value)
+		{
+			if (IsBatchResponse) return this;
+
+			_details.Deep = deep;
+			return Set(value);
 		}
 
 		public FluentCommand Function(string functionName)
@@ -549,6 +545,11 @@ namespace Simple.OData.Client
 
 			_details.ActionName = actionName;
 			return this;
+		}
+
+		public bool Deep
+		{
+			get { return _details.Deep; }
 		}
 
 		public bool FilterIsKey
