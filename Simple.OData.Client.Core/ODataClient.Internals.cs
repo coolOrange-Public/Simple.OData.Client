@@ -25,8 +25,8 @@ namespace Simple.OData.Client
                 x => x.AsEntry(_session.Settings.IncludeAnnotationsInResults), () => null, () => request.EntryData);
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-            if (result == null && resultRequired &&
-                _session.Metadata.GetDeclaredKeyPropertyNames(commandText).All(entryData.ContainsKey))
+            var keyNames = _session.Metadata.GetDeclaredKeyPropertyNames(commandText);
+            if (result == null && resultRequired && Utils.AllMatch(keyNames, entryData.Keys, _session.Pluralizer))
             {
                 result = await this.GetEntryAsync(commandText, entryData, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -377,9 +377,14 @@ namespace Simple.OData.Client
                 runActionsOnExist = true;
             }
 
-            if (!_settings.IncludeAnnotationsInResults && entryData.ContainsKey(FluentCommand.AnnotationsLiteral))
+            if (!_settings.IncludeAnnotationsInResults)
             {
-                actions.Add(() => entryData.Remove(FluentCommand.AnnotationsLiteral));
+                foreach (var entry in entryData)
+                {
+                    var key = entry.Key;
+                    if (key == FluentCommand.AnnotationsLiteral || key.StartsWith(FluentCommand.AnnotationsLiteral + "_"))
+                        actions.Add(() => entryData.Remove(key));
+                }
 
                 var nestedEntries = entryData.Where(x => x.Value is IDictionary<string, object>);
                 foreach (var nestedEntry in nestedEntries)
@@ -419,7 +424,7 @@ namespace Simple.OData.Client
                 .Key(entryKey)
                 .GetCommandTextAsync(cancellationToken);
 
-            return RemoveTypeSpecification(entryIdent);
+            return entryIdent;
         }
 
         private async Task<string> FormatEntryKeyAsync(FluentCommand command, CancellationToken cancellationToken)
@@ -428,16 +433,6 @@ namespace Simple.OData.Client
                 ? await command.GetCommandTextAsync(cancellationToken)
                 : await (new FluentCommand(command).Key(command.FilterAsKey).GetCommandTextAsync(cancellationToken));
 
-            return RemoveTypeSpecification(entryIdent);
-        }
-
-        private string RemoveTypeSpecification(string entryIdent)
-        {
-            var segments = entryIdent.Split('/');
-            if (segments.Count() > 1 && segments.Last().Contains("."))
-            {
-                entryIdent = entryIdent.Substring(0, entryIdent.Length - segments.Last().Length - 1);
-            }
             return entryIdent;
         }
 

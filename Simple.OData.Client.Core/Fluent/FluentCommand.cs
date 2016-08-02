@@ -730,9 +730,9 @@ namespace Simple.OData.Client
 				return null;
 
 			var keyNames = _details.Session.Metadata.GetDeclaredKeyPropertyNames(this.EntityCollection.Name).ToList();
-			return keyNames.Count == namedKeyValues.Count() && keyNames.All(namedKeyValues.ContainsKey)
-				? namedKeyValues
-				: null;
+			return keyNames.Count == namedKeyValues.Count && Utils.AllMatch(keyNames, namedKeyValues.Keys, _details.Session.Pluralizer)
+				  ? namedKeyValues
+				  : null;
 		}
 
 		private static bool IsAnonymousType(Type type)
