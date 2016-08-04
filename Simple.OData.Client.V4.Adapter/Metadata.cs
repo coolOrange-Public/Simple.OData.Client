@@ -66,6 +66,8 @@ namespace Simple.OData.Client.V4.Adapter
 					? typeof(IEnumerable<object>)
 					: typeof(object);
 			}
+			if (property.Type.Definition.TypeKind == EdmTypeKind.Complex)
+				return typeof(object);
 			return EdmTypeMap.GetTypes(property.Type).FirstOrDefault();
 		}
 
