@@ -75,7 +75,7 @@ namespace Simple.OData.Client.V3.Adapter
 
 		IEdmProperty GetPropertyByName(string collectionName, string propertyName)
 		{
-			var property = GetEntityType(collectionName).DeclaredProperties.FirstOrDefault(x => x.Name == propertyName);
+			var property = GetEntityType(collectionName).FindProperty(propertyName);
 			if (property == default(IEdmProperty))
 				throw new UnresolvableObjectException(propertyName, string.Format("Property [{0}] not found", propertyName));
 			return property;
@@ -205,7 +205,7 @@ namespace Simple.OData.Client.V3.Adapter
 
 		public override bool IsTypeWithId(string collectionName)
 		{
-			return GetEntityType(collectionName).DeclaredKey != null;
+			return GetEntityType(collectionName).Key().Any();
 		}
 
 		public override IEnumerable<string> GetStructuralPropertyNames(string collectionName)
@@ -251,15 +251,7 @@ namespace Simple.OData.Client.V3.Adapter
 		public override IEnumerable<string> GetDeclaredKeyPropertyNames(string collectionName)
 		{
 			var entityType = GetEntityType(collectionName);
-			while (entityType.DeclaredKey == null && entityType.BaseEntityType() != null)
-			{
-				entityType = entityType.BaseEntityType();
-			}
-
-			if (entityType.DeclaredKey == null)
-				return new string[] { };
-
-			return entityType.DeclaredKey.Select(x => x.Name);
+			return entityType.Key().Select(p => p.Name);
 		}
 
 		public override string GetFunctionFullName(string functionName)
