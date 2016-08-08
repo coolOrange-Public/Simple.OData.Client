@@ -49,36 +49,34 @@ namespace Simple.OData.Client
             }
         }
 
-	    public Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)
+	    public Task InsertStreamAsync(Stream stream, string contentType)
 	    {
-			return InsertStreamAsync(stream, contentType, optimisticConcurrency, CancellationToken.None);
+			return InsertStreamAsync(stream, contentType, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency,
-		    CancellationToken cancellationToken)
+	    public Task InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, stream, contentType, optimisticConcurrency, cancellationToken);
+			return _client.InsertMediaStreamAsync(_command, _command.CommandData, stream, contentType, cancellationToken);
 		}
 
-	    public Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency)
+	    public Task InsertStreamAsync(byte[] streamContent, string contentType)
 	    {
-			return InsertStreamAsync(streamContent, contentType, optimisticConcurrency, CancellationToken.None);
+			return InsertStreamAsync(streamContent, contentType, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency,
-		    CancellationToken cancellationToken)
+	    public Task InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, Utils.ByteArrayToStream(streamContent), contentType, optimisticConcurrency, cancellationToken);
+			return _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.ByteArrayToStream(streamContent), contentType, cancellationToken);
 		}
 
-	    public Task InsertStreamAsync(string streamContent, bool optimisticConcurrency)
+	    public Task InsertStreamAsync(string streamContent)
 	    {
-			return InsertStreamAsync(streamContent, optimisticConcurrency, CancellationToken.None);
+			return InsertStreamAsync(streamContent, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(string streamContent, bool optimisticConcurrency, CancellationToken cancellationToken)
+	    public Task InsertStreamAsync(string streamContent, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, Utils.StringToStream(streamContent), "text/plain", optimisticConcurrency, cancellationToken);
+			return _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.StringToStream(streamContent), "text/plain", cancellationToken);
 		}
 
 	    public Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)

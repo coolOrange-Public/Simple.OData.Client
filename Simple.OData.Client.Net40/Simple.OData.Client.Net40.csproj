@@ -432,6 +432,8 @@
     <Compile Include="..\Simple.OData.Client.V4.Adapter\TypeConverters.cs">
       <Link>AdapterV4\TypeConverters.cs</Link>
     </Compile>
+    <Compile Include="Http\Rfc3986.cs" />
+    <Compile Include="Http\SlugHeader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 
 namespace Simple.OData.Client
 {
-    public interface IRequestWriter
-    {
-        Task<ODataRequest> CreateGetRequestAsync(string commandText, bool scalarResult);
-        Task<ODataRequest> CreatePutRequestAsync(string commandText, Stream stream, string contentType, bool optimisticConcurrency);
-        Task<ODataRequest> CreateInsertRequestAsync(string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired, bool deep);
-        Task<ODataRequest> CreateUpdateRequestAsync(string collection, string entryIdent, IDictionary<string, object> entryKey, IDictionary<string, object> entryData, bool resultRequired);
-        Task<ODataRequest> CreateDeleteRequestAsync(string collection, string entryIdent);
-        Task<ODataRequest> CreateLinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent);
-        Task<ODataRequest> CreateUnlinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent);
-        Task<ODataRequest> CreateFunctionRequestAsync(string commandText, string functionName);
-        Task<ODataRequest> CreateActionRequestAsync(string commandText, string actionName, IDictionary<string, object> parameters, bool resultRequired);
-    }
+	public interface IRequestWriter
+	{
+		Task<ODataRequest> CreateGetRequestAsync(string commandText, bool scalarResult);
+		Task<ODataRequest> CreateInsertRequestAsync(string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired, bool deep);
+		Task<ODataRequest> CreateInsertRequestAsync(string commandText, IDictionary<string, object> entryData, Stream stream, string mediaType = null);
+		Task<ODataRequest> CreateUpdateRequestAsync(string collection, string entryIdent, IDictionary<string, object> entryKey, IDictionary<string, object> entryData, bool resultRequired);
+		Task<ODataRequest> CreatePutRequestAsync(string commandText, Stream stream, string contentType, bool optimisticConcurrency);
+		Task<ODataRequest> CreateDeleteRequestAsync(string collection, string entryIdent);
+		Task<ODataRequest> CreateLinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent);
+		Task<ODataRequest> CreateUnlinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent);
+		Task<ODataRequest> CreateFunctionRequestAsync(string commandText, string functionName);
+		Task<ODataRequest> CreateActionRequestAsync(string commandText, string actionName, IDictionary<string, object> parameters, bool resultRequired);
+	}
 }

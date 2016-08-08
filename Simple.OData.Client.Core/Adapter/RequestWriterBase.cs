@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Simple.OData.Client.Extensions;
+using Simple.OData.Client.Http;
 
 #pragma warning disable 1591
 
@@ -37,16 +38,6 @@ namespace Simple.OData.Client
 			return request;
 		}
 
-		public async Task<ODataRequest> CreatePutRequestAsync(string commandText, Stream stream, string mediaType = null, bool optimisticConcurrency = false)
-		{
-			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
-
-			var request = new ODataRequest(RestVerbs.Put, _session, commandText, null, entryContent, mediaType);
-			request.CheckOptimisticConcurrency = optimisticConcurrency;
-			AssignHeaders(request);
-			return request;
-		}
-
 		public async Task<ODataRequest> CreateInsertRequestAsync(string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired, bool deep)
 		{
 			var segments = commandText.Split('/');
@@ -62,6 +53,16 @@ namespace Simple.OData.Client
 				ResultRequired = resultRequired
 			};
 			AssignHeaders(request);
+			return request;
+		}
+
+		public async Task<ODataRequest> CreateInsertRequestAsync(string commandText, IDictionary<string, object> entryData, Stream stream, string mediaType = null)
+		{
+			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
+			var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData, entryContent, mediaType);
+			AssignHeaders(request);
+			var slugHeader = new SlugHeader(entryData.ToDictionary(d => d.Key, d => Convert.ChangeType(d.Value, typeof(string)) as string));
+			request.Headers.Add(HttpLiteral.Slug, slugHeader.ToString());
 			return request;
 		}
 
@@ -89,6 +90,15 @@ namespace Simple.OData.Client
 			return request;
 		}
 
+		public async Task<ODataRequest> CreatePutRequestAsync(string commandText, Stream stream, string mediaType = null, bool optimisticConcurrency = false)
+		{
+			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
+
+			var request = new ODataRequest(RestVerbs.Put, _session, commandText, null, entryContent, mediaType);
+			request.CheckOptimisticConcurrency = optimisticConcurrency;
+			AssignHeaders(request);
+			return request;
+		}
 		public async Task<ODataRequest> CreateDeleteRequestAsync(string collection, string entryIdent)
 		{
 			await WriteEntryContentAsync(RestVerbs.Delete, collection, entryIdent, null, false);

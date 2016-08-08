@@ -738,20 +738,6 @@ namespace Simple.OData.Client
             return await ExecuteGetStreamRequestAsync(request, cancellationToken);
         }
 
-		public async Task InsertMediaStreamAsync(string commandText, Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken)
-		{
-			if (IsBatchResponse)
-				throw new NotSupportedException("Media stream requests are not supported in batch mode");
-
-			await _session.ResolveAdapterAsync(cancellationToken);
-			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
-
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-				.CreatePutRequestAsync(commandText, stream, contentType, optimisticConcurrency);
-
-			await ExecuteRequestAsync(request, cancellationToken);
-		}
-
 		public Task SetMediaStreamAsync(string commandText, Stream stream, string contentType, bool optimisticConcurrency)
         {
             return SetMediaStreamAsync(commandText, stream, contentType, optimisticConcurrency, CancellationToken.None);
@@ -1140,7 +1126,7 @@ namespace Simple.OData.Client
             return await GetMediaStreamAsync(commandText, cancellationToken);
         }
 
-		internal async Task InsertMediaStreamAsync(FluentCommand command, Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken)
+		internal async Task InsertMediaStreamAsync(FluentCommand command, IDictionary<string, object> entryData, Stream stream, string contentType, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
 				throw new NotSupportedException("Media stream requests are not supported in batch mode");
@@ -1148,10 +1134,9 @@ namespace Simple.OData.Client
 			await _session.ResolveAdapterAsync(cancellationToken);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-			var commandText = await command.GetCommandTextAsync(cancellationToken);
-			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
-
-			await InsertMediaStreamAsync(commandText, stream, contentType, optimisticConcurrency, cancellationToken);
+			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+				.CreateInsertRequestAsync(command.QualifiedEntityCollectionName, entryData, stream, contentType);
+			await ExecuteRequestAsync(request, cancellationToken);
 		}
 
 		internal async Task SetMediaStreamAsync(FluentCommand command, Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken)

@@ -51,50 +51,44 @@ namespace Simple.OData.Client
 		/// </summary>
 		/// <param name="stream">The media stream.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency);
+		Task InsertStreamAsync(Stream stream, string contentType);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="stream">The media stream.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken);
+		Task InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as byte array.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency);
+		Task InsertStreamAsync(byte[] streamContent, string contentType);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as byte array.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken);
+		Task InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as string.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(string streamContent, bool optimisticConcurrency);
+		Task InsertStreamAsync(string streamContent);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as string.</param>
-		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(string streamContent, bool optimisticConcurrency, CancellationToken cancellationToken);
+		Task InsertStreamAsync(string streamContent, CancellationToken cancellationToken);
 
 
 		/// <summary>
