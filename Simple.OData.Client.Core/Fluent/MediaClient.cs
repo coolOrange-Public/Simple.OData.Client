@@ -49,7 +49,39 @@ namespace Simple.OData.Client
             }
         }
 
-        public Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)
+	    public Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)
+	    {
+			return InsertStreamAsync(stream, contentType, optimisticConcurrency, CancellationToken.None);
+		}
+
+	    public Task InsertStreamAsync(Stream stream, string contentType, bool optimisticConcurrency,
+		    CancellationToken cancellationToken)
+	    {
+			return _client.InsertMediaStreamAsync(_command, stream, contentType, optimisticConcurrency, cancellationToken);
+		}
+
+	    public Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency)
+	    {
+			return InsertStreamAsync(streamContent, contentType, optimisticConcurrency, CancellationToken.None);
+		}
+
+	    public Task InsertStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency,
+		    CancellationToken cancellationToken)
+	    {
+			return _client.InsertMediaStreamAsync(_command, Utils.ByteArrayToStream(streamContent), contentType, optimisticConcurrency, cancellationToken);
+		}
+
+	    public Task InsertStreamAsync(string streamContent, bool optimisticConcurrency)
+	    {
+			return InsertStreamAsync(streamContent, optimisticConcurrency, CancellationToken.None);
+		}
+
+	    public Task InsertStreamAsync(string streamContent, bool optimisticConcurrency, CancellationToken cancellationToken)
+	    {
+			return _client.InsertMediaStreamAsync(_command, Utils.StringToStream(streamContent), "text/plain", optimisticConcurrency, cancellationToken);
+		}
+
+	    public Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)
         {
             return SetStreamAsync(stream, contentType, optimisticConcurrency, CancellationToken.None);
         }
