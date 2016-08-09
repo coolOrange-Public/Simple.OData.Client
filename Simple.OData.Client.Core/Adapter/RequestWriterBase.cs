@@ -56,12 +56,12 @@ namespace Simple.OData.Client
 			return request;
 		}
 
-		public async Task<ODataRequest> CreateInsertRequestAsync(string commandText, IDictionary<string, object> entryData, Stream stream, string mediaType = null)
+		public async Task<ODataRequest> CreateInsertRequestAsync(string collectionName, IDictionary<string, object> entryData, Stream stream, string mediaType = null)
 		{
 			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
-			var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData, entryContent, mediaType);
+			var request = new ODataRequest(RestVerbs.Post, _session, collectionName, entryData, entryContent, mediaType);
 			AssignHeaders(request);
-			var slugHeader = new SlugHeader(entryData.ToDictionary(d => d.Key, d => Convert.ChangeType(d.Value, typeof(string)) as string));
+			var slugHeader = WriteEntrySlugHeader(collectionName, entryData);
 			request.Headers.Add(HttpLiteral.Slug, slugHeader.ToString());
 			return request;
 		}
@@ -184,6 +184,8 @@ namespace Simple.OData.Client
 		protected abstract Task<Stream> WriteStreamContentAsync(Stream stream, bool writeAsText);
 		protected abstract string FormatLinkPath(string entryIdent, string navigationPropertyName, string linkIdent = null);
 		protected abstract void AssignHeaders(ODataRequest request);
+
+		protected abstract SlugHeader WriteEntrySlugHeader(string collection, IDictionary<string, object> entryData);
 
 		protected string GetContentId(ReferenceLink referenceLink)
 		{

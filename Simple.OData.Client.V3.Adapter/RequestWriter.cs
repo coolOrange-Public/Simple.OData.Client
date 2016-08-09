@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.Edm;
 using Microsoft.Data.OData;
 using Simple.OData.Client.Extensions;
+using Simple.OData.Client.Http;
 
 #pragma warning disable 1591
 
@@ -40,7 +41,7 @@ namespace Simple.OData.Client.V3.Adapter
 			var entityType = _model.FindDeclaredType(
 				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
 			var model = method == RestVerbs.Patch ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
-
+			
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
 			{
 				var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
@@ -52,7 +53,7 @@ namespace Simple.OData.Client.V3.Adapter
 				entryWriter.WriteStart(entry);
 				WriteNavigationLinks(entryDetails, entry, deep, entryWriter);
 				entryWriter.WriteEnd();
-
+				
 				if (IsBatch)
 					return null;
 
@@ -63,6 +64,21 @@ namespace Simple.OData.Client.V3.Adapter
 #endif
 			}
 		}
+
+		protected override SlugHeader WriteEntrySlugHeader(string collection,IDictionary<string, object> entryData)
+		{
+			var entityType = _model.FindDeclaredType(
+				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
+			var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
+			var entityCollection = _session.Metadata.NavigateToCollection(collection);
+			var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
+			var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
+
+			return new SlugHeader(entry,_session.Adapter);
+		}
+
+
+
 
 #pragma warning disable 1998
 		protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
@@ -267,7 +283,6 @@ namespace Simple.OData.Client.V3.Adapter
 		private Microsoft.Data.OData.ODataEntry CreateODataEntry(string typeName, IDictionary<string, object> properties)
 		{
 			var entry = new Microsoft.Data.OData.ODataEntry() { TypeName = typeName };
-
 			var typeProperties = (_model.FindDeclaredType(entry.TypeName) as IEdmEntityType).Properties();
 			Func<string, string> findMatchingPropertyName = name =>
 			{

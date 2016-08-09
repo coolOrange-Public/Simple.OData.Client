@@ -9,6 +9,7 @@ using Microsoft.OData.Core;
 using Microsoft.OData.Edm;
 using Microsoft.Spatial;
 using Simple.OData.Client.Extensions;
+using Simple.OData.Client.Http;
 
 #pragma warning disable 1591
 
@@ -54,7 +55,19 @@ namespace Simple.OData.Client.V4.Adapter
             }
         }
 
-        protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
+		protected override SlugHeader WriteEntrySlugHeader(string collection, IDictionary<string, object> entryData)
+		{
+			var entityType = _model.FindDeclaredType(
+				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
+			var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
+			var entityCollection = _session.Metadata.NavigateToCollection(collection);
+			var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
+
+			var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
+			return new SlugHeader(entry,_session.Adapter);
+		}
+
+		protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
         {
             var message = IsBatch
                 ? await CreateBatchOperationMessageAsync(method, null, null, commandText, false)
