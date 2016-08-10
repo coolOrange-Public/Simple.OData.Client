@@ -42,7 +42,6 @@ namespace Simple.OData.Client
 				.CreateInsertRequestAsync(command.QualifiedEntityCollectionName, entryData, stream, resultRequired, contentType);
 
 			string locationHeaderValue = null;
-
 			Func<ODataResponse, string> getLocationHeaderValue = r => r.Headers != null ?
 			   r.Headers.FirstOrDefault(h => string.Equals(h.Key, HttpLiteral.Location, StringComparison.InvariantCulture)).Value : null;
 
