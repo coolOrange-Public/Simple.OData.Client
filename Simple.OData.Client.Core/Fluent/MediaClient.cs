@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Simple.OData.Client.Extensions;
 
 namespace Simple.OData.Client
 {
-    public class MediaClient : FluentClientBase<IDictionary<string, object>, MediaClient>, IMediaClient
+    public class MediaClient<T> : FluentClientBase<T, MediaClient<T>>, IMediaClient<T> where T : class
     {
         internal MediaClient(ODataClient client, Session session, FluentCommand command = null, bool dynamicResults = false)
             : base(client, session, null, command, dynamicResults)
@@ -49,34 +48,37 @@ namespace Simple.OData.Client
             }
         }
 
-	    public Task InsertStreamAsync(Stream stream, string contentType)
+	    public Task<T> InsertStreamAsync(Stream stream, string contentType)
 	    {
 			return InsertStreamAsync(stream, contentType, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken)
+	    public async Task<T> InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, _command.CommandData, stream, contentType, cancellationToken);
+			var result = await _client.InsertMediaStreamAsync(_command, _command.CommandData, stream, contentType, cancellationToken);
+			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
 		}
 
-	    public Task InsertStreamAsync(byte[] streamContent, string contentType)
+	    public Task<T> InsertStreamAsync(byte[] streamContent, string contentType)
 	    {
 			return InsertStreamAsync(streamContent, contentType, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken)
+	    public async Task<T> InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.ByteArrayToStream(streamContent), contentType, cancellationToken);
+			var result = await _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.ByteArrayToStream(streamContent), contentType, cancellationToken);
+			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
 		}
 
-	    public Task InsertStreamAsync(string streamContent)
+	    public Task<T> InsertStreamAsync(string streamContent)
 	    {
 			return InsertStreamAsync(streamContent, CancellationToken.None);
 		}
 
-	    public Task InsertStreamAsync(string streamContent, CancellationToken cancellationToken)
+	    public async Task<T> InsertStreamAsync(string streamContent, CancellationToken cancellationToken)
 	    {
-			return _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.StringToStream(streamContent), "text/plain", cancellationToken);
+			var result = await _client.InsertMediaStreamAsync(_command, _command.CommandData, Utils.StringToStream(streamContent), "text/plain", cancellationToken);
+			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
 		}
 
 	    public Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)

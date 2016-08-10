@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +8,7 @@ namespace Simple.OData.Client
 	/// Provides access to OData media stream operations.
 	/// </summary>
 	/// <typeparam name="T">The entity type.</typeparam>
-	public interface IMediaClient
+	public interface IMediaClient<T> where T : class
 	{
 		/// <summary>
 		/// Retrieves a media stream by executing OData GET request.
@@ -51,44 +49,44 @@ namespace Simple.OData.Client
 		/// </summary>
 		/// <param name="stream">The media stream.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(Stream stream, string contentType);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(Stream stream, string contentType);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="stream">The media stream.</param>
 		/// <param name="contentType">The media content type.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as byte array.</param>
 		/// <param name="contentType">The media content type.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(byte[] streamContent, string contentType);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(byte[] streamContent, string contentType);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as byte array.</param>
 		/// <param name="contentType">The media content type.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as string.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(string streamContent);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(string streamContent);
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as string.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
-		/// <returns>Task instance.</returns>
-		Task InsertStreamAsync(string streamContent, CancellationToken cancellationToken);
+		/// <returns>Execution result.</returns>
+		Task<T> InsertStreamAsync(string streamContent, CancellationToken cancellationToken);
 
 
 		/// <summary>

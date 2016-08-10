@@ -1126,7 +1126,7 @@ namespace Simple.OData.Client
             return await GetMediaStreamAsync(commandText, cancellationToken);
         }
 
-		internal async Task InsertMediaStreamAsync(FluentCommand command, IDictionary<string, object> entryData, Stream stream, string contentType, CancellationToken cancellationToken)
+		internal async Task<IDictionary<string, object>> InsertMediaStreamAsync(FluentCommand command, IDictionary<string, object> entryData, Stream stream, string contentType, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
 				throw new NotSupportedException("Media stream requests are not supported in batch mode");
@@ -1137,6 +1137,21 @@ namespace Simple.OData.Client
 			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
 				.CreateInsertRequestAsync(command.QualifiedEntityCollectionName, entryData, stream, contentType);
 			await ExecuteRequestAsync(request, cancellationToken);
+
+			throw new NotImplementedException();
+			var result = await ExecuteRequestWithResultAsync(request, cancellationToken,
+				x => x.AsEntry(_session.Settings.IncludeAnnotationsInResults), () => null, () => request.EntryData);
+			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+
+			var keyNames = _session.Metadata.GetDeclaredKeyPropertyNames("");
+			if (result == null && true && Utils.AllMatch(keyNames, entryData.Keys, _session.Pluralizer))
+			{
+				result = await this.GetEntryAsync("", entryData, cancellationToken);
+				if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+			}
+
+			return result;
+
 		}
 
 		internal async Task SetMediaStreamAsync(FluentCommand command, Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken)

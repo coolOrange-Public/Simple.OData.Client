@@ -328,28 +328,28 @@ namespace Simple.OData.Client
             return this as FT;
         }
 
-        public IMediaClient Media()
+        public IMediaClient<T> Media()
         {
             this.Command.Media();
-            return new MediaClient(_client, _session, this.Command, _dynamicResults);
+            return new MediaClient<T>(_client, _session, this.Command, _dynamicResults);
         }
 
-        public IMediaClient Media(string streamName)
+        public IMediaClient<T> Media(string streamName)
         {
             this.Command.Media(streamName);
-            return new MediaClient(_client, _session, this.Command, _dynamicResults);
+            return new MediaClient<T>(_client, _session, this.Command, _dynamicResults);
         }
 
-        public IMediaClient Media(ODataExpression expression)
+        public IMediaClient<T> Media(ODataExpression expression)
         {
             this.Command.Media(expression);
-            return new MediaClient(_client, _session, this.Command, _dynamicResults);
+            return new MediaClient<T>(_client, _session, this.Command, _dynamicResults);
         }
 
-        public IMediaClient Media(Expression<Func<T, object>> expression)
+        public IMediaClient<T> Media(Expression<Func<T, object>> expression)
         {
             this.Command.Media(ColumnExpression.ExtractColumnName(expression));
-            return new MediaClient(_client, _session, this.Command, _dynamicResults);
+            return new MediaClient<T>(_client, _session, this.Command, _dynamicResults);
         }
 
         public FT Count()
