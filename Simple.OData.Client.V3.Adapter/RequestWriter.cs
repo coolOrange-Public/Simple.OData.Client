@@ -74,7 +74,7 @@ namespace Simple.OData.Client.V3.Adapter
 			var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
 			var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties);
 
-			return new SlugHeader(entry,_session.Adapter);
+			return entry.ToSlugHeader(_session.Adapter);
 		}
 
 

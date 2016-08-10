@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
+using Simple.OData.Client.Adapter;
 
 namespace Simple.OData.Client.Http
 {
@@ -45,53 +45,31 @@ namespace Simple.OData.Client.Http
 			};
 			return string.Join(",", _fields.Select(kvp => kvp.Key + "="+getValue(kvp.Value)));
 		}
+	}
 
-		internal SlugHeader(Microsoft.Data.OData.ODataEntry entry, IODataAdapter adapter) :
-			this(GetJsonFieldValues(entry, adapter))
+	public static class SlugHeaderExtensions
+	{
+		public static SlugHeader ToSlugHeader(this Microsoft.Data.OData.ODataEntry entry, IODataAdapter adapter)
 		{
-		}
-		internal SlugHeader(Microsoft.OData.Core.ODataEntry entry, IODataAdapter adapter) :
-			this(GetJsonFieldValues(entry, adapter))
-		{
+			return ToSlugHeader(entry, writer => new V3.Adapter.JsonWriter(adapter,writer, true));
 		}
 
-		static IDictionary<string, string> GetJsonFieldValues(dynamic entry, IODataAdapter adapter)
+		public static SlugHeader ToSlugHeader(this Microsoft.OData.Core.ODataEntry entry)
 		{
-			var @namepsace = ((Type) entry.GetType()).Namespace;
+			return ToSlugHeader(entry, writer => new V4.Adapter.JsonWriter(writer, true));
+		}
+
+		static SlugHeader ToSlugHeader(dynamic entry, Func<TextWriter,IJsonWriter> getJsonWriter)
+		{
 			var fields = new Dictionary<string, string>();
-			Assembly microsoftOdataAssembly = Assembly.GetAssembly(entry.GetType());
-			var jsonFormat = microsoftOdataAssembly.CreateInstance(@namepsace+".JsonLight.ODataJsonLightFormat", true,
-				BindingFlags.CreateInstance |BindingFlags.Instance | BindingFlags.NonPublic |BindingFlags.Public,null, null, null, null);
-			
-			var odataVersion = Enum.Parse(microsoftOdataAssembly.GetType(@namepsace+ ".ODataVersion"), adapter.GetODataVersionString(), false);
-
 			foreach (var property in entry.Properties)
-				fields[property.Name] = GetJsonFieldValue(property, odataVersion, microsoftOdataAssembly, namepsace, jsonFormat);
-			return fields;
-		}
-
-		static string GetJsonFieldValue(dynamic property, object odataVersion, Assembly microsoftOdataAssembly, string namepsace, object jsonFormat)
-		{
-			using (var textWriter = new StringWriter())
-			{
-				var jsonWriter = microsoftOdataAssembly.CreateInstance(@namepsace + ".Json.JsonWriter", true,
-					BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {textWriter, true, jsonFormat}, null, null);
-
-				var writeJsonValueArguments = new Dictionary<Type, object> {
-					{microsoftOdataAssembly.GetType(@namepsace + ".Json.IJsonWriter"), jsonWriter},
-					{typeof(object), property.Value},
-					{odataVersion.GetType(), odataVersion}
-				};
-				if (@namepsace.Equals("Microsoft.OData.Core", StringComparison.InvariantCulture))
-					writeJsonValueArguments.Add(typeof(bool), true);
-
-				var writeJsonValue = microsoftOdataAssembly.GetType(@namepsace + ".Json.JsonWriterExtensions")
-					.GetMethod("WriteJsonValue", BindingFlags.NonPublic | BindingFlags.Static,
-						null, CallingConventions.Any, writeJsonValueArguments.Keys.ToArray(), null);
-
-				writeJsonValue.Invoke(null, writeJsonValueArguments.Values.ToArray());
-				return textWriter.ToString();
-			}
+				using (var textWriter = new StringWriter())
+				{
+					var jsonWriter = getJsonWriter(textWriter);
+					jsonWriter.WriteJsonValue(property.Value);
+					fields[property.Name] = textWriter.ToString();
+				}
+			return new SlugHeader(fields);
 		}
 	}
 }
