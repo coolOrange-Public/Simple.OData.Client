@@ -56,10 +56,13 @@ namespace Simple.OData.Client
 			return request;
 		}
 
-		public async Task<ODataRequest> CreateInsertRequestAsync(string collectionName, IDictionary<string, object> entryData, Stream stream, string mediaType = null)
+		public async Task<ODataRequest> CreateInsertRequestAsync(string collectionName, IDictionary<string, object> entryData, Stream stream, bool resultRequired, string mediaType = null)
 		{
 			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
-			var request = new ODataRequest(RestVerbs.Post, _session, collectionName, entryData, entryContent, mediaType);
+			var request = new ODataRequest(RestVerbs.Post, _session, collectionName, entryData, entryContent, mediaType)
+			{
+				ResultRequired = resultRequired
+			};
 			AssignHeaders(request);
 			var slugHeader = WriteEntrySlugHeader(collectionName, entryData);
 			request.Headers.Add(HttpLiteral.Slug, slugHeader.ToString());

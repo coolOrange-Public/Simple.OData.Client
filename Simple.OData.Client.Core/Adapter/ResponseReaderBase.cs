@@ -18,9 +18,9 @@ namespace Simple.OData.Client
             _session = session;
         }
 
-        public abstract Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage);
+		public abstract Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage);
 
-        public async Task AssignBatchActionResultsAsync(IODataClient client,
+		public async Task AssignBatchActionResultsAsync(IODataClient client,
             ODataResponse batchResponse, IList<Func<IODataClient, Task>> actions, IList<int> responseIndexes)
         {
             var exceptions = new List<Exception>();

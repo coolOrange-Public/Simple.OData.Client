@@ -4,6 +4,7 @@
 	{
 		public const string ContentType = "Content-Type";
 		public const string ContentLength = "Content-Length";
+		public const string Location = "Location";
 		public const string ContentId = "Content-ID";
 		public const string Slug = "Slug";
 		public const string ODataVersion = "OData-Version";

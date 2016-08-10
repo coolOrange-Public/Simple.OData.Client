@@ -78,7 +78,9 @@ namespace Simple.OData.Client
         public IList<ODataResponse> Batch { get; private set; }
         public Exception Exception { get; private set; }
 
-        private ODataResponse()
+		public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
+
+		private ODataResponse()
         {
         }
 
