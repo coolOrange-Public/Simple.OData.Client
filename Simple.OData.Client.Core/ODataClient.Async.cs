@@ -998,7 +998,8 @@ namespace Simple.OData.Client
 			var result = await FindAnnotatedEntriesAsync(commandText, scalarResult, annotations, cancellationToken);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-			await EnrichWithMediaPropertiesAsync(result, command, cancellationToken);
+			if (_session.Settings.IncludeAnnotationsInResults)
+				await EnrichWithMediaPropertiesAsync(result, command, cancellationToken);
 			return result == null ? null : result.Select(x => x.GetData(_session.Settings.IncludeAnnotationsInResults));
 		}
 
@@ -1017,7 +1018,8 @@ namespace Simple.OData.Client
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 			var result = results == null ? null : results.FirstOrDefault();
 
-			await EnrichWithMediaPropertiesAsync(result, command.Details.MediaProperties, cancellationToken);
+			if (_session.Settings.IncludeAnnotationsInResults)
+				await EnrichWithMediaPropertiesAsync(result, command.Details.MediaProperties, cancellationToken);
 			return result == null ? null : result.GetData(_session.Settings.IncludeAnnotationsInResults);
 		}
 
