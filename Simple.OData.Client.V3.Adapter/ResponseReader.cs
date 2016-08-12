@@ -24,7 +24,9 @@ namespace Simple.OData.Client.V3.Adapter
 
 		public override async Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
 		{
-			var odataResponseMessage=new ODataResponseMessage(responseMessage);
+			var odataResponseMessage = new ODataResponseMessage(responseMessage);
+			if (!responseMessage.IsSuccessStatusCode || responseMessage.StatusCode == HttpStatusCode.NoContent)
+				return ODataResponse.FromStatusCode(odataResponseMessage.StatusCode);
 			var response = await GetResponseAsync(odataResponseMessage);
 			response.Headers = odataResponseMessage.Headers;
 			return response;
