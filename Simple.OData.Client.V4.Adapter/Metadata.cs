@@ -60,15 +60,21 @@ namespace Simple.OData.Client.V4.Adapter
 		public override Type GetPropertyType(string collectionName, string propertyName)
 		{
 			var property = GetPropertyByName(collectionName, propertyName);
-			if (property.PropertyKind == EdmPropertyKind.Navigation)
+			switch (property.Type.TypeKind())
 			{
-				return property.Type.Definition.TypeKind == EdmTypeKind.Collection
-					? typeof(IEnumerable<object>)
-					: typeof(object);
+				case EdmTypeKind.Collection:
+					var collectionElementType = property.Type.AsCollection().ElementType();
+					var elementType = typeof(object);
+					if (collectionElementType.TypeKind() == EdmTypeKind.Primitive)
+						elementType = EdmTypeMap.GetTypes(collectionElementType).FirstOrDefault();
+					return typeof(IEnumerable<>).MakeGenericType(elementType);
+				case EdmTypeKind.Primitive:
+					return EdmTypeMap.GetTypes(property.Type).FirstOrDefault();
+				case EdmTypeKind.Enum:
+					return typeof(Enum);
+				default:
+					return typeof(object);
 			}
-			if (property.Type.Definition.TypeKind == EdmTypeKind.Complex)
-				return typeof(object);
-			return EdmTypeMap.GetTypes(property.Type).FirstOrDefault();
 		}
 
 		IEdmProperty GetPropertyByName(string collectionName, string propertyName)
