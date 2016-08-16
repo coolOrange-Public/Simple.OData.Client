@@ -34,7 +34,13 @@ namespace Simple.OData.Client.V3.Adapter
 
 		public override string GetNavigationPropertyPartnerMultiplicity(string collectionName, string propertyName)
 		{
-			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => navigationProperty.Partner.Multiplicity().ToString());
+			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => (navigationProperty.Partner != null
+							? navigationProperty.Partner.Multiplicity()
+							: navigationProperty.Type.TypeKind() == EdmTypeKind.Collection
+							? EdmMultiplicity.Many
+							: navigationProperty.Type.TypeKind() == EdmTypeKind.Entity
+							? EdmMultiplicity.ZeroOrOne
+							: EdmMultiplicity.Unknown).ToString());
 		}
 
 		T ExecuteOnNavigationProperty<T>(string collectionName, string propertyName, Func<IEdmNavigationProperty, T> execution)
