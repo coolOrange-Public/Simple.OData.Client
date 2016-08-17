@@ -49,9 +49,6 @@ namespace Simple.OData.Client.V4.Adapter
 		public override bool PropertyIsNullable(string collectionName, string propertyName)
 		{
 			var property = GetPropertyByName(collectionName, propertyName);
-			if (property.PropertyKind == EdmPropertyKind.Navigation)
-				return !GetNavigationPropertyPartnerMultiplicity(collectionName, propertyName)
-					.Equals("One", StringComparison.InvariantCulture);
 			return property.Type.IsNullable;
 		}
 
