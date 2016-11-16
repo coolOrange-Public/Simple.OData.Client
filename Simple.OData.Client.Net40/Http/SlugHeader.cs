@@ -38,9 +38,10 @@ namespace Simple.OData.Client.Http
 		{
 			Func<string, string> getValue = value =>
 			{
-				var quoted = value.StartsWith("%22") && value.EndsWith("%22");
+				var encodedQuote = "%22";
+				var quoted = value.StartsWith(encodedQuote) && value.EndsWith(encodedQuote);
 				if (quoted)
-					value = "'" + value.Trim("%22".ToCharArray())+ "'";
+					value = "'" + value.Remove(value.Length - encodedQuote.Length).Remove(0, encodedQuote.Length) + "'";
 				return value;
 			};
 			return string.Join(",", _fields.Select(kvp => kvp.Key + "="+getValue(kvp.Value)));
