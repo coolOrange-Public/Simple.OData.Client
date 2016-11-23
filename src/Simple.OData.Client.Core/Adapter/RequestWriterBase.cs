@@ -92,6 +92,9 @@ namespace Simple.OData.Client
 				: updateMethod;
 #pragma warning restore CS0618 // Type or member is obsolete
 
+			if (updateMethod == RestVerbs.Put)
+				entryData = entryKey.Concat(entryData).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
+
 			var entryContent = await WriteEntryContentAsync(
 				updateMethod, collection, entryIdent, entryData, resultRequired).ConfigureAwait(false);
 
