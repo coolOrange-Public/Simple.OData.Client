@@ -79,10 +79,12 @@ namespace Simple.OData.Client
 			if (HasUpdatedKeyProperties(collection, entryKey, entryData))
 				usePatch = false;
 
-			var entryContent = await WriteEntryContentAsync(
-				usePatch ? RestVerbs.Patch : RestVerbs.Put, collection, entryIdent, entryData, resultRequired);
-
 			var updateMethod = usePatch ? RestVerbs.Patch : RestVerbs.Put;
+			if (updateMethod == RestVerbs.Put)
+				entryData = entryKey.Concat(entryData).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
+
+			var entryContent = await WriteEntryContentAsync(updateMethod, collection, entryIdent, entryData, resultRequired);
+
 			var checkOptimisticConcurrency = _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection);
 			var request = new ODataRequest(updateMethod, _session, entryIdent, entryData, entryContent)
 			{
