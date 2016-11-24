@@ -27,10 +27,8 @@ namespace Simple.OData.Client.Http
 		{
 			string value = null;
 			if (fieldValue != null)
-			{
-				var utf8FieldValue = Encoding.UTF8.GetString(Encoding.Default.GetBytes(fieldValue));
-				value = Rfc3986.EscapeUriDataString(utf8FieldValue);
-			}
+				value = ToSlugText(fieldValue);
+			
 			_fields[fieldKey] = value;
 		}
 
@@ -38,13 +36,50 @@ namespace Simple.OData.Client.Http
 		{
 			Func<string, string> getValue = value =>
 			{
-				var encodedQuote = "%22";
-				var quoted = value.StartsWith(encodedQuote) && value.EndsWith(encodedQuote);
+				var doubleQuote = "\"";
+				var quoted = value.StartsWith(doubleQuote) && value.EndsWith(doubleQuote);
 				if (quoted)
-					value = "'" + value.Remove(value.Length - encodedQuote.Length).Remove(0, encodedQuote.Length) + "'";
+					value = "'" + value.Remove(value.Length - doubleQuote.Length).Remove(0, doubleQuote.Length) + "'";
 				return value;
 			};
 			return string.Join(",", _fields.Select(kvp => kvp.Key + "="+getValue(kvp.Value)));
+		}
+
+
+		static readonly HashSet<int> Rfc3986CharsNotToEscape = new HashSet<int>(Enumerable.Range(32, 36 - 32 + 1)
+			.Concat(Enumerable.Range(38, 126 - 38 + 1)));
+
+		string ToSlugText(string text)
+		{
+			var utf8Encoded = ToUTF8(text);
+			var stringBuilder = new StringBuilder();
+			var toRfc3986 = new StringBuilder();
+			Action<StringBuilder> escapeUriDataString = t =>
+			{
+				if(t.Length > 0)
+					stringBuilder.Append(Rfc3986.EscapeUriDataString(t.ToString()));
+			};
+			foreach (var octet in utf8Encoded)
+			{
+				if (!Rfc3986CharsNotToEscape.Contains(octet))
+					toRfc3986.Append(octet);
+				else
+				{
+					escapeUriDataString(toRfc3986);
+					toRfc3986.Clear();
+					stringBuilder.Append(octet);
+				}
+			}
+			escapeUriDataString(toRfc3986);
+			return stringBuilder.ToString();
+		}
+
+		string ToUTF8(string text)
+		{
+			var utf8 = Encoding.UTF8;
+			var encodedBytes = Encoding.Default.GetBytes(text);
+			var convertedBytes = Encoding.Convert(Encoding.Default, utf8, encodedBytes);
+			return utf8.GetString(convertedBytes);
 		}
 	}
 
