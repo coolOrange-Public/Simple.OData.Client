@@ -155,28 +155,28 @@ namespace Simple.OData.Client
         public Func<HttpMessageHandler> OnCreateMessageHandler { get; set; }
 
         /// <summary>
-        /// Gets or sets the action on HttpClientHandler.
+        /// Stores the action on HttpClientHandler.
         /// </summary>
         /// <value>
         /// The action on <see cref="HttpClientHandler"/>.
         /// </value>
-        public Action<HttpClientHandler> OnApplyClientHandler { get; set; }
+        public Action<HttpClientHandler> OnApplyClientHandler;
 
         /// <summary>
-        /// Gets or sets the action executed before the OData request.
+        /// Stores the action executed before the OData request.
         /// </summary>
         /// <value>
         /// The action on <see cref="HttpRequestMessage"/>.
         /// </value>
-        public Action<HttpRequestMessage> BeforeRequest { get; set; }
+        public Action<HttpRequestMessage> BeforeRequest;
 
         /// <summary>
-        /// Gets or sets the action executed after the OData request.
+        /// Stores the action executed after the OData request.
         /// </summary>
         /// <value>
         /// The action on <see cref="HttpResponseMessage"/>.
         /// </value>
-        public Action<HttpResponseMessage> AfterResponse { get; set; }
+        public Action<HttpResponseMessage> AfterResponse;
 
         /// <summary>
         /// Gets or sets the method that will be executed to write trace messages.

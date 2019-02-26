@@ -3,6 +3,7 @@ bin
 deploy
 *.csproj.user
 *.suo
+.vs
 *.cache
 *.nupkg
 ~$*
