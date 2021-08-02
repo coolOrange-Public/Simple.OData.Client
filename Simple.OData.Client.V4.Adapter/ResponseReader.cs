@@ -39,7 +39,7 @@ namespace Simple.OData.Client.V4.Adapter
 				var payloadKind = messageReader.DetectPayloadKind();
 				if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Error))
 				{
-					return ODataResponse.FromStatusCode(responseMessage.StatusCode);
+					return ODataResponse.FromErrorResponse(responseMessage.StatusCode, ReadErrorDetails(messageReader, readerSettings));
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Value))
 				{
@@ -89,11 +89,12 @@ namespace Simple.OData.Client.V4.Adapter
 					case ODataBatchReaderState.Operation:
 						var operationMessage = odataReader.CreateOperationResponseMessage();
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
-							batch.Add(ODataResponse.FromStatusCode(operationMessage.StatusCode));
+							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage)));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
-							batch.Add(ODataResponse.FromStatusCode(
+							batch.Add(ODataResponse.FromErrorResponse(
 								operationMessage.StatusCode,
-								await operationMessage.GetStreamAsync()));
+								await operationMessage.GetStreamAsync(),
+								ReadErrorDetails(operationMessage)));
 						else
 							batch.Add(await GetResponseAsync(operationMessage));
 						break;
@@ -170,6 +171,20 @@ namespace Simple.OData.Client.V4.Adapter
 			}
 
 			return ODataResponse.FromNode(rootNode);
+		}
+
+		ODataErrorDetails ReadErrorDetails(ODataBatchOperationResponseMessage operationMessage)
+		{
+			var readerSettings = new ODataMessageReaderSettings();
+			using (var messageReader = new ODataMessageReader(operationMessage, readerSettings))
+				return ReadErrorDetails(messageReader, readerSettings);
+		}
+		ODataErrorDetails ReadErrorDetails(ODataMessageReader responseMessageReader, ODataMessageReaderSettings readerSettings)
+		{
+			readerSettings.EnableFullValidation = false;
+			readerSettings.UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty;
+			var error = responseMessageReader.ReadError();
+			return new ODataErrorDetails(error);
 		}
 
 		protected override void ConvertEntry(ResponseNode entryNode, object entry)

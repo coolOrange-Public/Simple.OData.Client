@@ -26,7 +26,7 @@ namespace Simple.OData.Client.V3.Adapter
 		{
 			var odataResponseMessage = new ODataResponseMessage(responseMessage);
 			if (!responseMessage.IsSuccessStatusCode || responseMessage.StatusCode == HttpStatusCode.NoContent)
-				return ODataResponse.FromStatusCode(odataResponseMessage.StatusCode);
+				return ODataResponse.FromErrorResponse(odataResponseMessage.StatusCode, ReadErrorDetails(odataResponseMessage));
 			var response = await GetResponseAsync(odataResponseMessage);
 			response.Headers = odataResponseMessage.Headers;
 			return response;
@@ -49,7 +49,7 @@ namespace Simple.OData.Client.V3.Adapter
 
 				if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Error))
 				{
-					return ODataResponse.FromStatusCode(responseMessage.StatusCode);
+					return ODataResponse.FromErrorResponse(responseMessage.StatusCode, ReadErrorDetails(responseMessage));
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Value))
 				{
@@ -114,15 +114,16 @@ namespace Simple.OData.Client.V3.Adapter
 					case ODataBatchReaderState.Operation:
 						var operationMessage = odataReader.CreateOperationResponseMessage();
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
-							batch.Add(ODataResponse.FromStatusCode(operationMessage.StatusCode));
+							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage)));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
-							batch.Add(ODataResponse.FromStatusCode(
+							batch.Add(ODataResponse.FromErrorResponse(
 								operationMessage.StatusCode,
 #if SILVERLIGHT
-								operationMessage.GetStream()));
+								operationMessage.GetStream(),
 #else
-								await operationMessage.GetStreamAsync()));
+								await operationMessage.GetStreamAsync(),
 #endif
+								ReadErrorDetails(operationMessage)));
 						else
 							batch.Add(await GetResponseAsync(operationMessage));
 						break;
@@ -200,6 +201,21 @@ namespace Simple.OData.Client.V3.Adapter
 
 			return ODataResponse.FromNode(rootNode);
 		}
+
+		ODataErrorDetails ReadErrorDetails(IODataResponseMessageAsync responseMessage)
+		{
+			var readerSettings = new ODataMessageReaderSettings
+			{
+				UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty, 
+				DisableMessageStreamDisposal = true
+			};
+			using (var messageReader = new ODataMessageReader(responseMessage, readerSettings))
+			{
+				var error = messageReader.ReadError();
+				return new ODataErrorDetails(error);
+			}
+		}
+
 		protected override void ConvertEntry(ResponseNode entryNode, object entry)
 		{
 			if (entry != null)

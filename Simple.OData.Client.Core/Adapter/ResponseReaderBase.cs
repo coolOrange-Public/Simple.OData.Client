@@ -51,7 +51,8 @@ namespace Simple.OData.Client
             }
         }
 
-        protected abstract void ConvertEntry(ResponseNode entryNode, object entry);
+
+		protected abstract void ConvertEntry(ResponseNode entryNode, object entry);
 
         protected void StartFeed(Stack<ResponseNode> nodeStack, ODataFeedAnnotations feedAnnotations)
         {

@@ -70,15 +70,46 @@ namespace Simple.OData.Client
             }
         }
     }
+    public class ODataErrorDetails
+    {
+	    public string ErrorCode { get; private set; }
+	    public string Message { get; private set; }
+	    public ODataInnerErrorDetails InnerError { get; private set; }
+
+	    internal ODataErrorDetails(dynamic error)
+	    {
+		    ErrorCode = error.ErrorCode;
+		    Message = error.Message;
+		    if (error.InnerError != null)
+			    InnerError = new ODataInnerErrorDetails(error.InnerError);
+        }
+    }
+    public class ODataInnerErrorDetails
+    {
+	    public string Message { get; private set; }
+	    public string TypeName { get; private set; }
+	    public string StackTrace { get; private set; }
+	    public ODataInnerErrorDetails InnerError { get; private set; }
+
+	    internal ODataInnerErrorDetails(dynamic innerError)
+	    {
+		    Message = innerError.Message;
+		    StackTrace = innerError.StackTrace;
+		    TypeName = innerError.TypeName;
+		    if (innerError.InnerError != null)
+			    InnerError = new ODataInnerErrorDetails(innerError.InnerError);
+	    }
+    }
 
     public class ODataResponse
     {
         public int StatusCode { get; private set; }
         public AnnotatedFeed Feed { get; private set; }
         public IList<ODataResponse> Batch { get; private set; }
-        public Exception Exception { get; private set; }
 
-		public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
+        public ODataErrorDetails ErrorDetails { get; private set; }
+        public Exception Exception { get; private set; }
+        public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
 
 		private ODataResponse()
         {
@@ -172,33 +203,25 @@ namespace Simple.OData.Client
             };
         }
 
-        public static ODataResponse FromStatusCode(int statusCode, Exception exception = null)
+        public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails)
         {
             return new ODataResponse
             {
                 StatusCode = statusCode,
-                Exception = exception,
+                ErrorDetails = errorDetails,
             };
         }
 
-        public static ODataResponse FromStatusCode(int statusCode, Stream responseStream)
+        public static ODataResponse FromErrorResponse(int statusCode, Stream responseStream, ODataErrorDetails errorDetails)
         {
+	        var errorResponse = FromErrorResponse(statusCode, errorDetails);
             if (statusCode >= (int)HttpStatusCode.BadRequest)
             {
                 var responseContent = Utils.StreamToString(responseStream, true);
-                return new ODataResponse
-                {
-                    StatusCode = statusCode,
-                    Exception = WebRequestException.CreateFromStatusCode((HttpStatusCode)statusCode, responseContent),
-                };
-            }
-            else
-            {
-                return new ODataResponse
-                {
-                    StatusCode = statusCode,
-                };
-            }
+                errorResponse.Exception =
+	                WebRequestException.CreateFromStatusCode((HttpStatusCode) statusCode, responseContent);
+            };
+            return errorResponse;
         }
 
         public static ODataResponse EmptyFeed
