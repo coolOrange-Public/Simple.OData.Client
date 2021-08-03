@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization;
@@ -14,58 +15,57 @@ namespace Simple.OData.Client
 #endif
     public class WebRequestException : Exception
     {
-        private readonly HttpStatusCode _statusCode;
-        private readonly string _responseContent;
         private readonly Uri _requestUri;
 
-        /// <summary>
-        /// Creates from the instance of HttpResponseMessage.
-        /// </summary>
-        /// <param name="response">The instance of <see cref="HttpResponseMessage"/>.</param>
-        /// <returns>The instance of <see cref="WebRequestException"/>.</returns>
-        public static async Task<WebRequestException> CreateFromResponseMessageAsync(HttpResponseMessage response)
+        public static async Task<WebRequestException> CreateFromResponseMessageAsync(HttpResponseMessage response, ISession session, Exception innerException = null)
         {
-            var requestUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
-            return new WebRequestException(response.ReasonPhrase, response.StatusCode, requestUri,
-                response.Content != null ? await response.Content.ReadAsStringAsync() : null, null);
+	        var requestUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
+            var exception = new WebRequestException(response.ReasonPhrase, response.StatusCode, requestUri,
+                response.Content != null ? await response.Content.ReadAsStringAsync() : null, innerException);
+            try
+            {
+	            var responseReader = session.Adapter.GetResponseReader();
+	            exception.ODataResponse = await responseReader.GetResponseAsync(response);
+            }
+            catch (Exception)
+            {
+	            // ignored
+            }
+            return exception;
         }
 
-        /// <summary>
-        /// Creates from the instance of WebException.
-        /// </summary>
-        /// <param name="ex">The instance of <see cref="WebException"/>.</param>
-        /// <returns>The instance of <see cref="WebRequestException"/>.</returns>
-        public static WebRequestException CreateFromWebException(WebException ex)
+        public static WebRequestException CreateFromWebException(WebException ex, ISession session)
         {
-            var response = ex.Response as HttpWebResponse;
-            return response == null ?
-                new WebRequestException(ex) :
-                new WebRequestException(ex.Message, response.StatusCode, response.ResponseUri, Utils.StreamToString(response.GetResponseStream()), ex);
+	        var response = ex.Response as HttpWebResponse;
+	        if (response == null)
+		        return new WebRequestException(ex);
+
+	        return CreateFromResponseMessageAsync(new HttpResponseMessage(response.StatusCode)
+	        {
+                ReasonPhrase = ex.Message,
+                Content = new StringContent(Utils.StreamToString(response.GetResponseStream(),true)), 
+		        RequestMessage = new HttpRequestMessage(new HttpMethod(response.Method), response.ResponseUri)
+	        }, session, ex).Result;
         }
 
-        /// <summary>
-        /// Creates from the instance of HttpResponseMessage.
-        /// </summary>
-        /// <param name="statusCode">The HTTP status code.</param>
-        /// <returns>The instance of <see cref="WebRequestException"/>.</returns>
-        public static WebRequestException CreateFromStatusCode(HttpStatusCode statusCode, string responseContent = null)
+        public static WebRequestException CreateFromResponse(ODataResponse response)
         {
-            return new WebRequestException(statusCode.ToString(), statusCode, null, responseContent, null);
+            return new WebRequestException(response.StatusCode.ToString(), (HttpStatusCode)response.StatusCode, null, null, null)
+            {
+                ODataResponse = response
+            };
+        }
+        public static WebRequestException CreateFromFromBatchResponse(HttpStatusCode statusCode, Stream responseStream)
+        {
+	        var responseContent = Utils.StreamToString(responseStream, true);
+	        return new WebRequestException(statusCode.ToString(), statusCode, null, responseContent, null);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebRequestException"/> class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="statusCode">The HTTP status code.</param>
-        /// <param name="requestUri">The original request URI.</param>
-        /// <param name="responseContent">The response content.</param>
-        /// <param name="inner">The inner exception.</param>
         private WebRequestException(string message, HttpStatusCode statusCode, Uri requestUri, string responseContent, Exception inner)
             : base(message, inner)
         {
-            _statusCode = statusCode;
-            _responseContent = responseContent;
+	        StatusCode = statusCode;
+            RawResponse = responseContent;
             _requestUri = requestUri;
         }
 
@@ -91,27 +91,9 @@ namespace Simple.OData.Client
         }
 #endif
 
-        /// <summary>
-        /// Gets the <see cref="HttpStatusCode"/>.
-        /// </summary>
-        /// <value>
-        /// The <see cref="HttpStatusCode"/>.
-        /// </value>
-        public HttpStatusCode Code
-        {
-            get { return _statusCode; }
-        }
-
-        /// <summary>
-        /// Gets the HTTP response text.
-        /// </summary>
-        /// <value>
-        /// The response text.
-        /// </value>
-        public string Response
-        {
-            get { return _responseContent; }
-        }
+        public HttpStatusCode StatusCode { get; private set; }
+        public string RawResponse { get; private set; }
+        public ODataResponse ODataResponse { get; protected set; }
 
         /// <summary>
         /// Gets the HTTP Uri

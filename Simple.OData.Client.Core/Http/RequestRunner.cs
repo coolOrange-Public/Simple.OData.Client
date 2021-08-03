@@ -51,18 +51,14 @@ namespace Simple.OData.Client
             }
             catch (WebException ex)
             {
-                throw WebRequestException.CreateFromWebException(ex);
+                throw WebRequestException.CreateFromWebException(ex, _session);
             }
             catch (AggregateException ex)
             {
                 if (ex.InnerException is WebException)
-                {
-                    throw WebRequestException.CreateFromWebException(ex.InnerException as WebException);
-                }
+	                throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session);
                 else
-                {
-                    throw;
-                }
+	                throw;
             }
             finally
             {
@@ -106,9 +102,7 @@ namespace Simple.OData.Client
                 _session.Settings.AfterResponse(responseMessage);
 
             if (!responseMessage.IsSuccessStatusCode)
-            {
-                throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage);
-            }
+	            throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session);
         }
     }
 }

@@ -116,14 +116,17 @@ namespace Simple.OData.Client.V3.Adapter
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
 							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage)));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
-							batch.Add(ODataResponse.FromErrorResponse(
-								operationMessage.StatusCode,
+						{
+
 #if SILVERLIGHT
-								operationMessage.GetStream(),
+							var responseStream = operationMessage.GetStream();
 #else
-								await operationMessage.GetStreamAsync(),
+							var responseStream = await operationMessage.GetStreamAsync();
 #endif
-								ReadErrorDetails(operationMessage)));
+							var exception = WebRequestException.CreateFromFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
+							var errorResponse = ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage), exception);
+							batch.Add(errorResponse);
+						}
 						else
 							batch.Add(await GetResponseAsync(operationMessage));
 						break;

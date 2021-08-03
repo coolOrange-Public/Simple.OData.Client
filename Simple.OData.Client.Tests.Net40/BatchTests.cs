@@ -99,7 +99,7 @@ namespace Simple.OData.Client.Tests
             }
             catch (WebRequestException exception)
             {
-                Assert.NotNull(exception.Response);
+                Assert.NotNull(exception.RawResponse);
             }
         }
 
@@ -116,7 +116,7 @@ namespace Simple.OData.Client.Tests
             }
             catch (WebRequestException exception)
             {
-                Assert.NotNull(exception.Response);
+                Assert.NotNull(exception.RawResponse);
             }
         }
 

@@ -35,9 +35,7 @@ namespace Simple.OData.Client
                         exceptions.Add(actionResponse.Exception);
                     }
                     else if (actionResponse.StatusCode >= (int)HttpStatusCode.BadRequest)
-                    {
-                        exceptions.Add(WebRequestException.CreateFromStatusCode((HttpStatusCode)actionResponse.StatusCode));
-                    }
+	                    exceptions.Add(WebRequestException.CreateFromResponse(actionResponse));
                     else
                     {
                         await actions[actionIndex](new ODataClient(client as ODataClient, actionResponse));

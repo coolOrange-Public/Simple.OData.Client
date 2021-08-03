@@ -274,7 +274,7 @@ namespace Simple.OData.Client
 			}
 			catch (WebRequestException ex)
 			{
-				if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+				if (_settings.IgnoreResourceNotFoundException && ex.StatusCode == HttpStatusCode.NotFound)
 					return;
 				else
 					throw;
@@ -305,7 +305,7 @@ namespace Simple.OData.Client
 			}
 			catch (WebRequestException ex)
 			{
-				if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+				if (_settings.IgnoreResourceNotFoundException && ex.StatusCode == HttpStatusCode.NotFound)
 					return createEmptyResult != null ? createEmptyResult(null) : default(T);
 				else
 					throw;
@@ -336,7 +336,7 @@ namespace Simple.OData.Client
 			}
 			catch (WebRequestException ex)
 			{
-				if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+				if (_settings.IgnoreResourceNotFoundException && ex.StatusCode == HttpStatusCode.NotFound)
 					return Stream.Null;
 				else
 					throw;

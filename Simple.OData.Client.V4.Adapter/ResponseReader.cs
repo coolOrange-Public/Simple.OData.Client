@@ -91,10 +91,13 @@ namespace Simple.OData.Client.V4.Adapter
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
 							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage)));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
-							batch.Add(ODataResponse.FromErrorResponse(
-								operationMessage.StatusCode,
-								await operationMessage.GetStreamAsync(),
-								ReadErrorDetails(operationMessage)));
+						{
+							var responseStream = await operationMessage.GetStreamAsync();
+							var exception = WebRequestException.CreateFromFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
+							var errorResponse = ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage), exception);
+
+							batch.Add(errorResponse);
+						}
 						else
 							batch.Add(await GetResponseAsync(operationMessage));
 						break;

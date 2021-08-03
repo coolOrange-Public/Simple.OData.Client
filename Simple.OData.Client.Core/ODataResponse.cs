@@ -203,25 +203,14 @@ namespace Simple.OData.Client
             };
         }
 
-        public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails)
+        public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails, Exception e = null)
         {
             return new ODataResponse
             {
                 StatusCode = statusCode,
                 ErrorDetails = errorDetails,
+                Exception = e
             };
-        }
-
-        public static ODataResponse FromErrorResponse(int statusCode, Stream responseStream, ODataErrorDetails errorDetails)
-        {
-	        var errorResponse = FromErrorResponse(statusCode, errorDetails);
-            if (statusCode >= (int)HttpStatusCode.BadRequest)
-            {
-                var responseContent = Utils.StreamToString(responseStream, true);
-                errorResponse.Exception =
-	                WebRequestException.CreateFromStatusCode((HttpStatusCode) statusCode, responseContent);
-            };
-            return errorResponse;
         }
 
         public static ODataResponse EmptyFeed
