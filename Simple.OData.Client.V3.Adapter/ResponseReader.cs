@@ -25,7 +25,7 @@ namespace Simple.OData.Client.V3.Adapter
 		public override async Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
 		{
 			var odataResponseMessage = new ODataResponseMessage(responseMessage);
-			if (!responseMessage.IsSuccessStatusCode || responseMessage.StatusCode == HttpStatusCode.NoContent)
+			if (!responseMessage.IsSuccessStatusCode)
 				return ODataResponse.FromErrorResponse(odataResponseMessage.StatusCode, ReadErrorDetails(odataResponseMessage));
 			var response = await GetResponseAsync(odataResponseMessage);
 			response.Headers = odataResponseMessage.Headers;
@@ -38,6 +38,9 @@ namespace Simple.OData.Client.V3.Adapter
 		public async Task<ODataResponse> GetResponseAsync(IODataResponseMessageAsync responseMessage)
 #endif
 		{
+			if(responseMessage.StatusCode == (int)HttpStatusCode.NoContent)
+				return ODataResponse.FromErrorResponse(responseMessage.StatusCode);
+
 			var readerSettings = new ODataMessageReaderSettings();
 			readerSettings.MessageQuotas.MaxReceivedMessageSize = Int32.MaxValue;
 			readerSettings.ShouldIncludeAnnotation = x => _session.Settings.IncludeAnnotationsInResults;
@@ -114,7 +117,7 @@ namespace Simple.OData.Client.V3.Adapter
 					case ODataBatchReaderState.Operation:
 						var operationMessage = odataReader.CreateOperationResponseMessage();
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
-							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage)));
+							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
 

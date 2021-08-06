@@ -203,7 +203,7 @@ namespace Simple.OData.Client
             };
         }
 
-        public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails, Exception e = null)
+        public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
         {
             return new ODataResponse
             {
