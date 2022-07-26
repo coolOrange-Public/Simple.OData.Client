@@ -5,8 +5,8 @@ using System.Xml;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Moq;
-using Simple.OData.Client.V4.Adapter;
 using Xunit;
+using Simple.OData.Client.V4.Adapter;
 
 namespace Simple.OData.Client.Tests.AdapterV4
 {
@@ -772,7 +772,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 
 		IEdmModel ParseMetadata(string metadataString)
 		{
-			return EdmxReader.Parse(XmlReader.Create(new StringReader(metadataString)));
+			return CsdlReader.Parse(XmlReader.Create(new StringReader(metadataString)));
 		}
 
 		Mock<IEdmStructuralProperty> CreateProperty(string name, EdmTypeKind typeKind, EdmPropertyKind propertyKind)

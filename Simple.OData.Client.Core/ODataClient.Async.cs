@@ -464,7 +464,7 @@ namespace Simple.OData.Client
 
 			var result = await ExecuteRequestWithResultAsync(request, cancellationToken,
 				x => x.AsEntries(_session.Settings.IncludeAnnotationsInResults),
-				x => new IDictionary<string, object>[] {});
+				x => new IDictionary<string, object>[] { });
 
 			Func<IDictionary<string, object>, object> extractScalar = x => (x == null) || !x.Any() ? null : x.Values.First();
 			return result == null ? null : extractScalar(result.FirstOrDefault());
@@ -832,7 +832,7 @@ namespace Simple.OData.Client
 
 			var result = await ExecuteFunctionAsEnumerableAsync(functionName, parameters, cancellationToken);
 			return IsBatchRequest
-				? new T[] {}
+				? new T[] { }
 				: result == null
 				? null
 				: result.SelectMany(x => x.Values)
@@ -1186,6 +1186,22 @@ namespace Simple.OData.Client
 				throw new InvalidOperationException("Command is expected to be a function or an action.");
 		}
 
+		internal async Task<IEnumerable<IDictionary<string, object>>> ExecuteAsEnumerableAsync(FluentCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		{
+			if (IsBatchResponse)
+				return _batchResponse.AsEntries(false);
+
+			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
+			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+
+			if (command.HasFunction)
+				return await ExecuteFunctionAsync(command, annotations, cancellationToken).ConfigureAwait(false);
+			else if (command.HasAction)
+				return await ExecuteActionAsync(command, annotations, cancellationToken).ConfigureAwait(false);
+			else
+				throw new InvalidOperationException("Command is expected to be a function or an action.");
+		}
+
 		internal async Task<T> ExecuteAsScalarAsync<T>(FluentCommand command, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
@@ -1194,8 +1210,8 @@ namespace Simple.OData.Client
 			var result = await ExecuteAsSingleAsync(command, cancellationToken);
 			return IsBatchRequest
 				? default(T)
-				: result == null 
-				? default(T) 
+				: result == null
+				? default(T)
 				: (T)Utils.Convert(result.First().Value, typeof(T));
 		}
 
@@ -1212,6 +1228,21 @@ namespace Simple.OData.Client
 				: typeof(T) == typeof(string) || typeof(T).IsValue()
 				? result.SelectMany(x => x.Values).Select(x => (T)Utils.Convert(x, typeof(T))).ToArray()
 				: result.Select(x => (T)x.ToObject(typeof(T))).ToArray();
+		}
+
+		internal async Task<T[]> ExecuteAsArrayAsync<T>(FluentCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		{
+			if (IsBatchResponse)
+				return _batchResponse.AsArray<T>();
+
+			var result = await ExecuteAsEnumerableAsync(command, annotations, cancellationToken).ConfigureAwait(false);
+			return IsBatchRequest
+				? new T[] { }
+				: result == null
+					? null
+					: typeof(T) == typeof(string) || typeof(T).IsValue()
+						? result.SelectMany(x => x.Values).Select(x => (T)Utils.Convert(x, typeof(T))).ToArray()
+						: result.Select(x => (T)x.ToObject(typeof(T))).ToArray();
 		}
 
 		internal async Task ExecuteBatchAsync(IList<Func<IODataClient, Task>> actions, CancellationToken cancellationToken)

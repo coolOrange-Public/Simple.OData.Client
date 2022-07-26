@@ -230,7 +230,7 @@ namespace Simple.OData.Client
                 type.FullName.StartsWith("Microsoft.");
         }
 
-#if NET40 || SILVERLIGHT || PORTABLE_LEGACY
+#if  SILVERLIGHT || PORTABLE_LEGACY
         public static Task<T> GetTaskFromResult<T>(T result)
         {
             return TaskEx.FromResult(result);

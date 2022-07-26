@@ -227,6 +227,45 @@ namespace Simple.OData.Client
 				x => new IDictionary<string, object>[] { });
 		}
 
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(FluentCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		{
+			var commandText = await command.GetCommandTextAsync(cancellationToken);
+			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+
+			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+				.CreateFunctionRequestAsync(commandText, command.FunctionName);
+
+			return await ExecuteRequestWithResultAsync(request, cancellationToken,
+				x =>
+				{
+					var result = x.AsEntries(_session.Settings.IncludeAnnotationsInResults);
+					if (annotations != null && x.Feed != null)
+						annotations.CopyFrom(x.Feed.Annotations);
+					return result;
+				},
+				x => new IDictionary<string, object>[] { });
+		}
+
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(FluentCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		{
+			var commandText = await command.GetCommandTextAsync(cancellationToken);
+			var entityTypeName = command.EntityCollection != null
+				? _session.Metadata.GetQualifiedTypeName(command.EntityCollection.Name)
+				: null;
+			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+				.CreateActionRequestAsync(commandText, command.ActionName, command.CommandData, true).ConfigureAwait(false);
+
+			return await ExecuteRequestWithResultAsync(request, cancellationToken,
+				x =>
+				{
+					var result = x.AsEntries(_session.Settings.IncludeAnnotationsInResults);
+					if (annotations != null && x.Feed != null)
+						annotations.CopyFrom(x.Feed.Annotations);
+					return result;
+				},
+				x => new IDictionary<string, object>[] { });
+		}
+
 		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(FluentCommand command, CancellationToken cancellationToken)
 		{
 			var commandText = await command.GetCommandTextAsync(cancellationToken);
@@ -282,7 +321,7 @@ namespace Simple.OData.Client
 		}
 
 		private async Task<T> ExecuteRequestWithResultAsync<T>(ODataRequest request, CancellationToken cancellationToken,
-			Func<ODataResponse, T> createResult, Func<ODataResponse,T> createEmptyResult, Func<T> createBatchResult = null)
+			Func<ODataResponse, T> createResult, Func<ODataResponse, T> createEmptyResult, Func<T> createBatchResult = null)
 		{
 			if (IsBatchRequest)
 				return createBatchResult != null

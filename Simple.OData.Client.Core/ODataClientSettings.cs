@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using Microsoft.OData;
 
 namespace Simple.OData.Client
 {
@@ -195,10 +196,16 @@ namespace Simple.OData.Client
         public ODataTrace TraceFilter { get; set; }
 
         /// <summary>
+        /// Gets or sets validations to perform. Default value is <see cref="T:Microsoft.OData.ValidationKinds.All" />,
+        /// </summary>
+        public ValidationKinds Validations { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ODataClientSettings"/> class.
         /// </summary>
         public ODataClientSettings()
         {
+	        Validations = ValidationKinds.All;
         }
 
         /// <summary>
@@ -206,7 +213,8 @@ namespace Simple.OData.Client
         /// </summary>
         /// <param name="baseUri">The URL address.</param>
         /// <param name="credentials">The client credentials.</param>
-        public ODataClientSettings(string baseUri, ICredentials credentials = null)
+        public ODataClientSettings(string baseUri, ICredentials credentials = null) 
+	        :this()
         {
             this.BaseUri = new Uri(baseUri);
             this.Credentials = credentials;
@@ -218,12 +226,14 @@ namespace Simple.OData.Client
         /// <param name="baseUri">The URL address.</param>
         /// <param name="credentials">The client credentials.</param>
         public ODataClientSettings(Uri baseUri, ICredentials credentials = null)
+	        : this()
         {
             this.BaseUri = baseUri;
             this.Credentials = credentials;
         }
 
         internal ODataClientSettings(ISession session)
+	        : this()
         {
             this.BaseUri = session.Settings.BaseUri;
             this.Credentials = session.Settings.Credentials;

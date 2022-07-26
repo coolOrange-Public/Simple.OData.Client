@@ -76,7 +76,7 @@ namespace Simple.OData.Client.V3.Adapter
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Feed))
 				{
-					return ReadResponse(messageReader.CreateODataFeedReader());
+					return ReadResponse(messageReader.CreateODataFeedReader(), responseMessage);
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Collection))
 				{
@@ -99,7 +99,7 @@ namespace Simple.OData.Client.V3.Adapter
 				}
 				else
 				{
-					return ReadResponse(messageReader.CreateODataEntryReader());
+					return ReadResponse(messageReader.CreateODataEntryReader(), responseMessage);
 				}
 			}
 		}
@@ -167,7 +167,7 @@ namespace Simple.OData.Client.V3.Adapter
 			return ODataResponse.FromCollection(collection);
 		}
 
-		private ODataResponse ReadResponse(ODataReader odataReader)
+		private ODataResponse ReadResponse(ODataReader odataReader, IODataResponseMessageAsync responseMessage)
 		{
 			ResponseNode rootNode = null;
 			var nodeStack = new Stack<ResponseNode>();
@@ -205,7 +205,7 @@ namespace Simple.OData.Client.V3.Adapter
 				}
 			}
 
-			return ODataResponse.FromNode(rootNode);
+			return ODataResponse.FromNode(rootNode, responseMessage.Headers);
 		}
 
 		ODataErrorDetails ReadErrorDetails(IODataResponseMessageAsync responseMessage)

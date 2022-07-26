@@ -77,9 +77,6 @@ namespace Simple.OData.Client.V3.Adapter
 			return entry.ToSlugHeader(_session.Adapter);
 		}
 
-
-
-
 #pragma warning disable 1998
 		protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
 		{

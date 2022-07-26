@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Xml;
-using Microsoft.OData.Core;
-using Microsoft.OData.Core.UriParser;
+using Microsoft.Data.Edm.Csdl;
+using Microsoft.OData;
 using Microsoft.OData.Edm;
-using Microsoft.OData.Edm.Csdl;
 using Microsoft.Spatial;
-using Simple.OData.Client.Extensions;
+
+using Simple.OData.Client.Adapter;
 
 #pragma warning disable 1591
 
@@ -60,14 +59,6 @@ namespace Simple.OData.Client.V4.Adapter
             {
                 Model = messageReader.ReadMetadataDocument();
             }
-        }
-
-        public ODataAdapter(ISession session, string protocolVersion, string metadataString)
-            : this(session, protocolVersion)
-        {
-            var reader = XmlReader.Create(new StringReader(metadataString));
-            reader.MoveToContent();
-            Model = EdmxReader.Parse(reader);
         }
 
         public override string GetODataVersionString()

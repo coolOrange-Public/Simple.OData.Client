@@ -56,9 +56,9 @@ namespace Simple.OData.Client
             catch (AggregateException ex)
             {
                 if (ex.InnerException is WebException)
-	                throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session);
+                    throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session);
                 else
-	                throw;
+                    throw;
             }
             finally
             {
@@ -102,7 +102,7 @@ namespace Simple.OData.Client
                 _session.Settings.AfterResponse(responseMessage);
 
             if (!responseMessage.IsSuccessStatusCode)
-	            throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session);
+                throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session);
         }
     }
 }

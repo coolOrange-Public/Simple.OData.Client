@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.OData.Core;
+using Microsoft.OData;
 using Microsoft.OData.Edm;
 
 #pragma warning disable 1591
@@ -59,9 +59,9 @@ namespace Simple.OData.Client.V4.Adapter
 				{
 					return await ReadResponse(messageReader.CreateODataBatchReader());
 				}
-				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Feed))
+				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.ResourceSet))
 				{
-					return ReadResponse(messageReader.CreateODataFeedReader());
+					return ReadResponse(messageReader.CreateODataResourceSetReader(), responseMessage);
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Collection))
 				{
@@ -72,9 +72,20 @@ namespace Simple.OData.Client.V4.Adapter
 					var property = messageReader.ReadProperty();
 					return ODataResponse.FromProperty(property.Name, GetPropertyValue(property.Value));
 				}
+				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Delta))
+				{
+					if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Resource))
+					{
+						return ReadResponse(messageReader.CreateODataResourceReader(), responseMessage);
+					}
+					else
+					{
+						return ReadResponse(messageReader.CreateODataDeltaResourceSetReader(), responseMessage);
+					}
+				}
 				else
 				{
-					return ReadResponse(messageReader.CreateODataEntryReader());
+					return ReadResponse(messageReader.CreateODataResourceReader(), responseMessage);
 				}
 			}
 		}
@@ -138,7 +149,7 @@ namespace Simple.OData.Client.V4.Adapter
 			return ODataResponse.FromCollection(collection);
 		}
 
-		private ODataResponse ReadResponse(ODataReader odataReader)
+		private ODataResponse ReadResponse(ODataReader odataReader, IODataResponseMessageAsync responseMessage)
 		{
 			ResponseNode rootNode = null;
 			var nodeStack = new Stack<ResponseNode>();
@@ -150,33 +161,35 @@ namespace Simple.OData.Client.V4.Adapter
 
 				switch (odataReader.State)
 				{
-					case ODataReaderState.FeedStart:
-						StartFeed(nodeStack, CreateAnnotations(odataReader.Item as ODataFeed));
+					case ODataReaderState.ResourceSetStart:
+					case ODataReaderState.DeltaResourceSetStart:
+						StartFeed(nodeStack, CreateAnnotations(odataReader.Item as ODataResourceSetBase));
 						break;
 
-					case ODataReaderState.FeedEnd:
-						EndFeed(nodeStack, CreateAnnotations(odataReader.Item as ODataFeed), ref rootNode);
+					case ODataReaderState.ResourceSetEnd:
+					case ODataReaderState.DeltaResourceSetEnd:
+						EndFeed(nodeStack, CreateAnnotations(odataReader.Item as ODataResourceSetBase), ref rootNode);
 						break;
 
-					case ODataReaderState.EntryStart:
+					case ODataReaderState.ResourceStart:
 						StartEntry(nodeStack);
 						break;
 
-					case ODataReaderState.EntryEnd:
+					case ODataReaderState.ResourceEnd:
 						EndEntry(nodeStack, ref rootNode, odataReader.Item);
 						break;
 
-					case ODataReaderState.NavigationLinkStart:
-						StartNavigationLink(nodeStack, (odataReader.Item as ODataNavigationLink).Name);
+					case ODataReaderState.NestedResourceInfoStart:
+						StartNavigationLink(nodeStack, (odataReader.Item as ODataNestedResourceInfo).Name);
 						break;
 
-					case ODataReaderState.NavigationLinkEnd:
+					case ODataReaderState.NestedResourceInfoEnd:
 						EndNavigationLink(nodeStack);
 						break;
 				}
 			}
 
-			return ODataResponse.FromNode(rootNode);
+			return ODataResponse.FromNode(rootNode, responseMessage.Headers);
 		}
 
 		ODataErrorDetails ReadErrorDetails(ODataBatchOperationResponseMessage operationMessage)
@@ -187,8 +200,7 @@ namespace Simple.OData.Client.V4.Adapter
 		}
 		ODataErrorDetails ReadErrorDetails(ODataMessageReader responseMessageReader, ODataMessageReaderSettings readerSettings)
 		{
-			readerSettings.EnableFullValidation = false;
-			readerSettings.UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty;
+			readerSettings.Validations = ValidationKinds.None;
 			var error = responseMessageReader.ReadError();
 			return new ODataErrorDetails(error);
 		}
@@ -197,7 +209,7 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (entry != null)
 			{
-				var odataEntry = entry as Microsoft.OData.Core.ODataEntry;
+				var odataEntry = entry as ODataResource;
 				foreach (var property in odataEntry.Properties)
 				{
 					entryNode.Entry.Data.Add(property.Name, GetPropertyValue(property.Value));
@@ -206,7 +218,7 @@ namespace Simple.OData.Client.V4.Adapter
 			}
 		}
 
-		private ODataFeedAnnotations CreateAnnotations(ODataFeed feed)
+		private ODataFeedAnnotations CreateAnnotations(ODataResourceSetBase feed)
 		{
 			return new ODataFeedAnnotations()
 			{
@@ -218,7 +230,7 @@ namespace Simple.OData.Client.V4.Adapter
 			};
 		}
 
-		private ODataEntryAnnotations CreateAnnotations(Microsoft.OData.Core.ODataEntry odataEntry)
+		private ODataEntryAnnotations CreateAnnotations(ODataResource odataEntry)
 		{
 			string id = null;
 			Uri readLink = null;
@@ -255,28 +267,29 @@ namespace Simple.OData.Client.V4.Adapter
 
 		private object GetPropertyValue(object value)
 		{
-			if (value is ODataComplexValue)
-			{
-				return (value as ODataComplexValue).Properties.ToDictionary(
-					x => x.Name, x => GetPropertyValue(x.Value));
-			}
-			else if (value is ODataCollectionValue)
-			{
-				return (value as ODataCollectionValue).Items.Cast<object>()
-					.Select(GetPropertyValue).ToList();
-			}
-			else if (value is ODataEnumValue)
-			{
+			if (value is ODataResource)
+				return (value as ODataResource).Properties.ToDictionary(x => x.Name, x => GetPropertyValue(x.Value));
+			if (value is ODataCollectionValue)
+				return (value as ODataCollectionValue).Items.Select(GetPropertyValue).ToList();
+			if (value is ODataEnumValue)
 				return (value as ODataEnumValue).Value;
-			}
-			else if (value is ODataStreamReferenceValue)
+			if (value is ODataUntypedValue)
 			{
+				var result = (value as ODataUntypedValue).RawValue;
+				if (!string.IsNullOrEmpty(result))
+				{
+					// Remove extra quoting as has been read as a string
+					// Don't just replace \" in case we have embedded quotes
+					if (result.StartsWith("\"") && result.EndsWith("\""))
+					{
+						result = result.Substring(1, result.Length - 2);
+					}
+				}
+				return result;
+			}
+			if (value is ODataStreamReferenceValue)
 				return CreateAnnotations(value as ODataStreamReferenceValue);
-			}
-			else
-			{
-				return value;
-			}
+			return value;
 		}
 	}
 }

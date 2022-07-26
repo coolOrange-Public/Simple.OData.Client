@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OData.Edm;
+using Microsoft.OData.Edm.Vocabularies;
 
 #pragma warning disable 1591
 
@@ -194,7 +195,7 @@ namespace Simple.OData.Client.V4.Adapter
 			var entityType = GetEntityTypes().BestMatch(x => x.Name, collectionName, _session.Pluralizer);
 			if (entityType != null)
 				return entityType.Name;
-			
+
 			throw new UnresolvableObjectException(collectionName, string.Format("Entity type [{0}] not found", collectionName));
 		}
 

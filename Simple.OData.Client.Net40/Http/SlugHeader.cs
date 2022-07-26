@@ -90,7 +90,7 @@ namespace Simple.OData.Client.Http
 			return ToSlugHeader(entry, writer => new V3.Adapter.JsonWriter(adapter,writer, true));
 		}
 
-		public static SlugHeader ToSlugHeader(this Microsoft.OData.Core.ODataEntry entry)
+		public static SlugHeader ToSlugHeader(this Microsoft.OData.ODataResource entry)
 		{
 			return ToSlugHeader(entry, writer => new V4.Adapter.JsonWriter(writer, true));
 		}

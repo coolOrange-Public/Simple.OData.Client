@@ -21,7 +21,7 @@ namespace Simple.OData.Client
         public Task<IEnumerable<T>> FindEntriesAsync(CancellationToken cancellationToken)
         {
             return RectifyColumnSelectionAsync(
-                _client.FindEntriesAsync(_command, false, null, cancellationToken), 
+                _client.FindEntriesAsync(_command, false, null, cancellationToken),
                 _command.SelectedColumns, _command.DynamicPropertiesContainerName);
         }
 
@@ -89,8 +89,8 @@ namespace Simple.OData.Client
         public async Task<U> FindScalarAsync<U>(CancellationToken cancellationToken)
         {
             var result = await _client.FindScalarAsync(_command, cancellationToken);
-            return _client.IsBatchRequest 
-                ? default(U) 
+            return _client.IsBatchRequest
+                ? default(U)
                 : (U)Utils.Convert(result, typeof(U));
         }
 
@@ -135,7 +135,7 @@ namespace Simple.OData.Client
             if (_command.HasFilter)
             {
                 var result = await UpdateEntriesAsync(resultRequired, cancellationToken);
-                return resultRequired 
+                return resultRequired
                     ? result == null ? null : result.First()
                     : null;
             }
