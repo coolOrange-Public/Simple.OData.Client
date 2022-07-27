@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Simple.OData.Client.Extensions;
 
@@ -102,12 +103,6 @@ namespace Simple.OData.Client
 			return type.GetAllProperties().Where(x => !x.IsNotMapped());
 		}
 
-		public static PropertyInfo GetMappedProperty(Type type, string propertyName)
-		{
-			var property = type.GetAnyProperty(propertyName);
-			return property == null || property.IsNotMapped() ? null : property;
-		}
-
 		public static Uri CreateAbsoluteUri(string baseUri, string relativePath)
 		{
 			var basePath = string.IsNullOrEmpty(baseUri) ? "http://" : baseUri;
@@ -157,10 +152,7 @@ namespace Simple.OData.Client
 			{
 				if (value == null)
 				{
-					if (targetType.IsValue())
-						result = Activator.CreateInstance(targetType);
-					else
-						result = null;
+					result = targetType.IsValue() ? Activator.CreateInstance(targetType) : null;
 				}
 				else if (targetType == typeof(string))
 				{
@@ -180,16 +172,11 @@ namespace Simple.OData.Client
 				}
 				else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && value is DateTimeOffset)
 				{
-					result = ((DateTimeOffset)value).DateTime;
+					result = ((DateTimeOffset) value).DateTime;
 				}
-				else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && value is Microsoft.OData.Edm.Date)
+				else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) && value is DateTime)
 				{
-					var date = (Microsoft.OData.Edm.Date)value;
-					result = new DateTime(date.Year, date.Month, date.Day);
-				}
-				else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset)) && value is DateTime)
-				{
-					result = new DateTimeOffset((DateTime)value);
+					result = new DateTimeOffset(((DateTime)value));
 				}
 				else if (targetType.IsEnumType())
 				{
@@ -203,9 +190,16 @@ namespace Simple.OData.Client
 				{
 					result = Convert(value, Nullable.GetUnderlyingType(targetType));
 				}
+				else if (CustomConverters.HasObjectConverter(targetType))
+				{
+					result = CustomConverters.Convert(value, targetType);
+				}
 				else
 				{
-					result = System.Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+					var descriptor = TypeDescriptor.GetConverter(targetType);
+					result = descriptor != null & descriptor.CanConvertTo(targetType)
+						? descriptor.ConvertTo(value, targetType)
+						: System.Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
 				}
 				return true;
 			}
@@ -234,17 +228,5 @@ namespace Simple.OData.Client
 				type.FullName.StartsWith("System.") ||
 				type.FullName.StartsWith("Microsoft.");
 		}
-
-#if SILVERLIGHT || PORTABLE_LEGACY
-        public static Task<T> GetTaskFromResult<T>(T result)
-        {
-            return TaskEx.FromResult(result);
-        }
-#else
-		public static Task<T> GetTaskFromResult<T>(T result)
-		{
-			return Task.FromResult(result);
-		}
-#endif
 	}
 }

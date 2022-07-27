@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Xml;
-using Microsoft.Data.Edm.Csdl;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.Spatial;
-
-using Simple.OData.Client.Adapter;
 
 #pragma warning disable 1591
 

@@ -9,7 +9,7 @@ namespace Simple.OData.Client.Tests
         [Fact]
         public void GetAllProperties_BaseType()
         {
-            Assert.Equal(1, typeof(Transport).GetAllProperties().Count());
+            Assert.Single(typeof(Transport).GetAllProperties());
         }
 
         [Fact]
@@ -19,28 +19,40 @@ namespace Simple.OData.Client.Tests
         }
 
         [Fact]
+        public void GetAllProperties_SkipIndexer()
+        {
+            Assert.Single(typeof(TypeWithIndexer).GetAllProperties());
+        }
+
+        [Fact]
+        public void GetDeclaredProperties_ExcludeExplicitInterface()
+        {
+            Assert.Equal(5, typeof(Address).GetAllProperties().Count());
+        }
+
+        [Fact]
         public void GetDeclaredProperties_BaseType()
         {
-            Assert.Equal(1, typeof(Transport).GetDeclaredProperties().Count());
+            Assert.Single(typeof(Transport).GetDeclaredProperties());
         }
 
         [Fact]
         public void GetDeclaredProperties_DerivedType()
         {
-            Assert.Equal(1, typeof(Ship).GetDeclaredProperties().Count());
+            Assert.Single(typeof(Ship).GetDeclaredProperties());
         }
 
         [Fact]
-        public void GetAnyProperty_BaseType()
+        public void GetNamedProperty_BaseType()
         {
-            Assert.NotNull(typeof(Transport).GetAnyProperty("TransportID"));
+            Assert.NotNull(typeof(Transport).GetNamedProperty("TransportID"));
         }
 
         [Fact]
-        public void GetAnyProperty_DerivedType()
+        public void GetNamedProperty_DerivedType()
         {
-            Assert.NotNull(typeof(Ship).GetAnyProperty("TransportID"));
-            Assert.NotNull(typeof(Ship).GetAnyProperty("ShipName"));
+            Assert.NotNull(typeof(Ship).GetNamedProperty("TransportID"));
+            Assert.NotNull(typeof(Ship).GetNamedProperty("ShipName"));
         }
 
         [Fact]

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -8,6 +9,11 @@ namespace Simple.OData.Client.Tests
     public class ODataSchemaTests
     {
         private const string _serviceUrl = "http://services.odata.org/{0}/OData/OData.svc/";
+
+        static ODataSchemaTests()
+        {
+	        System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+        }
 
         [Fact]
         public async Task ReadMetadataV3()

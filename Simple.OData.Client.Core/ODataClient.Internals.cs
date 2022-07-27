@@ -392,7 +392,7 @@ namespace Simple.OData.Client
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
 			IEnumerable<IDictionary<string, object>> result = null;
-			var client = new ODataClient(_settings);
+			var client = new ODataClient(this);
 			var entries = await client.FindEntriesAsync(commandText, cancellationToken);
 			if (entries != null)
 			{
@@ -417,7 +417,7 @@ namespace Simple.OData.Client
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
 			var result = 0;
-			var client = new ODataClient(_settings);
+			var client = new ODataClient(this);
 			var entries = await client.FindEntriesAsync(commandText, cancellationToken);
 			if (entries != null)
 			{

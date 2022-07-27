@@ -40,7 +40,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var navigationEntityType = CreateEntityType("Description");
 			var edmnavigationProperty = CreateNavigationProperty("Description");
 			edmnavigationProperty.Setup(x => x.DeclaringType).Returns(navigationEntityType.Object);
-			
+
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			var edmProperty = CreateProperty("Version", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			var entityType = CreateEntityType("Material");
@@ -90,7 +90,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var entityType = CreateEntityType(expectedEntityTypeName);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
-			
+
 			var metadata = new Metadata(session.Object, edmModel.Object);
 			var entityTypeNames = metadata.GetEntityTypeNames().ToList();
 			Assert.Same(expectedEntityTypeName, entityTypeNames.First());
@@ -180,7 +180,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object });
 
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
-			Assert.Throws<UnresolvableObjectException>(()=>metadata.GetNavigationPropertyNames("31"));
+			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyNames("31"));
 		}
 
 		[Fact]
@@ -214,12 +214,15 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		{
 			var expectedType = typeof(int);
 			var edmStrcuturalProperty = CreateProperty("Id", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Id")).Returns(edmStrcuturalProperty.Object);
 
 			var entityType2 = CreateEntityType("Description");
 			var edmStrcuturalProperty2 = CreateProperty("Id", EdmTypeKind.Primitive, EdmPropertyKind.None);
 			entityType2.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty2.Object });
+			entityType2.Setup(x => x.FindProperty("Id")).Returns(edmStrcuturalProperty2.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityType2.Object });
@@ -239,10 +242,12 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var entityType2 = CreateEntityType("Description");
 			var edmStrcuturalProperty2 = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.None);
 			entityType2.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty2.Object });
+			entityType2.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty2.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityType2.Object });
@@ -289,9 +294,11 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		public void GetPropertyType_Model_With_One_EntitySet_Returns_List_Of_objects_Type_For_NavigationProperty_Which_IsCollection_Of_Passed_EntitySetName()
 		{
 			var expectedType = typeof(IEnumerable<object>);
-			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
+			var edmStrcuturalProperty = CreateNavigationProperty("Descriptions", EdmTypeKind.Collection);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Descriptions")).Returns(edmStrcuturalProperty.Object);
 
 			var entitySet = CreateEntitySet("Materials");
 			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
@@ -306,7 +313,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var session = new Mock<ISession>();
 
 			var metadata = new Metadata(session.Object, edmModel.Object) { EdmTypeMap = edmTypeMap.Object };
-			Assert.Same(expectedType, metadata.GetPropertyType("Materials", "Number"));
+			Assert.Same(expectedType, metadata.GetPropertyType("Materials", "Descriptions"));
 		}
 
 		[Fact]
@@ -315,8 +322,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			const string expectedDefaultValue = "31";
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns(expectedDefaultValue);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var entitySet = CreateEntitySet("Materials");
 			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
@@ -324,7 +333,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
-			
+
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
 			Assert.Same(expectedDefaultValue, metadata.GetPropertyDefaultValue("Materials", "Number"));
 		}
@@ -335,8 +344,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			const string expectedDefaultValue = "69";
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns(expectedDefaultValue);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
@@ -396,8 +407,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var entitySet = CreateEntitySet("Materials");
 			entitySet.SetupGet(x => x.ElementType).Returns(entityType.Object);
@@ -418,8 +431,10 @@ namespace Simple.OData.Client.Tests.AdapterV3
 
 			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
+
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
+			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
@@ -580,7 +595,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyPartnerMultiplicity("31", "Number"));
 		}
-		
+
 		[Fact]
 		public void GetNavigationPropertyMultiplicity_With_EntitySetName_And_Valid_Property_Returns_Correct_Multiplicity()
 		{
@@ -685,7 +700,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 		}
 
 		[Fact]
-		public void GetEntityTypeName_From__Invalid_EntitySet_Will_Throw_Exception()
+		public void GetEntityTypeName_From_Invalid_EntitySet_Will_Throw_Exception()
 		{
 			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
 			var entityType = CreateEntityType("Material");
@@ -699,7 +714,7 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
 			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
-			Assert.Throws<UnresolvableObjectException>(()=>metadata.GetEntityTypeName("Material"));
+			Assert.Throws<UnresolvableObjectException>(() => metadata.GetEntityTypeName("Material"));
 		}
 
 
@@ -754,11 +769,24 @@ namespace Simple.OData.Client.Tests.AdapterV3
 			edmStrcuturalProperty.SetupGet(x => x.PropertyKind).Returns(propertyKind);
 			edmStrcuturalProperty.SetupGet(x => x.Name).Returns(name);
 
-			var edmDefinition = new Mock<IEdmType>();
-			edmDefinition.SetupGet(x => x.TypeKind).Returns(typeKind);
+			IEdmType edmDefinition;
+			if (typeKind == EdmTypeKind.Collection)
+			{
+				var edmType = new Mock<IEdmTypeReference>();
+				var edmDefinitionMock = new Mock<IEdmCollectionType>();
+				edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
+				edmDefinitionMock.SetupGet(x => x.ElementType).Returns(edmType.Object);
+				edmDefinition = edmDefinitionMock.Object;
+			}
+			else
+			{
+				var edmDefinitionMock = new Mock<IEdmCollectionType>();
+				edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
+				edmDefinition = edmDefinitionMock.Object;
+			}
 
 			var edmTypeReference = new Mock<IEdmTypeReference>();
-			edmTypeReference.SetupGet(x => x.Definition).Returns(edmDefinition.Object);
+			edmTypeReference.SetupGet(x => x.Definition).Returns(edmDefinition);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			return edmStrcuturalProperty;
 		}

@@ -28,7 +28,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>
     </DocumentationFile>
-    <LangVersion>Default</LangVersion>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -39,7 +39,12 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\Simple.OData.Client.Net40.xml</DocumentationFile>
-    <LangVersion>Default</LangVersion>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\sn.snk</AssemblyOriginatorKeyFile>
+    <StrongNamePublicKey>PublicKey=00240000048000009400000006020000002400005253413100040000010001002d608f5bce35f3eff1c1102fc3a90c0c1fb48a69491aa396dc6f2b3214374645179700266ff7c64b35de02956afd8e0f29a6de4d4a32660d2ac7c531901daf5e1130944b1ca1e9a95cb7abcadca5aab49507e5673c1d0315e41157c0daf720fca9a7bfa78a264648bedc83ddb75792c607dda0b84e48ff577db2898566a470c2</StrongNamePublicKey>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Data.Edm, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -297,6 +302,9 @@
     <Compile Include="..\Simple.OData.Client.Core\Pluralizer.cs">
       <Link>Pluralizer.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Reflection\MemberAccessor.cs">
+      <Link>Reflection\MemberAccessor.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Session.cs">
       <Link>Session.cs</Link>
     </Compile>
@@ -416,6 +424,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="sn.snk" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -426,11 +435,4 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
