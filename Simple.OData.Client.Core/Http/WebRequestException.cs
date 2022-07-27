@@ -21,11 +21,11 @@ namespace Simple.OData.Client
         {
 	        var requestUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
             var exception = new WebRequestException(response.ReasonPhrase, response.StatusCode, requestUri,
-                response.Content != null ? await response.Content.ReadAsStringAsync() : null, innerException);
+                response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : null, innerException);
             try
             {
 	            var responseReader = session.Adapter.GetResponseReader();
-	            exception.ODataResponse = await responseReader.GetResponseAsync(response);
+	            exception.ODataResponse = await responseReader.GetResponseAsync(response).ConfigureAwait(false);
             }
             catch (Exception)
             {
