@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
+using Simple.OData.Client.Extensions;
 
 #pragma warning disable 1591
 
@@ -111,8 +111,11 @@ namespace Simple.OData.Client
 		public Exception Exception { get; private set; }
 		public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
 
-		private ODataResponse()
+		internal ITypeCache TypeCache { get; set; }
+
+		private ODataResponse(ITypeCache typeCache)
 		{
+			TypeCache = typeCache;
 		}
 
 		public IEnumerable<IDictionary<string, object>> AsEntries(bool includeAnnotations)
@@ -148,45 +151,45 @@ namespace Simple.OData.Client
 
 			return value == null
 				? default(T)
-				: (T)Utils.Convert(value, typeof(T));
+				: TypeCache.Convert<T>(value);
 		}
 
 		public T[] AsArray<T>()
 		{
 			return this.AsEntries(false)
 				.SelectMany(x => x.Values)
-				.Select(x => (T)Utils.Convert(x, typeof(T)))
+				.Select(x => TypeCache.Convert<T>(x))
 				.ToArray();
 		}
 
-		public static ODataResponse FromNode(ResponseNode node, IEnumerable<KeyValuePair<string, string>> headers)
+		public static ODataResponse FromNode(ITypeCache typeCache, ResponseNode node, IEnumerable<KeyValuePair<string, string>> headers)
 		{
-			return new ODataResponse
+			return new ODataResponse(typeCache)
 			{
 				Feed = node.Feed ?? new AnnotatedFeed(node.Entry != null ? new[] { node.Entry } : null),
 				Headers = headers
 			};
 		}
 
-		public static ODataResponse FromProperty(string propertyName, object propertyValue)
+		public static ODataResponse FromProperty(ITypeCache typeCache, string propertyName, object propertyValue)
 		{
-			return FromFeed(new[]
+			return FromFeed(typeCache, new[]
 			{
 				new Dictionary<string, object>() { {propertyName ?? FluentCommand.ResultLiteral, propertyValue} }
 			});
 		}
 
-		public static ODataResponse FromValueStream(Stream stream, bool disposeStream = false)
+		public static ODataResponse FromValueStream(ITypeCache typeCache, Stream stream, bool disposeStream = false)
 		{
-			return FromFeed(new[]
+			return FromFeed(typeCache, new[]
 			{
 				new Dictionary<string, object>() { {FluentCommand.ResultLiteral, Utils.StreamToString(stream, disposeStream)} }
 			});
 		}
 
-		public static ODataResponse FromCollection(IList<object> collection)
+		public static ODataResponse FromCollection(ITypeCache typeCache, IList<object> collection)
 		{
-			return new ODataResponse
+			return new ODataResponse(typeCache)
 			{
 				Feed = new AnnotatedFeed(collection.Select(
 						x => new AnnotatedEntry(new Dictionary<string, object>()
@@ -196,17 +199,17 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static ODataResponse FromBatch(IList<ODataResponse> batch)
+		public static ODataResponse FromBatch(ITypeCache typeCache, IList<ODataResponse> batch)
 		{
-			return new ODataResponse
+			return  new ODataResponse(typeCache)
 			{
 				Batch = batch,
 			};
 		}
 
-		public static ODataResponse FromErrorResponse(int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
+		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
 		{
-			return new ODataResponse
+			return  new ODataResponse(typeCache)
 			{
 				StatusCode = statusCode,
 				ErrorDetails = errorDetails,
@@ -214,14 +217,14 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static ODataResponse EmptyFeed
+		internal static ODataResponse EmptyFeeds(ITypeCache typeCache)
 		{
-			get { return FromFeed(new Dictionary<string, object>[] { }); }
+			return FromFeed(typeCache, Enumerable.Empty<Dictionary<string, object>>());
 		}
 
-		private static ODataResponse FromFeed(IEnumerable<IDictionary<string, object>> entries, ODataFeedAnnotations feedAnnotations = null)
+		private static ODataResponse FromFeed(ITypeCache typeCache, IEnumerable<IDictionary<string, object>> entries, ODataFeedAnnotations feedAnnotations = null)
 		{
-			return new ODataResponse
+			return  new ODataResponse(typeCache)
 			{
 				Feed = new AnnotatedFeed(entries.Select(x => new AnnotatedEntry(x)), feedAnnotations)
 			};

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Simple.OData.Client.Extensions;
+
 #pragma warning disable 1591
 
 namespace Simple.OData.Client
@@ -140,6 +142,7 @@ namespace Simple.OData.Client
             return Format(new ExpressionContext(session));
         }
 
+        private static readonly char[] _propertySeperator = {'.', '/'};
         internal bool ExtractLookupColumns(IDictionary<string, object> lookupColumns)
         {
             switch (_operator)
@@ -158,7 +161,12 @@ namespace Simple.OData.Client
                     }
                     if (!string.IsNullOrEmpty(expr.Reference))
                     {
-                        var key = expr.Reference.Split('.', '/').Last();
+                        if (expr.Reference.IndexOfAny(_propertySeperator) >= 0)
+                        {
+                            //skip child entity - may result in false positives
+                            return false;
+                        }
+                        var key = expr.Reference;
                         if (key != null && !lookupColumns.ContainsKey(key))
                             lookupColumns.Add(key, _right);
                     }

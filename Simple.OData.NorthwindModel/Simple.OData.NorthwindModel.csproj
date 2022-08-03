@@ -41,8 +41,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
-	<AssemblyOriginatorKeyFile>..\sn.snk</AssemblyOriginatorKeyFile>
-	<StrongNamePublicKey>PublicKey=00240000048000009400000006020000002400005253413100040000010001002d608f5bce35f3eff1c1102fc3a90c0c1fb48a69491aa396dc6f2b3214374645179700266ff7c64b35de02956afd8e0f29a6de4d4a32660d2ac7c531901daf5e1130944b1ca1e9a95cb7abcadca5aab49507e5673c1d0315e41157c0daf720fca9a7bfa78a264648bedc83ddb75792c607dda0b84e48ff577db2898566a470c2</StrongNamePublicKey>
+    <AssemblyOriginatorKeyFile>..\sn.snk</AssemblyOriginatorKeyFile>
+    <StrongNamePublicKey>PublicKey=00240000048000009400000006020000002400005253413100040000010001002d608f5bce35f3eff1c1102fc3a90c0c1fb48a69491aa396dc6f2b3214374645179700266ff7c64b35de02956afd8e0f29a6de4d4a32660d2ac7c531901daf5e1130944b1ca1e9a95cb7abcadca5aab49507e5673c1d0315e41157c0daf720fca9a7bfa78a264648bedc83ddb75792c607dda0b84e48ff577db2898566a470c2</StrongNamePublicKey>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -66,6 +66,9 @@
     <Reference Include="Microsoft.Data.Services.Client, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Solutions\packages\Microsoft.Data.Services.Client.5.8.5\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.OData.EntityFrameworkProvider, Version=1.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.OData.EntityFrameworkProvider.1.0.0-beta2\lib\net40\Microsoft.OData.EntityFrameworkProvider.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -88,17 +91,57 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ActionProviderImplementation\ActionAttribute.cs">
+      <Link>ActionProviderImplementation\ActionAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\ActionFactory.cs">
+      <Link>ActionProviderImplementation\ActionFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\ActionFinder.cs">
+      <Link>ActionProviderImplementation\ActionFinder.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\ActionInfo.cs">
+      <Link>ActionProviderImplementation\ActionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\ActionInvokable.cs">
+      <Link>ActionProviderImplementation\ActionInvokable.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\ActionProvider.cs">
+      <Link>ActionProviderImplementation\ActionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\Bindable.cs">
+      <Link>ActionProviderImplementation\Bindable.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\EntityFrameworkActionProvider.cs">
+      <Link>ActionProviderImplementation\EntityFrameworkActionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\EntityFrameworkParameterMarshaller.cs">
+      <Link>ActionProviderImplementation\EntityFrameworkParameterMarshaller.cs</Link>
+    </Compile>
+    <Compile Include="..\ActionProviderImplementation\IParameterMarshaller.cs">
+      <Link>ActionProviderImplementation\IParameterMarshaller.cs</Link>
+    </Compile>
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\CommonAssemblyVersion.cs">
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Northwind.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Northwind.edmx</DependentUpon>
-    </Compile>
+    <Compile Include="Entities\Address.cs" />
+    <Compile Include="Entities\AddressType.cs" />
+    <Compile Include="Entities\Category.cs" />
+    <Compile Include="Entities\Customer.cs" />
+    <Compile Include="Entities\Employee.cs" />
+    <Compile Include="Entities\Order.cs" />
+    <Compile Include="Entities\OrderDetail.cs" />
+    <Compile Include="Entities\Product.cs" />
+    <Compile Include="Entities\Ship.cs" />
+    <Compile Include="Entities\Shipper.cs" />
+    <Compile Include="Entities\Supplier.cs" />
+    <Compile Include="Entities\Transport.cs" />
+    <Compile Include="Entities\Truck.cs" />
+    <Compile Include="NorthwindContext.cs" />
+    <Compile Include="NorthwindInitializer.cs" />
     <Compile Include="NorthwindService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -106,10 +149,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <EntityDeploy Include="Northwind.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>Northwind.Designer.cs</LastGenOutput>
-    </EntityDeploy>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

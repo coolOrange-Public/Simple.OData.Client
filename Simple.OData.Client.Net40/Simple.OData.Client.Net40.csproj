@@ -89,8 +89,17 @@
     <Compile Include="..\CommonAssemblyVersion.cs">
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="..\Simple.OData.Client.Core\Adapter\AdapterFactory.cs">
-      <Link>Adapter\AdapterFactory.cs</Link>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\IODataAdapterFactory.cs">
+      <Link>Adapter\IODataAdapterFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\IODataModelAdapter.cs">
+      <Link>Adapter\IODataModelAdapter.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\MetadataCache.cs">
+      <Link>Adapter\MetadataCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\ODataAdapterFactory.cs">
+      <Link>Adapter\ODataAdapterFactory.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Adapter\AdapterVersion.cs">
       <Link>Adapter\AdapterVersion.cs</Link>
@@ -100,9 +109,6 @@
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Adapter\CommandFormatterBase.cs">
       <Link>Adapter\CommandFormatterBase.cs</Link>
-    </Compile>
-    <Compile Include="..\Simple.OData.Client.Core\Adapter\EdmTypeMap.cs">
-      <Link>Adapter\EdmTypeMap.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Adapter\FunctionFormat.cs">
       <Link>Adapter\FunctionFormat.cs</Link>
@@ -134,6 +140,9 @@
     <Compile Include="..\Simple.OData.Client.Core\Adapter\ODataAdapterBase.cs">
       <Link>Adapter\ODataAdapterBase.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Adapter\ODataModelAdapterBase.cs">
+      <Link>Adapter\ODataModelAdapterBase.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Adapter\RequestWriterBase.cs">
       <Link>Adapter\RequestWriterBase.cs</Link>
     </Compile>
@@ -143,8 +152,26 @@
     <Compile Include="..\Simple.OData.Client.Core\Adapter\ResponseReaderBase.cs">
       <Link>Adapter\ResponseReaderBase.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\CachedPluralizer.cs">
+      <Link>CachedPluralizer.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Cache\ITypeCache.cs">
+      <Link>Cache\ITypeCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Cache\TypeCache.cs">
+      <Link>Cache\TypeCache.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Cache\TypeCacheExtensions.cs">
+      <Link>Extensions\TypeCacheExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Cache\TypeCacheResolver.cs">
+      <Link>Cache\TypeCacheResolver.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\CustomConverters.cs">
       <Link>CustomConverters.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\EdmMetadataCache.cs">
+      <Link>EdmMetadataCache.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\EntityCollection.cs">
       <Link>EntityCollection.cs</Link>
@@ -155,11 +182,20 @@
     <Compile Include="..\Simple.OData.Client.Core\Expressions\ColumnExpression.cs">
       <Link>Expressions\ColumnExpression.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Expressions\ExpandExpression.cs">
+      <Link>Expressions\ExpandExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Expressions\FunctionToOperatorMapping.cs">
+      <Link>Expressions\FunctionToOperatorMapping.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Extensions\DictionaryExtensions.cs">
       <Link>Extensions\DictionaryExtensions.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Extensions\EnumerableOfKeyValuePairExtensions.cs">
       <Link>Extensions\EnumerableOfKeyValuePairExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Extensions\ExpressionActivator.cs">
+      <Link>Extensions\ExpressionActivator.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Extensions\MemberInfoExtensions.cs">
       <Link>Extensions\MemberInfoExtensions.cs</Link>
@@ -197,6 +233,12 @@
     <Compile Include="..\Simple.OData.Client.Core\Fluent\BoundClient.cs">
       <Link>Fluent\BoundClient.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\ClientWithRequest.cs">
+      <Link>Fluent\ClientWithRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\ClientWithResponse.cs">
+      <Link>Fluent\ClientWithResponse.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\CommandDetails.cs">
       <Link>Fluent\CommandDetails.cs</Link>
     </Compile>
@@ -206,17 +248,32 @@
     <Compile Include="..\Simple.OData.Client.Core\Fluent\IBoundClient.cs">
       <Link>Fluent\IBoundClient.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\IClientWithRequest.cs">
+      <Link>Fluent\IClientWithRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\IClientWithResponse.cs">
+      <Link>Fluent\IClientWithResponse.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\IFluentClient.cs">
       <Link>Fluent\IFluentClient.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\IMediaClient.cs">
       <Link>Fluent\IMediaClient.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\IRequestBuilder.cs">
+      <Link>Fluent\IRequestBuilder.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\IUnboundClient.cs">
       <Link>Fluent\IUnboundClient.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\MediaClient.cs">
       <Link>Fluent\MediaClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\RequestBuilder.cs">
+      <Link>Fluent\RequestBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\ResolvedCommand.cs">
+      <Link>Fluent\ResolvedCommand.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\UnboundClient.cs">
       <Link>Fluent\UnboundClient.cs</Link>
@@ -236,14 +293,20 @@
     <Compile Include="..\Simple.OData.Client.Core\Http\WebRequestException.cs">
       <Link>Http\WebRequestException.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\INameMatchResolver.cs">
+      <Link>INameMatchResolver.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\IODataClient.cs">
       <Link>IODataClient.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\ISession.cs">
       <Link>ISession.cs</Link>
     </Compile>
-    <Compile Include="..\Simple.OData.Client.Core\MetadataCache.cs">
-      <Link>MetadataCache.cs</Link>
+    <Compile Include="..\Simple.OData.Client.Core\ITypeConverter.cs">
+      <Link>ITypeConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\NameMatchResolvers.cs">
+      <Link>NameMatchResolvers.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\ODataClient.Async.cs">
       <Link>ODataClient.Async.cs</Link>
@@ -266,6 +329,9 @@
     <Compile Include="..\Simple.OData.Client.Core\ODataEntryAnnotations.cs">
       <Link>ODataEntryAnnotations.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\ODataExpandAssociation.cs">
+      <Link>ODataExpandAssociation.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\ODataExpandOptions.cs">
       <Link>ODataExpandOptions.cs</Link>
     </Compile>
@@ -280,6 +346,9 @@
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\ODataNamespace.cs">
       <Link>ODataNamespace.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\ODataOrderByColumn.cs">
+      <Link>ODataOrderByColumn.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\ODataPayloadFormat.cs">
       <Link>ODataPayloadFormat.cs</Link>
@@ -313,6 +382,12 @@
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\SimplePluralizer.cs">
       <Link>SimplePluralizer.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\TypeCaches.cs">
+      <Link>TypeCaches.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\TypeConverter.cs">
+      <Link>TypeConverter.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Utils.cs">
       <Link>Utils.cs</Link>
@@ -365,6 +440,12 @@
     <Compile Include="..\Simple.OData.Client.V3.Adapter\ODataAdapter.cs">
       <Link>AdapterV3\ODataAdapter.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.V3.Adapter\ODataExtensions.cs">
+      <Link>AdapterV3\ODataExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V3.Adapter\ODataModelAdapter.cs">
+      <Link>AdapterV3\ODataModelAdapter.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.V3.Adapter\ODataRequestMessage.cs">
       <Link>AdapterV3\ODataRequestMessage.cs</Link>
     </Compile>
@@ -392,6 +473,45 @@
     <Compile Include="..\Simple.OData.Client.V4.Adapter\EdmTypeMap.cs">
       <Link>AdapterV4\EdmTypeMap.cs</Link>
     </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\DataAggregationBuilder.cs">
+      <Link>AdapterV4Extensions\DataAggregationBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\DataAggregationClauses.cs">
+      <Link>AdapterV4Extensions\DataAggregationClauses.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\DynamicAggregationFunction.cs">
+      <Link>AdapterV4Extensions\DynamicAggregationFunction.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\DynamicDataAggregationBuilder.cs">
+      <Link>AdapterV4Extensions\DynamicDataAggregationBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\ExtendedBoundClient.cs">
+      <Link>AdapterV4Extensions\ExtendedBoundClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\ExtendedFluentCommand.cs">
+      <Link>AdapterV4Extensions\ExtendedFluentCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\ExtendedODataClient.cs">
+      <Link>AdapterV4Extensions\ExtendedODataClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\IAggregationFunction.cs">
+      <Link>AdapterV4Extensions\IAggregationFunction.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\IDataAggregation.cs">
+      <Link>AdapterV4Extensions\IDataAggregation.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\IExtendedBoundClient.cs">
+      <Link>AdapterV4Extensions\IExtendedBoundClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\IExtendedODataClient.cs">
+      <Link>AdapterV4Extensions\IExtendedODataClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\ODataClientExtensions.cs">
+      <Link>AdapterV4Extensions\ODataClientExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\Extensions\ODataDynamicDataAggregation.cs">
+      <Link>AdapterV4Extensions\ODataDynamicDataAggregation.cs</Link>
+    </Compile>
     <Compile Include="..\Simple.OData.Client.V4.Adapter\JsonWriter.cs">
       <Link>AdapterV4\JsonWriter.cs</Link>
     </Compile>
@@ -400,6 +520,12 @@
     </Compile>
     <Compile Include="..\Simple.OData.Client.V4.Adapter\ODataAdapter.cs">
       <Link>AdapterV4\ODataAdapter.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\ODataExtensions.cs">
+      <Link>AdapterV4\ODataExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.V4.Adapter\ODataModelAdapter.cs">
+      <Link>AdapterV4\ODataModelAdapter.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.V4.Adapter\ODataRequestMessage.cs">
       <Link>AdapterV4\ODataRequestMessage.cs</Link>
@@ -424,7 +550,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="sn.snk" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

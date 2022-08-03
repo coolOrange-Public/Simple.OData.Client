@@ -3,7 +3,6 @@ bin
 deploy
 *.csproj.user
 *.suo
-.vs
 *.cache
 *.nupkg
 ~$*
@@ -31,6 +30,13 @@ TestResults/
 Simple.OData.ProductService/Properties/PublishProfiles/va-odata-integration - FTP.pubxml
 Simple.OData.ProductService/Properties/PublishProfiles/va-odata-integration - Web Deploy.pubxml
 Simple.OData.Client.AdHocTests/
+Simple.OData.Client.IntegrationTests/AdHocTests.cs
 Solutions/AdHocTests.sln
-Solutions/UpgradeLog.htm
+.vs/
+.idea/
+build/
 nuget.exe
+/.fake
+/paket-files
+/.paket/paket.exe
+/.paket/Paket.Restore.targets

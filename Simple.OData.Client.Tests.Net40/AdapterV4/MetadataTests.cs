@@ -15,8 +15,8 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetPropertyNames_Model_With_One_EntitySet_ReturnsCorrect_Properties()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
-			var edmProperty = CreateProperty("Version", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
+			var edmProperty = CreateProperty("Version", EdmTypeKind.Primitive);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.Setup(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object, edmProperty.Object });
@@ -32,7 +32,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var properties = metadata.GetPropertyNames("Materials").ToList();
 			Assert.Same("Version", properties.First());
 			Assert.Equal(1, properties.Count);
@@ -45,8 +45,8 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmnavigationProperty = CreateNavigationProperty("Description");
 			edmnavigationProperty.Setup(x => x.DeclaringType).Returns(navigationEntityType.Object);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
-			var edmProperty = CreateProperty("Version", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
+			var edmProperty = CreateProperty("Version", EdmTypeKind.Primitive);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.Setup(x => x.DeclaredProperties).Returns(new List<IEdmProperty> { edmStrcuturalProperty.Object, edmProperty.Object, edmnavigationProperty.Object });
@@ -54,7 +54,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var properties = metadata.GetPropertyNames("Material").ToList();
 			Assert.Same("Version", properties.First());
 			Assert.Equal(1, properties.Count);
@@ -62,14 +62,14 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetEntitySetNames_Model_With_One_EntitySet_Returns_One_EntitySetName()
 		{
-			var session = new Mock<ISession>();
+
 			const string expectedEntitySetName = "Materials";
 			var entitySet = CreateEntitySet(expectedEntitySetName);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object });
 
-			var metadata = new Metadata(session.Object, edmModel.Object);
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var entitySetNames = metadata.GetEntitySetNames().ToList();
 			Assert.Same(expectedEntitySetName, entitySetNames.First());
 			Assert.Equal(1, entitySetNames.Count);
@@ -78,23 +78,23 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetEntitySetNames_Model_With_No_EntitySet_Returns_An_Empty_List()
 		{
-			var session = new Mock<ISession>();
+
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement>());
 
-			Assert.Empty(new Metadata(session.Object, edmModel.Object).GetEntitySetNames());
+			Assert.Empty(new Metadata(edmModel.Object, new BestMatchResolver(), false, false).GetEntitySetNames());
 		}
 
 		[Fact]
 		public void GetEntityTypeNames_Model_With_Two_EntityTypes_Returns_Two_EntityTypeNames()
 		{
-			var session = new Mock<ISession>();
+
 			const string expectedEntityTypeName = "Material";
 			var entityType = CreateEntityType(expectedEntityTypeName);
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 			
-			var metadata = new Metadata(session.Object, edmModel.Object);
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var entityTypeNames = metadata.GetEntityTypeNames().ToList();
 			Assert.Same(expectedEntityTypeName, entityTypeNames.First());
 			Assert.Equal(1, entityTypeNames.Count);
@@ -103,10 +103,10 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetEntityTypeNames_Model_With_No_EntityType_Returns_An_Empty_List()
 		{
-			var session = new Mock<ISession>();
+
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement>());
-			Assert.Equal(0, new Metadata(session.Object, edmModel.Object).GetEntityTypeNames().Count());
+			Assert.Equal(0, new Metadata(edmModel.Object, new BestMatchResolver(), false, false).GetEntityTypeNames().Count());
 		}
 
 		[Fact]
@@ -114,7 +114,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		{
 			var navigationEntityType = CreateEntityType("Description");
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			var edmnavigationProperty = CreateNavigationProperty("Description");
 			edmnavigationProperty.Setup(x => x.DeclaringType).Returns(navigationEntityType.Object);
 			var entityType = CreateEntityType("Material");
@@ -133,7 +133,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var navigationPropertyNames = metadata.GetNavigationPropertyNames("Materials").ToList();
 			Assert.Equal(1, navigationPropertyNames.Count);
 			Assert.Equal("Description", navigationPropertyNames.First());
@@ -144,7 +144,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		{
 			var navigationEntityType = CreateEntityType("Description");
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			var edmnavigationProperty = CreateNavigationProperty("Description");
 			edmnavigationProperty.Setup(x => x.DeclaringType).Returns(navigationEntityType.Object);
 			var entityType = CreateEntityType("Material");
@@ -162,7 +162,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var navigationPropertyNames = metadata.GetNavigationPropertyNames("Material").ToList();
 			Assert.Equal(1, navigationPropertyNames.Count);
 			Assert.Equal("Description", navigationPropertyNames.First());
@@ -171,7 +171,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetNavigationPropertyNames_Model_With_No_NavigationProperties_Returns_An_Empty_List()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 
@@ -186,7 +186,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Empty(metadata.GetNavigationPropertyNames("Materials"));
 		}
 
@@ -198,7 +198,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(()=>metadata.GetNavigationPropertyNames("31"));
 		}
 
@@ -207,8 +207,8 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		{
 			var navigationEntityType = CreateEntityType("Description");
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
-			var edmNormalProperty = CreateProperty("Version", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
+			var edmNormalProperty = CreateProperty("Version", EdmTypeKind.Primitive);
 			var edmnavigationProperty = CreateNavigationProperty("Description");
 			edmnavigationProperty.Setup(x => x.DeclaringType).Returns(navigationEntityType.Object);
 			var entityType = CreateEntityType("Material");
@@ -226,7 +226,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object, entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			var navigationPropertyNames = metadata.GetNavigationPropertyNames("Materials").ToList();
 			Assert.Equal(1, navigationPropertyNames.Count);
 			Assert.Equal("Description", navigationPropertyNames.First());
@@ -236,80 +236,70 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		[Fact]
 		public void GetPropertyType_Model_With_Two_EntityTypes_Returns_Correct_Type_For_KeyProperty_Of_Passed_EntityTypeName()
 		{
-			var expectedType = typeof(int);
-			var edmStrcuturalProperty = CreateProperty("Id", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Id", EdmTypeKind.Primitive, EdmPrimitiveTypeKind.Int32);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.Setup(x => x.FindProperty("Id")).Returns(edmStrcuturalProperty.Object);
 
 			var entityType2 = CreateEntityType("Description");
-			var edmStrcuturalProperty2 = CreateProperty("Id", EdmTypeKind.Primitive, EdmPropertyKind.None);
+			var edmStrcuturalProperty2 = CreateProperty("Id", EdmTypeKind.Primitive);
 			entityType2.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty2.Object });
 			entityType2.Setup(x => x.FindProperty("Id")).Returns(edmStrcuturalProperty2.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityType2.Object });
 
-			var edmTypeMap = new Mock<IEdmTypeMap>();
-			edmTypeMap.Setup(x => x.GetTypes(edmStrcuturalProperty.Object.Type)).Returns(new[] { expectedType });
-			var session = new Mock<ISession>();
-
-			var metadata = new Metadata(session.Object, edmModel.Object) { EdmTypeMap = edmTypeMap.Object };
-			Assert.Same(expectedType, metadata.GetPropertyType("Material", "Id"));
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
+			Assert.Same(typeof(int), metadata.GetPropertyType("Material", "Id"));
 		}
 
 		[Fact]
 		public void GetPropertyType_Model_With_One_EntityType_Returns_Correct_Type_For_NormalProperty_Of_Passed_EntityTypeName()
 		{
-			var expectedType = typeof(bool);
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPrimitiveTypeKind.Boolean);
 			
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
 			entityType.Setup(x => x.FindProperty("Number")).Returns(edmStrcuturalProperty.Object);
 
 			var entityType2 = CreateEntityType("Description");
-			var edmStrcuturalProperty2 = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.None);
+			var edmStrcuturalProperty2 = CreateProperty("Number", EdmTypeKind.Primitive);
 			entityType2.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty2.Object });
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityType2.Object });
 
-			var edmTypeMap = new Mock<IEdmTypeMap>();
-			edmTypeMap.Setup(x => x.GetTypes(edmStrcuturalProperty.Object.Type)).Returns(new[] { expectedType });
-			var session = new Mock<ISession>();
-
-			var metadata = new Metadata(session.Object, edmModel.Object) { EdmTypeMap = edmTypeMap.Object };
-			Assert.Same(expectedType, metadata.GetPropertyType("Material", "Number"));
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
+			Assert.Same(typeof(bool), metadata.GetPropertyType("Material", "Number"));
 		}
 
 		[Fact]
 		public void GetPropertyType_Model_With_Invalid_CollectionName_Throws_Exception()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
-			var session = new Mock<ISession>();
 
-			var metadata = new Metadata(session.Object, edmModel.Object);
+
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetPropertyType("Invalid", "Number"));
 		}
 
 		[Fact]
 		public void GetPropertyType_Model_With_Invalid_PropertyName_Throws_Exception()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
-			var session = new Mock<ISession>();
 
-			var metadata = new Metadata(session.Object, edmModel.Object);
+
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetPropertyType("Material", "Invalid"));
 		}
 
@@ -336,11 +326,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
-			var edmTypeMap = new Mock<IEdmTypeMap>();
-			edmTypeMap.Setup(x => x.GetTypes(edmStrcuturalProperty.Object.Type)).Returns(new[] { expectedType });
-			var session = new Mock<ISession>();
-
-			var metadata = new Metadata(session.Object, edmModel.Object) { EdmTypeMap = edmTypeMap.Object };
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Same(expectedType, metadata.GetPropertyType("Materials", "Descriptions"));
 		}
 
@@ -348,7 +334,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetPropertyDefaultValue_With_EntitySetName_And_Valid_Property_Returns_Correct_String()
 		{
 			const string expectedDefaultValue = "31";
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns(expectedDefaultValue);
 
 			var entityType = CreateEntityType("Material");
@@ -367,7 +353,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 			
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Same(expectedDefaultValue, metadata.GetPropertyDefaultValue("Materials", "Number"));
 		}
 
@@ -375,7 +361,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetPropertyDefaultValue_With_EntityTypeName_And_Valid_Property_Returns_Correct_String()
 		{
 			const string expectedDefaultValue = "69";
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns(expectedDefaultValue);
 
 			var entityType = CreateEntityType("Material");
@@ -385,14 +371,14 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Same(expectedDefaultValue, metadata.GetPropertyDefaultValue("Material", "Number"));
 		}
 
 		[Fact]
 		public void GetPropertyDefaultValue_With_EntityTypeName_And_InValid_Property_Throws_Exception()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns("31");
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
@@ -400,27 +386,34 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetPropertyDefaultValue("Material", "Exception"));
 		}
 
 		[Fact]
 		public void GetPropertyDefaultValue_With_EntitySetName_And_InValid_Property_Throws_Exception()
 		{
+			var entityType = CreateEntityType("Material");
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
+			var edmType = new Mock<IEdmCollectionType>();
+			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
+
 			var entitySet = CreateEntitySet("Materials");
+			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetPropertyDefaultValue("Material", "Ehy"));
 		}
 
 		[Fact]
 		public void GetPropertyDefaultValue_With_Invalid_CollectionName_And_Valid_Property_Throws_Exception()
 		{
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.DefaultValueString).Returns("31");
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredKey).Returns(new[] { edmStrcuturalProperty.Object });
@@ -428,7 +421,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetPropertyDefaultValue("31", "Number"));
 		}
 
@@ -438,7 +431,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmTypeReference = new Mock<IEdmTypeReference>();
 			edmTypeReference.SetupGet(x => x.IsNullable).Returns(false);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
@@ -456,7 +449,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.False(metadata.PropertyIsNullable("Materials", "Number"));
 		}
 
@@ -466,7 +459,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmTypeReference = new Mock<IEdmTypeReference>();
 			edmTypeReference.SetupGet(x => x.IsNullable).Returns(true);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			
 			var entityType = CreateEntityType("Material");
@@ -476,7 +469,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.True(metadata.PropertyIsNullable("Material", "Number"));
 		}
 
@@ -486,7 +479,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmTypeReference = new Mock<IEdmTypeReference>();
 			edmTypeReference.SetupGet(x => x.IsNullable).Returns(false);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
@@ -494,7 +487,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.PropertyIsNullable("Material", "31"));
 		}
 
@@ -504,7 +497,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmTypeReference = new Mock<IEdmTypeReference>();
 			edmTypeReference.SetupGet(x => x.IsNullable).Returns(true);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
@@ -521,7 +514,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.PropertyIsNullable("Materials", "69"));
 		}
 
@@ -531,7 +524,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmTypeReference = new Mock<IEdmTypeReference>();
 			edmTypeReference.SetupGet(x => x.IsNullable).Returns(true);
 
-			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive, EdmPropertyKind.Structural);
+			var edmStrcuturalProperty = CreateProperty("Number", EdmTypeKind.Primitive);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			var entityType = CreateEntityType("Material");
 			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
@@ -539,7 +532,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.PropertyIsNullable("31", "Number"));
 		}
 
@@ -591,7 +584,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;
 			var edmModel = ParseMetadata(MetadataMaterialService);
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyPartnerMultiplicity("Materials", "Descriptions"));
 		}
 
@@ -600,7 +593,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		{
 			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.Many;
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyPartnerMultiplicity("MaterialDescription", "Material"));
 		}
 
@@ -608,7 +601,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyPartnerMultiplicity_With_EntityTypeName_And_InValid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyPartnerMultiplicity("Material", "Number"));
 		}
 
@@ -616,7 +609,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyPartnerMultiplicity_With_EntitySetName_And_InValid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyPartnerMultiplicity("Materials", "Version"));
 		}
 
@@ -624,7 +617,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyPartnerMultiplicity_With_Invalid_EntityTypeName_And_Valid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyPartnerMultiplicity("31", "Number"));
 		}
 		
@@ -634,7 +627,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.Many;
 			var edmModel = ParseMetadata(MetadataMaterialService);
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyMultiplicity("Materials", "Descriptions"));
 		}
 
@@ -643,7 +636,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		{
 			const EdmMultiplicity expectedMultiplicity = EdmMultiplicity.ZeroOrOne;;
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Same(expectedMultiplicity.ToString(), metadata.GetNavigationPropertyMultiplicity("MaterialDescription", "Material"));
 		}
 
@@ -651,7 +644,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyMultiplicity_With_EntityTypeName_And_InValid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyMultiplicity("Material", "Number"));
 		}
 
@@ -659,7 +652,7 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyMultiplicity_With_EntitySetName_And_InValid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyMultiplicity("Materials", "Version"));
 		}
 
@@ -667,42 +660,42 @@ namespace Simple.OData.Client.Tests.AdapterV4
 		public void GetNavigationPropertyMultiplicity_With_Invalid_EntityTypeName_And_Valid_Property_Throws_Exception()
 		{
 			var edmModel = ParseMetadata(MetadataMaterialService);
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel);
+			var metadata = new Metadata(edmModel, new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.GetNavigationPropertyMultiplicity("31", "Number"));
 		}
 
 		[Fact]
 		public void HasStream_For_Streamable_EntitySetName_Return_True()
 		{
-			var metadata = new Metadata(new Mock<ISession>().Object, CreateStreamableModel(true));
+			var metadata = new Metadata(CreateStreamableModel(true), new BestMatchResolver(), false, false);
 			Assert.True(metadata.HasStream("DocumentInfoRecordOriginalCollection"));
 		}
 
 		[Fact]
 		public void HasStream_For_Streamable_EntityTypeName_Return_True()
 		{
-			var metadata = new Metadata(new Mock<ISession>().Object, CreateStreamableModel(true));
+			var metadata = new Metadata(CreateStreamableModel(true), new BestMatchResolver(), false, false);
 			Assert.True(metadata.HasStream("DocumentInfoRecordOriginal"));
 		}
 
 		[Fact]
 		public void HasStream_For_NonStreamable_EntitySetName_Return_False()
 		{
-			var metadata = new Metadata(new Mock<ISession>().Object, CreateStreamableModel(false));
+			var metadata = new Metadata(CreateStreamableModel(false), new BestMatchResolver(), false, false);
 			Assert.False(metadata.HasStream("DocumentInfoRecordOriginalCollection"));
 		}
 
 		[Fact]
 		public void HasStream_For_NonStreamable_EntityTypeName_Return_False()
 		{
-			var metadata = new Metadata(new Mock<ISession>().Object, CreateStreamableModel(false));
+			var metadata = new Metadata(CreateStreamableModel(false), new BestMatchResolver(), false, false);
 			Assert.False(metadata.HasStream("DocumentInfoRecordOriginal"));
 		}
 
 		[Fact]
 		public void HasStream_With_Invalid_CollectioneName_Throws_Exception()
 		{
-			var metadata = new Metadata(new Mock<ISession>().Object, CreateStreamableModel(false));
+			var metadata = new Metadata(CreateStreamableModel(false), new BestMatchResolver(), false, false);
 			Assert.Throws<UnresolvableObjectException>(() => metadata.HasStream("31"));
 		}
 
@@ -725,31 +718,23 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
+			var metadata =new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
 			Assert.Same("Material", metadata.GetEntityTypeName("Materials"));
 		}
 
 		[Fact]
-		public void GetEntityTypeName_From__Invalid_EntitySet_Will_Throw_Exception()
+		public void GetEntityTypeName_From_Invalid_EntitySet_Will_Throw_Exception()
 		{
-			var edmStrcuturalProperty = CreateNavigationProperty("Number", EdmTypeKind.Collection);
 			var entityType = CreateEntityType("Material");
-			entityType.SetupGet(x => x.DeclaredProperties).Returns(new[] { edmStrcuturalProperty.Object });
-
-			var edmTypeReference = new Mock<IEdmTypeReference>();
-			edmTypeReference.Setup(x => x.Definition).Returns(entityType.Object);
-			var edmType = new Mock<IEdmCollectionType>();
-			edmType.Setup(x => x.ElementType).Returns(edmTypeReference.Object);
-
 			var entitySet = CreateEntitySet("Materials");
-			entitySet.SetupGet(x => x.Type).Returns(edmType.Object);
+
 			var entityContainer = CreateEntityContainer(entitySet.Object);
 
 			var edmModel = new Mock<IEdmModel>();
 			edmModel.SetupGet(x => x.SchemaElements).Returns(new List<IEdmSchemaElement> { entityType.Object, entityContainer.Object });
 
-			var metadata = new Metadata(new Mock<ISession>().Object, edmModel.Object);
-			Assert.Throws<UnresolvableObjectException>(() => metadata.GetEntityTypeName("Material"));
+			var metadata = new Metadata(edmModel.Object, new BestMatchResolver(), false, false);
+			Assert.Throws<UnresolvableObjectException>(() => metadata.GetEntityTypeName("Blub"));
 		}
 
 		IEdmModel CreateStreamableModel(bool streamAble)
@@ -788,40 +773,35 @@ namespace Simple.OData.Client.Tests.AdapterV4
 			return CsdlReader.Parse(XmlReader.Create(new StringReader(metadataString)));
 		}
 
-		Mock<IEdmStructuralProperty> CreateProperty(string name, EdmTypeKind typeKind, EdmPropertyKind propertyKind)
+		Mock<IEdmStructuralProperty> CreateProperty(string name, EdmTypeKind typeKind, EdmPrimitiveTypeKind primitiveTypeKind = EdmPrimitiveTypeKind.String)
 		{
-			return CreateProperty<IEdmStructuralProperty>(name, typeKind, propertyKind);
+			var edmStrcuturalProperty = new Mock<IEdmStructuralProperty>();
+			edmStrcuturalProperty.SetupGet(x => x.PropertyKind).Returns(EdmPropertyKind.Structural);
+			edmStrcuturalProperty.SetupGet(x => x.Name).Returns(name);
+
+			var edmDefinitionMock = new Mock<IEdmPrimitiveType>();
+			edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
+			edmDefinitionMock.SetupGet(x => x.PrimitiveKind).Returns(primitiveTypeKind);
+
+			var edmTypeReference = new Mock<IEdmTypeReference>();
+			edmTypeReference.SetupGet(x => x.Definition).Returns(edmDefinitionMock.Object);
+			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
+			return edmStrcuturalProperty;
 		}
 
 		Mock<IEdmNavigationProperty> CreateNavigationProperty(string name, EdmTypeKind typeKind = EdmTypeKind.Entity)
 		{
-			return CreateProperty<IEdmNavigationProperty>(name, typeKind, EdmPropertyKind.Navigation);
-		}
-
-		Mock<T> CreateProperty<T>(string name, EdmTypeKind typeKind, EdmPropertyKind propertyKind) where T : class, IEdmProperty
-		{
-			var edmStrcuturalProperty = new Mock<T>();
-			edmStrcuturalProperty.SetupGet(x => x.PropertyKind).Returns(propertyKind);
+			var edmStrcuturalProperty = new Mock<IEdmNavigationProperty>();
+			edmStrcuturalProperty.SetupGet(x => x.PropertyKind).Returns(EdmPropertyKind.Navigation);
 			edmStrcuturalProperty.SetupGet(x => x.Name).Returns(name);
 
-			IEdmType edmDefinition;
-			if (typeKind == EdmTypeKind.Collection)
-			{
-				var edmType = new Mock<IEdmTypeReference>();
-				var edmDefinitionMock = new Mock<IEdmCollectionType>();
-				edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
-				edmDefinitionMock.SetupGet(x => x.ElementType).Returns(edmType.Object);
-				edmDefinition = edmDefinitionMock.Object;
-			}
-			else
-			{
-				var edmDefinitionMock = new Mock<IEdmCollectionType>();
-				edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
-				edmDefinition = edmDefinitionMock.Object;
-			}
+			var edmType = new Mock<IEdmTypeReference>();
+			var edmDefinitionMock = new Mock<IEdmCollectionType>();
+			edmDefinitionMock.SetupGet(x => x.TypeKind).Returns(typeKind);
+			edmDefinitionMock.SetupGet(x => x.ElementType).Returns(edmType.Object);
 
 			var edmTypeReference = new Mock<IEdmTypeReference>();
-			edmTypeReference.SetupGet(x => x.Definition).Returns(edmDefinition);
+			edmTypeReference.SetupGet(x => x.Definition).Returns(edmDefinitionMock.Object);
 			edmStrcuturalProperty.SetupGet(x => x.Type).Returns(edmTypeReference.Object);
 			return edmStrcuturalProperty;
 		}

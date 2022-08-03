@@ -9,6 +9,7 @@ using Microsoft.Data.Edm;
 using Microsoft.Data.Edm.Csdl;
 using Microsoft.Data.OData;
 using Microsoft.Data.OData.Query;
+using Simple.OData.Client.Adapter;
 using Simple.OData.Client.Extensions;
 
 #pragma warning disable 1591
@@ -28,6 +29,7 @@ namespace Simple.OData.Client.V3.Adapter
     public class ODataAdapter : ODataAdapterBase
     {
         private readonly ISession _session;
+        private IMetadata _metadata;
 
         public override AdapterVersion AdapterVersion { get { return AdapterVersion.V3; } }
 
@@ -42,34 +44,14 @@ namespace Simple.OData.Client.V3.Adapter
             set { base.Model = value; }
         }
 
-        private ODataAdapter(ISession session, string protocolVersion)
+        public ODataAdapter(ISession session, IODataModelAdapter modelAdapter)
         {
-            _session = session;
-            ProtocolVersion = protocolVersion;
+	        _session = session;
+	        ProtocolVersion = modelAdapter.ProtocolVersion;
+	        Model = modelAdapter.Model as IEdmModel;
 
-            CustomConverters.RegisterTypeConverter(typeof(GeographyPoint), TypeConverters.CreateGeographyPoint);
-            CustomConverters.RegisterTypeConverter(typeof(GeometryPoint), TypeConverters.CreateGeometryPoint);
-        }
-
-        public ODataAdapter(ISession session, string protocolVersion, HttpResponseMessage response)
-            : this(session, protocolVersion)
-        {
-            var readerSettings = new ODataMessageReaderSettings
-            {
-                MessageQuotas = { MaxReceivedMessageSize = Int32.MaxValue }
-            };
-            using (var messageReader = new ODataMessageReader(new ODataResponseMessage(response), readerSettings))
-            {
-                Model = messageReader.ReadMetadataDocument();
-            }
-        }
-
-        public ODataAdapter(ISession session, string protocolVersion, string metadataString)
-            : this(session, protocolVersion)
-        {
-            var reader = XmlReader.Create(new StringReader(metadataString));
-            reader.MoveToContent();
-            Model = EdmxReader.Parse(reader);
+	        CustomConverters.RegisterTypeConverter(typeof(GeographyPoint), TypeConverters.CreateGeographyPoint);
+	        CustomConverters.RegisterTypeConverter(typeof(GeometryPoint), TypeConverters.CreateGeometryPoint);
         }
 
         public override string GetODataVersionString()
@@ -88,7 +70,7 @@ namespace Simple.OData.Client.V3.Adapter
 
         public override IMetadata GetMetadata()
         {
-            return new Metadata(_session, Model);
+	        return _metadata ?? (_metadata = new MetadataCache(new Metadata(Model, _session.Settings.NameMatchResolver, _session.Settings.IgnoreUnmappedProperties, _session.Settings.UnqualifiedNameCall)));
         }
 
         public override ICommandFormatter GetCommandFormatter()

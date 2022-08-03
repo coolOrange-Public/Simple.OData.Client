@@ -1,268 +1,352 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Simple.OData.Client.Extensions
 {
-    static class DictionaryExtensions
-    {
-        private static readonly Dictionary<Type, ConstructorInfo> _constructors = new Dictionary<Type, ConstructorInfo>();
+	static class DictionaryExtensions
+	{
+		private static ConcurrentDictionary<Type, ActivatorDelegate> _defaultActivators = new ConcurrentDictionary<Type, ActivatorDelegate>();
+		private static ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate> _collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
 
-        internal static Func<IDictionary<string, object>, ODataEntry> CreateDynamicODataEntry { get; set; }
+		internal static Func<IDictionary<string, object>, ITypeCache, ODataEntry> CreateDynamicODataEntry { get; set; }
 
-        public static T ToObject<T>(this IDictionary<string, object> source,
-            string dynamicPropertiesContainerName = null, bool dynamicObject = false)
-            where T : class
-        {
-            if (source == null)
-                return default(T);
-            if (typeof(IDictionary<string, object>).IsTypeAssignableFrom(typeof(T)))
-                return source as T;
-            if (typeof(T) == typeof(ODataEntry))
-                return CreateODataEntry(source, dynamicObject) as T;
-            if (typeof(T) == typeof(string) || typeof(T).IsValue())
-                throw new InvalidOperationException(
-                    string.Format("Unable to convert structural data to {0}.", typeof(T).Name));
+		internal static void ClearCache()
+		{
+			_defaultActivators = new ConcurrentDictionary<Type, ActivatorDelegate>();
+			_collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
+		}
 
-            return (T)ToObject(source, typeof(T), CreateInstance<T>, dynamicPropertiesContainerName, dynamicObject);
-        }
+		public static T ToObject<T>(this IDictionary<string, object> source, ITypeCache typeCache, bool dynamicObject = false)
+			where T : class
+		{
+			if (typeCache == null)
+			{
+				throw new ArgumentNullException("typeCache");
+			}
 
-        public static object ToObject(this IDictionary<string, object> source, Type type, string dynamicPropertiesContainerName = null)
-        {
-            var ctor = type.GetDefaultConstructor();
-            if (ctor == null && !CustomConverters.HasDictionaryConverter(type))
-            {
-                throw new InvalidOperationException(
-                    string.Format("Unable to create an instance of type {0} that does not have a default constructor.", type.Name));
-            }
+			if (source == null)
+				return default(T);
 
-            return ToObject(source, type, () => ctor.Invoke(new object[] { }), dynamicPropertiesContainerName, false);
-        }
+			if (typeCache.IsTypeAssignableFrom(typeof(IDictionary<string, object>), typeof(T)))
+				return source as T;
 
-        private static object ToObject(this IDictionary<string, object> source, Type type, Func<object> instanceFactory,
-            string dynamicPropertiesContainerName, bool dynamicObject)
-        {
-            if (source == null)
-                return null;
-            if (typeof(IDictionary<string, object>).IsTypeAssignableFrom(type))
-                return source;
-            if (type == typeof(ODataEntry))
-                return CreateODataEntry(source, dynamicObject);
+			if (typeof(T) == typeof(ODataEntry))
+				return CreateODataEntry(source, typeCache, dynamicObject) as T;
 
-            if (CustomConverters.HasDictionaryConverter(type))
-            {
-                return CustomConverters.Convert(source, type);
-            }
+			if (typeof(T) == typeof(string) || typeCache.IsValue(typeof(T)))
+				throw new InvalidOperationException(string.Format("Unable to convert structural data to {0}.", typeof(T).Name));
 
-            var instance = instanceFactory();
+			return (T)ToObject(source, typeCache, typeof(T), dynamicObject);
+		}
 
-            IDictionary<string, object> dynamicProperties = null;
-            if (!string.IsNullOrEmpty(dynamicPropertiesContainerName))
-            {
-                dynamicProperties = CreateDynamicPropertiesContainer(type, instance, dynamicPropertiesContainerName);
-            }
+		public static object ToObject(this IDictionary<string, object> source, ITypeCache typeCache, Type type, bool dynamicObject = false)
+		{
+			if (typeCache == null)
+			{
+				throw new ArgumentNullException("typeCache");
+			}
 
-            foreach (var item in source)
-            {
-                var property = FindMatchingProperty(type, item);
+			if (source == null)
+				return null;
 
-                if (property != null && property.CanWrite && !property.IsNotMapped())
-                {
-                    if (item.Value != null)
-                    {
-                        property.SetValue(instance, ConvertValue(property.PropertyType, item.Value), null);
-                    }
-                }
-                else if (dynamicProperties != null)
-                {
-                    dynamicProperties.Add(item.Key, item.Value);
-                }
-            }
+			if (typeCache.IsTypeAssignableFrom(typeof(IDictionary<string, object>), type))
+				return source;
 
-            return instance;
-        }
+			if (type == typeof(ODataEntry))
+				return CreateODataEntry(source, typeCache, dynamicObject);
 
-        private static PropertyInfo FindMatchingProperty(Type type, KeyValuePair<string, object> item)
-        {
-            var property = type.GetAnyProperty(item.Key) ?? 
-                type.GetAllProperties().FirstOrDefault(x => x.GetMappedName() == item.Key);
+			// Check before custom converter so we use the most appropriate type.
+			if (source.ContainsKey(FluentCommand.AnnotationsLiteral))
+			{
+				type = GetTypeFromAnnotation(source, typeCache, type);
+			}
 
-            if (property == null && item.Key == FluentCommand.AnnotationsLiteral)
-            {
-                property = type.GetAllProperties().FirstOrDefault(x => x.PropertyType == typeof(ODataEntryAnnotations));
-            }
+			if (typeCache.Converter.HasDictionaryConverter(type))
+			{
+				return typeCache.Converter.Convert(source, type);
+			}
 
-            return property;
-        }
+			if (type.HasCustomAttribute(typeof(CompilerGeneratedAttribute), false))
+			{
+				return CreateInstanceOfAnonymousType(source, type, typeCache);
+			}
 
-        private static object ConvertValue(Type type, object itemValue)
-        {
-            return IsCollectionType(type, itemValue)
-                ? ConvertCollection(type, itemValue)
-                : ConvertSingle(type, itemValue);
-        }
+			var instance = CreateInstance(type);
 
-        private static bool IsCollectionType(Type type, object itemValue)
-        {
-            return 
-                (type.IsArray || type.IsGeneric() &&
-                typeof(System.Collections.IEnumerable).IsTypeAssignableFrom(type)) &&
-                (itemValue as System.Collections.IEnumerable) != null;
-        }
+			IDictionary<string, object> dynamicProperties = null;
+			var dynamicPropertiesContainerName = typeCache.DynamicContainerName(type);
+			if (!string.IsNullOrEmpty(dynamicPropertiesContainerName))
+			{
+				dynamicProperties = CreateDynamicPropertiesContainer(type, typeCache, instance, dynamicPropertiesContainerName);
+			}
 
-        private static bool IsCompoundType(Type type)
-        {
-            return !type.IsValue() && !type.IsArray && type != typeof(string);
-        }
+			foreach (var item in source)
+			{
+				var property = FindMatchingProperty(type, typeCache, item);
 
-        private static object ConvertEnum(Type type, object itemValue)
-        {
-            if (itemValue == null)
-                return null;
+				if (property != null && property.CanWrite)
+				{
+					if (item.Value != null)
+					{
+						property.SetValue(instance, ConvertValue(property.PropertyType, typeCache, item.Value), null);
+					}
+				}
+				else
+				{
+					if (dynamicProperties != null)
+						dynamicProperties.Add(item.Key, item.Value);
+				}
+			}
 
-            var stringValue = itemValue.ToString();
-            int intValue;
-            if (int.TryParse(stringValue, out intValue))
-            {
-                object result;
-                Utils.TryConvert(intValue, type, out result);
-                return result;
-            }
-            else
-            {
-                return Enum.Parse(type, stringValue, false);
-            }
-        }
+			return instance;
+		}
 
-        private static object ConvertSingle(Type type, object itemValue)
-        {
-            Func<object, Type, object> TryConvert = (v, t) =>
-            {
-                object result;
-                return Utils.TryConvert(v, t, out result) ? result : v;
-            };
+		private static Type GetTypeFromAnnotation(IDictionary<string, object> source, ITypeCache typeCache, Type type)
+		{
+			var annotations = source[FluentCommand.AnnotationsLiteral] as ODataEntryAnnotations;
 
-            return type == typeof(ODataEntryAnnotations)
-                ? itemValue
-                : IsCompoundType(type)
-                    ? itemValue.ToDictionary().ToObject(type)
-                    : type.IsEnumType()
-                        ? ConvertEnum(type, itemValue)
-                        : TryConvert(itemValue, type);
-        }
+			var odataType = annotations != null ? annotations.TypeName : null;
 
-        private static object ConvertCollection(Type type, object itemValue)
-        {
-            var elementType = type.IsArray
-                ? type.GetElementType()
-                : type.IsGeneric() && type.GetGenericTypeArguments().Length == 1
-                    ? type.GetGenericTypeArguments()[0]
-                    : null;
+			if (string.IsNullOrEmpty(odataType))
+			{
+				return type;
+			}
 
-            if (elementType == null)
-                return null;
+			// TODO: We could cast the ITypeCatcher to TypeCache and use it's property but it's a bit naughty - conditional?
+			var resolver = ODataNameMatchResolver.NotStrict;
 
-            var count = (itemValue as System.Collections.IEnumerable).Cast<object>().Count();
-            var arrayValue = Array.CreateInstance(elementType, count);
+			if (!resolver.IsMatch(odataType, type.Name))
+			{
+				// Ok, something other than the base type, see if we can match it
+				var derived = typeCache.GetDerivedTypes(type).FirstOrDefault(x => resolver.IsMatch(odataType, typeCache.GetMappedName(x)));
+				if (derived != null)
+				{
+					return derived;
+				}
 
-            count = 0;
-            foreach (var item in (itemValue as System.Collections.IEnumerable))
-            {
-                arrayValue.SetValue(ConvertSingle(elementType, item), count++);
-            }
+				foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+				{
+					var typeFound = assembly.GetType(odataType);
+					if (typeFound != null)
+						return typeFound;
+				}
 
-            if (type.IsArray || type.IsTypeAssignableFrom(arrayValue.GetType()))
-            {
-                return arrayValue;
-            }
-            else
-            {
-                var typedef = typeof(IEnumerable<>);
-                var enumerableType = typedef.MakeGenericType(elementType);
-                var ctor = type.GetDeclaredConstructors().FirstOrDefault(
-                    x => x.GetParameters().Length == 1 && x.GetParameters().First().ParameterType == enumerableType);
-                return ctor != null
-                    ? ctor.Invoke(new object[] { arrayValue })
-                    : null;
-            }
-        }
+				// TODO: Should we throw an exception here or log a warning here as we don't understand the data
+			}
 
-        public static IDictionary<string, object> ToDictionary(this object source)
-        {
-            if (source == null)
-                return new Dictionary<string, object>();
-            if (source is IDictionary<string, object>)
-                return source as IDictionary<string, object>;
-            if (source is ODataEntry)
-                return (Dictionary<string, object>)(source as ODataEntry);
+			return type;
+		}
 
-            var properties = Utils.GetMappedProperties(source.GetType());
-            return properties.ToDictionary
-            (
-                x => x.GetMappedName(),
-                x => x.GetValue(source, null)
-            );
-        }
+		private static PropertyInfo FindMatchingProperty(Type type, ITypeCache typeCache, KeyValuePair<string, object> item)
+		{
+			var property = typeCache.GetMappedProperty(type, item.Key);
 
-        private static T CreateInstance<T>()
-            where T : class
-        {
-            ConstructorInfo ctor = null;
+			if (property == null && item.Key == FluentCommand.AnnotationsLiteral)
+			{
+				property = typeCache.GetAnnotationsProperty(type);
+			}
 
-            if (!_constructors.TryGetValue(typeof(T), out ctor))
-            {
-                if (typeof(T) == typeof(IDictionary<string, object>))
-                {
-                    return new Dictionary<string, object>() as T;
-                }
-                else
-                {
-                    ctor = typeof(T).GetDefaultConstructor();
-                    if (ctor != null)
-                    {
-                        lock (_constructors)
-                        {
-                            if (!_constructors.ContainsKey(typeof(T)))
-                                _constructors.Add(typeof(T), ctor);
-                        }
-                    }
-                }
-            }
+			return property;
+		}
 
-            if (ctor == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Unable to create an instance of type {0} that does not have a default constructor.", typeof(T).Name));
-            }
+		private static object ConvertValue(Type type, ITypeCache typeCache, object itemValue)
+		{
+			return IsCollectionType(type, typeCache, itemValue)
+				? ConvertCollection(type, typeCache, itemValue)
+				: ConvertSingle(type, typeCache, itemValue);
+		}
 
-            return ctor.Invoke(new object[] { }) as T;
-        }
+		private static bool IsCollectionType(Type type, ITypeCache typeCache, object itemValue)
+		{
+			return
+				(type.IsArray || typeCache.IsGeneric(type) &&
+				 typeCache.IsTypeAssignableFrom(typeof(System.Collections.IEnumerable), type)) &&
+				(itemValue as System.Collections.IEnumerable) != null;
+		}
 
-        private static ODataEntry CreateODataEntry(IDictionary<string, object> source, bool dynamicObject = false)
-        {
-            return dynamicObject && CreateDynamicODataEntry != null ?
-                CreateDynamicODataEntry(source) :
-                new ODataEntry(source);
-        }
+		private static bool IsCompoundType(Type type, ITypeCache typeCache)
+		{
+			return !typeCache.IsValue(type) && !type.IsArray && type != typeof(string);
+		}
 
-        private static IDictionary<string, object> CreateDynamicPropertiesContainer(
-            Type type, object instance, string dynamicPropertiesContainerName)
-        {
-            var property = type.GetAnyProperty(dynamicPropertiesContainerName);
+		private static object ConvertEnum(Type type, ITypeCache typeCache, object itemValue)
+		{
+			if (itemValue == null)
+				return null;
 
-            if (property == null)
-                throw new ArgumentException(string.Format("Type {0} does not have property {1} ",
-                    type, dynamicPropertiesContainerName));
+			var stringValue = itemValue.ToString();
+			int intValue;
+			if (int.TryParse(stringValue, out intValue))
+			{
+				object result;
+				typeCache.TryConvert(intValue, type, out result);
+				return result;
+			}
+			else
+			{
+				return Enum.Parse(type, stringValue, false);
+			}
+		}
 
-            if (!typeof(IDictionary<string, object>).IsTypeAssignableFrom(property.PropertyType))
-                throw new InvalidOperationException(
-                    string.Format("Property {0} must implement IDictionary<string,object> interface",
-                    dynamicPropertiesContainerName));
+		private static object ConvertSingle(Type type, ITypeCache typeCache, object itemValue)
+		{
+			return type == typeof(ODataEntryAnnotations)
+				? itemValue
+				: IsCompoundType(type, typeCache)
+					? itemValue.ToDictionary(typeCache).ToObject(typeCache, type)
+					: type.IsEnumType()
+						? ConvertEnum(type, typeCache, itemValue)
+						: TryConvert(itemValue, type, typeCache);
+		}
 
-            var dynamicProperties = new Dictionary<string, object>();
-            property.SetValue(instance, dynamicProperties, null);
-            return dynamicProperties;
-        }
-    }
+		static object TryConvert(object v, Type t, ITypeCache typeCache)
+		{
+			object result;
+			return typeCache.TryConvert(v, t, out result) ? result : v;
+		}
+
+		private static object ConvertCollection(Type type, ITypeCache typeCache, object itemValue)
+		{
+			var elementType = type.IsArray
+				? type.GetElementType()
+				: typeCache.IsGeneric(type) && typeCache.GetGenericTypeArguments(type).Length == 1
+					? typeCache.GetGenericTypeArguments(type)[0]
+					: null;
+
+			if (elementType == null)
+				return null;
+
+			var count = GetCollectionCount(itemValue);
+			var arrayValue = Array.CreateInstance(elementType, count);
+
+			count = 0;
+			foreach (var item in (itemValue as System.Collections.IEnumerable))
+			{
+				arrayValue.SetValue(ConvertSingle(elementType, typeCache, item), count++);
+			}
+
+			if (type.IsArray || typeCache.IsTypeAssignableFrom(type, arrayValue.GetType()))
+			{
+				return arrayValue;
+			}
+			else
+			{
+				var collectionTypes = new[]
+				{
+					typeof(IList<>).MakeGenericType(elementType),
+					typeof(IEnumerable<>).MakeGenericType(elementType)
+				};
+				var collectionType = type.GetConstructor(new[] { collectionTypes[0] }) != null
+					? collectionTypes[0]
+					: collectionTypes[1];
+
+				var activator = _collectionActivators.GetOrAdd(new Tuple<Type, Type>(type, collectionType), type.CreateActivator(collectionType));
+				return activator != null ? activator.Invoke(arrayValue) : null;
+			}
+		}
+
+		private static int GetCollectionCount(object collection)
+		{
+			if (collection is System.Collections.IList)
+			{
+				return ((System.Collections.IList)collection).Count;
+			}
+			else if (collection is System.Collections.IDictionary)
+			{
+				return ((System.Collections.IDictionary)collection).Count;
+			}
+			else
+			{
+				int count = 0;
+				var e = ((System.Collections.IEnumerable)collection).GetEnumerator();
+				using (e as IDisposable)
+				{
+					while (e.MoveNext()) count++;
+				}
+
+				return count;
+			}
+		}
+
+		public static IDictionary<string, object> ToDictionary(this object source, ITypeCache typeCache)
+		{
+			if (source == null)
+				return new Dictionary<string, object>();
+			var objects = source as IDictionary<string, object>;
+			if (objects != null)
+				return objects;
+			var entry = source as ODataEntry;
+			if (entry != null)
+				return (Dictionary<string, object>)entry;
+
+			return typeCache.ToDictionary(source);
+		}
+
+		private static object CreateInstance(Type type)
+		{
+			if (type == typeof(IDictionary<string, object>))
+			{
+				return new Dictionary<string, object>();
+			}
+			else
+			{
+				var ctor = _defaultActivators.GetOrAdd(type, t => t.CreateActivator());
+				return ctor.Invoke();
+			}
+		}
+
+		private static ODataEntry CreateODataEntry(IDictionary<string, object> source, ITypeCache typeCache, bool dynamicObject = false)
+		{
+			return dynamicObject && CreateDynamicODataEntry != null ?
+				CreateDynamicODataEntry(source, typeCache) :
+				new ODataEntry(source);
+		}
+
+		private static IDictionary<string, object> CreateDynamicPropertiesContainer(Type type, ITypeCache typeCache, object instance, string dynamicPropertiesContainerName)
+		{
+			var property = typeCache.GetNamedProperty(type, dynamicPropertiesContainerName);
+
+			if (property == null)
+				throw new ArgumentException(string.Format("Type {0} does not have property {1} ", type, dynamicPropertiesContainerName));
+
+			if (!typeCache.IsTypeAssignableFrom(typeof(IDictionary<string, object>), property.PropertyType))
+				throw new InvalidOperationException(string.Format("Property {0} must implement IDictionary<string,object> interface", dynamicPropertiesContainerName));
+
+			var dynamicProperties = new Dictionary<string, object>();
+			property.SetValue(instance, dynamicProperties, null);
+			return dynamicProperties;
+		}
+
+		private static object CreateInstanceOfAnonymousType(IDictionary<string, object> source, Type type, ITypeCache typeCache)
+		{
+			var constructor = FindConstructorOfAnonymousType(type, source);
+			if (constructor == null)
+			{
+				throw new ConstructorNotFoundException(type, source.Values.Select(v => v.GetType()));
+			}
+
+			var parameterInfos = constructor.GetParameters();
+			var constructorParameters = new object[parameterInfos.Length];
+			for (var parameterIndex = 0; parameterIndex < parameterInfos.Length; parameterIndex++)
+			{
+				var parameterInfo = parameterInfos[parameterIndex];
+				constructorParameters[parameterIndex] = ConvertValue(parameterInfo.ParameterType, typeCache, source[parameterInfo.Name]);
+			}
+			return constructor.Invoke(constructorParameters);
+		}
+
+		private static ConstructorInfo FindConstructorOfAnonymousType(Type type, IDictionary<string, object> source)
+		{
+			return type.GetDeclaredConstructors().FirstOrDefault(c =>
+			{
+				var parameters = c.GetParameters();
+				return parameters.Length == source.Count &&
+					   parameters.All(p => source.ContainsKey(p.Name));
+			});
+		}
+	}
 }

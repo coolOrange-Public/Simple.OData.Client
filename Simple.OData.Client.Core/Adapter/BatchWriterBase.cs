@@ -19,7 +19,7 @@ namespace Simple.OData.Client
         {
             _session = session;
             _lastOperationId = 0;
-            _contentIdMap = new Dictionary<IDictionary<string, object>, string>();
+            _contentIdMap = new Dictionary<IDictionary<string, object>, string> ();
             this.BatchEntries = batchEntries;
         }
 
@@ -27,7 +27,8 @@ namespace Simple.OData.Client
         public abstract Task<HttpRequestMessage> EndBatchAsync();
 
         public async Task<ODataRequest> CreateBatchRequestAsync(
-            IODataClient client, IList<Func<IODataClient, Task>> actions, IList<int> responseIndexes)
+            IODataClient client, IList<Func<IODataClient, Task>> actions, IList<int> responseIndexes,
+            IDictionary<string, string> headers = null)
         {
             // Write batch operations into a batch content
             var lastOperationId = 0;
@@ -47,6 +48,12 @@ namespace Simple.OData.Client
             {
                 // Create batch request message
                 var requestMessage = await EndBatchAsync().ConfigureAwait(false);
+
+                foreach (var header in headers)
+                {
+                    requestMessage.Headers.Add(header.Key, header.Value);
+                }
+
                 return new ODataRequest(RestVerbs.Post, _session, ODataLiteral.Batch, requestMessage);
             }
             else
@@ -68,19 +75,20 @@ namespace Simple.OData.Client
 
         public string GetContentId(IDictionary<string, object> entryData, object linkData)
         {
-            string contentId;
-            if (!_contentIdMap.TryGetValue(entryData, out contentId) && linkData != null)
-            {
-                IDictionary<string, object> mappedEntry;
-                if (this.BatchEntries.TryGetValue(linkData, out mappedEntry))
-                    _contentIdMap.TryGetValue(mappedEntry, out contentId);
-            }
-            return contentId;
+	        string contentId;
+	        if (!_contentIdMap.TryGetValue(entryData, out contentId) && linkData != null)
+	        {
+		        IDictionary<string, object> mappedEntry;
+		        if (this.BatchEntries.TryGetValue(linkData, out mappedEntry))
+			        _contentIdMap.TryGetValue(mappedEntry, out contentId);
+	        }
+	        return contentId;
         }
 
         public void MapContentId(IDictionary<string, object> entryData, string contentId)
         {
-            if (entryData != null)
+	        string value;
+            if (entryData != null && !_contentIdMap.TryGetValue(entryData, out value))
             {
                 _contentIdMap.Add(entryData, contentId);
             }

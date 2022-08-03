@@ -84,14 +84,18 @@ namespace Simple.OData.Client
 
 		public bool FilterIsKey
 		{
-			get { return this.Command.FilterIsKey; }
+			get { return this.Command.Details.FilterIsKey; }
 		}
 
 		public IDictionary<string, object> FilterAsKey
 		{
-			get { return this.Command.FilterAsKey; }
+			get { return this.Command.Details.FilterAsKey; }
 		}
 
+		public IRequestBuilder<T> BuildRequestFor()
+		{
+			return new RequestBuilder<T>(this.Command, _session, _client.BatchWriter);
+		}
 #pragma warning restore 1591
 
 		private BoundClient<ODataEntry> CreateClientForODataEntry()

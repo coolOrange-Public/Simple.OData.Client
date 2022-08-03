@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Spatial;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Data.Edm;
 using Microsoft.Data.OData;
 using Simple.OData.Client.Extensions;
@@ -16,7 +18,6 @@ namespace Simple.OData.Client.V3.Adapter
 	public class RequestWriter : RequestWriterBase
 	{
 		private readonly IEdmModel _model;
-		readonly IEdmTypeMap _edmTypeMap = new EdmTypeMap();
 
 		public RequestWriter(ISession session, IEdmModel model, Lazy<IBatchWriter> deferredBatchWriter)
 			: base(session, deferredBatchWriter)
@@ -26,13 +27,8 @@ namespace Simple.OData.Client.V3.Adapter
 
 		protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired, bool deep = false)
 		{
-#if SILVERLIGHT
-			IODataRequestMessage
-#else
-			IODataRequestMessageAsync
-#endif
-			message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired)
+			IODataRequestMessageAsync message = IsBatch
+				? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired).ConfigureAwait(false)
 				: new ODataRequestMessage();
 
 			if (method == RestVerbs.Get || method == RestVerbs.Delete)
@@ -41,7 +37,7 @@ namespace Simple.OData.Client.V3.Adapter
 			var entityType = _model.FindDeclaredType(
 				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
 			var model = method == RestVerbs.Patch ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
-			
+
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
 			{
 				var contentId = _deferredBatchWriter != null ? _deferredBatchWriter.Value.GetContentId(entryData, null) : null;
@@ -53,19 +49,15 @@ namespace Simple.OData.Client.V3.Adapter
 				entryWriter.WriteStart(entry);
 				WriteNavigationLinks(entryDetails, entry, deep, entryWriter);
 				entryWriter.WriteEnd();
-				
+
 				if (IsBatch)
 					return null;
 
-#if SILVERLIGHT
-				return message.GetStream();
-#else
-				return await message.GetStreamAsync();
-#endif
+				return await message.GetStreamAsync().ConfigureAwait(false);
 			}
 		}
 
-		protected override SlugHeader WriteEntrySlugHeader(string collection,IDictionary<string, object> entryData)
+		protected override SlugHeader WriteEntrySlugHeader(string collection, IDictionary<string, object> entryData)
 		{
 			var entityType = _model.FindDeclaredType(
 				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
@@ -80,13 +72,8 @@ namespace Simple.OData.Client.V3.Adapter
 #pragma warning disable 1998
 		protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
 		{
-#if SILVERLIGHT
-			IODataRequestMessage
-#else
-			IODataRequestMessageAsync
-#endif
- message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, null, null, commandText, false)
+			IODataRequestMessageAsync message = IsBatch
+				? await CreateBatchOperationMessageAsync(method, null, null, commandText, false).ConfigureAwait(false)
 				: new ODataRequestMessage();
 
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), _model))
@@ -103,7 +90,7 @@ namespace Simple.OData.Client.V3.Adapter
 #if SILVERLIGHT
 				return message.GetStream();
 #else
-				return await message.GetStreamAsync();
+				return await message.GetStreamAsync().ConfigureAwait(false);
 #endif
 			}
 		}
@@ -112,20 +99,16 @@ namespace Simple.OData.Client.V3.Adapter
 		protected override async Task<Stream> WriteFunctionContentAsync(string method, string commandText)
 		{
 			if (IsBatch)
-				await CreateBatchOperationMessageAsync(method, null, null, commandText, true);
+				await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false);
 
 			return null;
 		}
 
-		protected override async Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, IDictionary<string, object> parameters)
+		protected override async Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, string boundTypeName, IDictionary<string, object> parameters)
 		{
-#if SILVERLIGHT
-			IODataRequestMessage
-#else
-			IODataRequestMessageAsync
-#endif
- message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, null, null, commandText, true)
+
+			IODataRequestMessageAsync message = IsBatch
+				? await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false)
 				: new ODataRequestMessage();
 
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), _model))
@@ -133,96 +116,63 @@ namespace Simple.OData.Client.V3.Adapter
 				var action = _model.SchemaElements
 					.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
 					.SelectMany(x => (x as IEdmEntityContainer).FunctionImports())
-					.BestMatch(x => x.Name, actionName, _session.Pluralizer);
-#if SILVERLIGHT
-					var parameterWriter = messageWriter.CreateODataParameterWriter(action);
-					parameterWriter.WriteStart();
-#else
-				var parameterWriter = await messageWriter.CreateODataParameterWriterAsync(action);
-				await parameterWriter.WriteStartAsync();
-#endif
+					.BestMatch(x => x.Name, actionName, _session.Settings.NameMatchResolver);
 
+				var parameterWriter = await messageWriter.CreateODataParameterWriterAsync(action).ConfigureAwait(false);
+				await parameterWriter.WriteStartAsync().ConfigureAwait(false);
 
 				foreach (var parameter in parameters)
 				{
-					var operationParameter = action.Parameters.BestMatch(x => x.Name, parameter.Key, _session.Pluralizer);
+					var operationParameter = action.Parameters.BestMatch(x => x.Name, parameter.Key, _session.Settings.NameMatchResolver);
 					if (operationParameter == null)
 						throw new UnresolvableObjectException(parameter.Key, string.Format("Parameter [{0}] not found for action [{1}]", parameter.Key, actionName));
 
-#if SILVERLIGHT
-					WriteOperationParameter(parameterWriter, operationParameter, parameter.Key, parameter.Value);
-#else
-					await WriteOperationParameterAsync(parameterWriter, operationParameter, parameter.Key, parameter.Value);
-#endif
+					await WriteOperationParameterAsync(parameterWriter, operationParameter, parameter.Key, parameter.Value).ConfigureAwait(false);
 				}
 
-#if SILVERLIGHT
-				parameterWriter.WriteEnd();
-#else
-				await parameterWriter.WriteEndAsync();
-#endif
+				await parameterWriter.WriteEndAsync().ConfigureAwait(false);
 
 				if (IsBatch)
 					return null;
 
-#if SILVERLIGHT
-				return message.GetStream();
-#else
-				return await message.GetStreamAsync();
-#endif
+				return await message.GetStreamAsync().ConfigureAwait(false);
 			}
 		}
 
-#if SILVERLIGHT
-		private void WriteOperationParameter(ODataParameterWriter parameterWriter, IEdmFunctionParameter operationParameter, string paramName, object paramValue)
-		{
-			if (operationParameter.Type.Definition.TypeKind == EdmTypeKind.Collection)
-			{
-				var collectionWriter = parameterWriter.CreateCollectionWriter(paramName);
-				collectionWriter.WriteStart(new ODataCollectionStart());
-				foreach (var item in paramValue as IEnumerable)
-				{
-					collectionWriter.WriteItem(item);
-				}
-				collectionWriter.WriteEnd();
-			}
-			else
-			{
-				parameterWriter.WriteValue(paramName, paramValue);
-			}
-		}
-#else
 		private async Task WriteOperationParameterAsync(ODataParameterWriter parameterWriter, IEdmFunctionParameter operationParameter, string paramName, object paramValue)
 		{
-			if (operationParameter.Type.Definition.TypeKind == EdmTypeKind.Collection)
+			switch (operationParameter.Type.Definition.TypeKind)
 			{
-				var collectionWriter = await parameterWriter.CreateCollectionWriterAsync(paramName);
-				await collectionWriter.WriteStartAsync(new ODataCollectionStart());
-				foreach (var item in paramValue as IEnumerable)
-				{
-					await collectionWriter.WriteItemAsync(item);
-				}
-				await collectionWriter.WriteEndAsync();
-			}
-			else
-			{
-				await parameterWriter.WriteValueAsync(paramName, paramValue);
+				case EdmTypeKind.Primitive:
+				case EdmTypeKind.Complex:
+					var value = GetPropertyValue(operationParameter.Type, paramValue);
+					await parameterWriter.WriteValueAsync(paramName, value).ConfigureAwait(false);
+					break;
+
+				case EdmTypeKind.Collection:
+					var collectionWriter = await parameterWriter.CreateCollectionWriterAsync(paramName).ConfigureAwait(false);
+					await collectionWriter.WriteStartAsync(new ODataCollectionStart()).ConfigureAwait(false);
+					foreach (var item in (IEnumerable)paramValue)
+					{
+						await collectionWriter.WriteItemAsync(item).ConfigureAwait(false);
+					}
+					await collectionWriter.WriteEndAsync().ConfigureAwait(false);
+					break;
+
+				default:
+					throw new NotSupportedException(string.Format("Unable to write action parameter of a type {0}",
+						operationParameter.Type.Definition.TypeKind));
 			}
 		}
-#endif
 
 		protected override async Task<Stream> WriteStreamContentAsync(Stream stream, bool writeAsText)
 		{
 			var message = new ODataRequestMessage();
-			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(true), _model))
+			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(ODataFormat.RawValue), _model))
 			{
 				var value = writeAsText ? (object)Utils.StreamToString(stream) : Utils.StreamToByteArray(stream);
-#if SILVERLIGHT
-				messageWriter.WriteValue(value);
-#else
-				await messageWriter.WriteValueAsync(value);
-#endif
-				return await message.GetStreamAsync();
+				await messageWriter.WriteValueAsync(value).ConfigureAwait(false);
+				return await message.GetStreamAsync().ConfigureAwait(false);
 			}
 		}
 
@@ -238,7 +188,7 @@ namespace Simple.OData.Client.V3.Adapter
 			request.Headers.Add(HttpLiteral.Prefer, request.ResultRequired ? HttpLiteral.ReturnContent : HttpLiteral.ReturnNoContent);
 		}
 
-		private ODataMessageWriterSettings GetWriterSettings(bool isRawValue = false)
+		private ODataMessageWriterSettings GetWriterSettings(ODataFormat preferredContentType = null)
 		{
 			var settings = new ODataMessageWriterSettings()
 			{
@@ -247,9 +197,9 @@ namespace Simple.OData.Client.V3.Adapter
 				DisableMessageStreamDisposal = !IsBatch,
 			};
 			ODataFormat contentType;
-			if (isRawValue)
+			if (preferredContentType != null)
 			{
-				contentType = ODataFormat.RawValue;
+				contentType = preferredContentType;
 			}
 			else
 			{
@@ -283,7 +233,7 @@ namespace Simple.OData.Client.V3.Adapter
 			var typeProperties = (_model.FindDeclaredType(entry.TypeName) as IEdmEntityType).Properties();
 			Func<string, string> findMatchingPropertyName = name =>
 			{
-				var property = typeProperties.BestMatch(y => y.Name, name, _session.Pluralizer);
+				var property = typeProperties.BestMatch(y => y.Name, name, _session.Settings.NameMatchResolver);
 				return property != null ? property.Name : name;
 			};
 			entry.Properties = properties.Select(x => new ODataProperty()
@@ -295,20 +245,11 @@ namespace Simple.OData.Client.V3.Adapter
 			return entry;
 		}
 
-#if SILVERLIGHT
-		private async Task<IODataRequestMessage> CreateBatchOperationMessageAsync(string method, string collections, IDictionary<string, object> entryData, string commandText, bool resultRequired)
-#else
 		private async Task<IODataRequestMessageAsync> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
-#endif
 		{
 			var message = (await _deferredBatchWriter.Value.CreateOperationMessageAsync(
 				Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, commandText),
-				method, collection, entryData, resultRequired))
-#if SILVERLIGHT
-				as IODataRequestMessage;
-#else
-				as IODataRequestMessageAsync;
-#endif
+				method, collection, entryData, resultRequired).ConfigureAwait(false)) as IODataRequestMessageAsync;
 
 			return message;
 		}
@@ -370,7 +311,7 @@ namespace Simple.OData.Client.V3.Adapter
 			foreach (var referenceLink in links)
 			{
 				var linkKey = linkTypeWithKey.DeclaredKey;
-				var linkEntry = referenceLink.LinkData.ToDictionary();
+				var linkEntry = referenceLink.LinkData.ToDictionary(TypeCache);
 				var contentId = GetContentId(referenceLink);
 				string linkUri;
 				if (contentId != null)
@@ -400,7 +341,7 @@ namespace Simple.OData.Client.V3.Adapter
 		ODataNavigationLink CreateNavigationLink(Microsoft.Data.OData.ODataEntry entry, string linkName, out IEdmEntityType entityType)
 		{
 			var navigationProperty = (_model.FindDeclaredType(entry.TypeName) as IEdmEntityType).NavigationProperties()
-				.BestMatch(x => x.Name, linkName, _session.Pluralizer);
+				.BestMatch(x => x.Name, linkName, _session.Settings.NameMatchResolver);
 			bool isCollection = navigationProperty.Type.Definition.TypeKind == EdmTypeKind.Collection;
 			entityType = GetNavigationPropertyEntityType(navigationProperty);
 			return new ODataNavigationLink
@@ -421,7 +362,7 @@ namespace Simple.OData.Client.V3.Adapter
 
 		private object GetPropertyValue(IEnumerable<IEdmProperty> properties, string key, object value)
 		{
-			var property = properties.BestMatch(x => x.Name, key, _session.Pluralizer);
+			var property = properties.BestMatch(x => x.Name, key, _session.Settings.NameMatchResolver);
 			return property != null ? GetPropertyValue(property.Type, value) : value;
 		}
 
@@ -433,11 +374,15 @@ namespace Simple.OData.Client.V3.Adapter
 			switch (propertyType.TypeKind())
 			{
 				case EdmTypeKind.Complex:
+					if (Converter.HasObjectConverter(value.GetType()))
+					{
+						return Converter.Convert(value, value.GetType());
+					}
 					var complexTypeProperties = propertyType.AsComplex().StructuralProperties();
 					return new ODataComplexValue
 					{
 						TypeName = propertyType.FullName(),
-						Properties = value.ToDictionary()
+						Properties = value.ToDictionary(TypeCache)
 							.Where(val => complexTypeProperties.Any(p => p.Name == val.Key))
 							.Select(x => new ODataProperty
 							{
@@ -455,13 +400,13 @@ namespace Simple.OData.Client.V3.Adapter
 					};
 
 				case EdmTypeKind.Primitive:
-					var mappedTypes = _edmTypeMap.GetTypes(propertyType);
+					var mappedTypes = EdmTypeMap.Map.Where(x => x.Value == (propertyType.Definition as IEdmPrimitiveType).PrimitiveKind);
 					if (mappedTypes.Any())
 					{
 						foreach (var mappedType in mappedTypes)
 						{
 							object result;
-							if (Utils.TryConvert(value, mappedType, out result))
+							if (TypeCache.TryConvert(value, mappedType.Key, out result))
 								return result;
 						}
 						throw new NotSupportedException(string.Format("Conversion is not supported from type {0} to OData type {1}", value.GetType(), propertyType));
@@ -472,9 +417,9 @@ namespace Simple.OData.Client.V3.Adapter
 					return value.ToString();
 
 				case EdmTypeKind.None:
-					if (CustomConverters.HasObjectConverter(value.GetType()))
+					if (Converter.HasObjectConverter(value.GetType()))
 					{
-						return CustomConverters.Convert(value, value.GetType());
+						return Converter.Convert(value, value.GetType());
 					}
 					throw new NotSupportedException(string.Format("Conversion is not supported from type {0} to OData type {1}", value.GetType(), propertyType));
 
@@ -482,7 +427,5 @@ namespace Simple.OData.Client.V3.Adapter
 					return value;
 			}
 		}
-
-
 	}
 }

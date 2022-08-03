@@ -56,7 +56,7 @@ namespace Simple.OData.Client
 	    public async Task<T> InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken)
 	    {
 			var result = await _client.InsertMediaStreamAsync(_command,true, stream, contentType, cancellationToken).ConfigureAwait(false);
-			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
+			return result.ToObject<T>(TypeCache, _dynamicResults);
 		}
 
 	    public Task<T> InsertStreamAsync(byte[] streamContent, string contentType)
@@ -67,7 +67,7 @@ namespace Simple.OData.Client
 	    public async Task<T> InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken)
 	    {
 			var result = await _client.InsertMediaStreamAsync(_command, true, Utils.ByteArrayToStream(streamContent), contentType, cancellationToken).ConfigureAwait(false);
-			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
+			return result.ToObject<T>(TypeCache, _dynamicResults);
 		}
 
 	    public Task<T> InsertStreamAsync(string streamContent)
@@ -78,7 +78,7 @@ namespace Simple.OData.Client
 	    public async Task<T> InsertStreamAsync(string streamContent, CancellationToken cancellationToken)
 	    {
 			var result = await _client.InsertMediaStreamAsync(_command, true, Utils.StringToStream(streamContent), "text/plain", cancellationToken).ConfigureAwait(false);
-			return result.ToObject<T>(_command.DynamicPropertiesContainerName, _dynamicResults);
+			return result.ToObject<T>(TypeCache, _dynamicResults);
 		}
 
 	    public Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency)

@@ -98,7 +98,7 @@ namespace Simple.OData.Client.Tests.Core
             var client = CreateClient(metadataFile);
             var command = client
                 .For<Employee>()
-                .Expand($"{nameof(Employee.Subordinates)}/*");
+                .Expand(string.Format("{0}/*", "Subordinates"));
             var commandText = await command.GetCommandTextAsync();
             Assert.Equal(expectedCommand, commandText);
         }
@@ -124,7 +124,7 @@ namespace Simple.OData.Client.Tests.Core
             var client = CreateClient(metadataFile);
             var command = client
                 .For<Employee>()
-                .Expand($"{nameof(Employee.Subordinates)}/{nameof(Employee.Subordinates)}/*");
+                .Expand(string.Format("{0}/{1}/*", "Subordinates", "Subordinates"));
             var commandText = await command.GetCommandTextAsync();
             Assert.Equal(expectedCommand, commandText);
         }
@@ -199,7 +199,7 @@ namespace Simple.OData.Client.Tests.Core
             var client = CreateClient(metadataFile);
             var command = client
                 .For<Employee>()
-                .Expand($"{nameof(Employee.Subordinates)}/*")
+                .Expand(string.Format("{0}/*", "Subordinates"))
                 .Select(x => new { x.LastName, x.Subordinates })
                 .Select(x => x.Subordinates.Select(y => new { y.LastName, y.Subordinates }))
                 .OrderBy(x => x.LastName)
@@ -247,7 +247,7 @@ namespace Simple.OData.Client.Tests.Core
             var client = CreateClient(metadataFile);
             var command = client
                 .For<Employee>()
-                .Expand($"{nameof(Employee.Subordinates)}/{nameof(Employee.Subordinates)}/*")
+                .Expand("Subordinates/Subordinates/*")
                 .Select(x => new { x.LastName, x.Subordinates })
                 .Select(x => x.Subordinates.Select(y => new { y.LastName, y.Subordinates }))
                 .Select(x => x.Subordinates.Select(y => y.Subordinates.Select(z => new { z.LastName, z.Subordinates })))

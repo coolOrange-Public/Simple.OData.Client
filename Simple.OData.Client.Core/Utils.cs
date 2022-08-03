@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
-using System.ComponentModel;
 using System.Threading.Tasks;
-using Simple.OData.Client.Extensions;
 
 namespace Simple.OData.Client
 {
-	public static class Utils
+	static class Utils
 	{
 		public static string StreamToString(Stream stream, bool disposeStream = false)
 		{
@@ -53,54 +49,49 @@ namespace Simple.OData.Client
 			return clonedStream;
 		}
 
-		public static bool NamesMatch(string actualName, string requestedName, IPluralizer pluralizer)
+		public static bool ContainsMatch(IEnumerable<string> actualNames, string requestedName, INameMatchResolver matchResolver)
 		{
-			actualName = actualName.Split('.').Last().Homogenize();
-			requestedName = requestedName.Split('.').Last().Homogenize();
-
-			return actualName == requestedName || pluralizer != null &&
-				(actualName == pluralizer.Singularize(requestedName) ||
-				actualName == pluralizer.Pluralize(requestedName) ||
-				pluralizer.Singularize(actualName) == requestedName ||
-				pluralizer.Pluralize(actualName) == requestedName);
+			return actualNames.Any(x => matchResolver.IsMatch(x, requestedName));
 		}
 
-		public static bool ContainsMatch(IEnumerable<string> actualNames, string requestedName, IPluralizer pluralizer)
+		public static bool AllMatch(IEnumerable<string> subset, IEnumerable<string> superset, INameMatchResolver matchResolver)
 		{
-			return actualNames.Any(x => NamesMatch(x, requestedName, pluralizer));
-		}
-
-		public static bool AllMatch(IEnumerable<string> subset, IEnumerable<string> superset, IPluralizer pluralizer)
-		{
-			return subset.All(x => superset.Any(y => NamesMatch(x, y, pluralizer)));
+			return subset.All(x => superset.Any(y => matchResolver.IsMatch(x, y)));
 		}
 
 		public static T BestMatch<T>(this IEnumerable<T> collection,
-			Func<T, string> fieldFunc, string value, IPluralizer pluralizer)
+			Func<T, string> fieldFunc, string value, INameMatchResolver matchResolver)
 			where T : class
 		{
-			return collection.FirstOrDefault(x => fieldFunc(x).Homogenize() == value.Homogenize())
-				?? collection.FirstOrDefault(x => NamesMatch(fieldFunc(x), value, pluralizer));
+			if (ReferenceEquals(matchResolver, ODataNameMatchResolver.Strict))
+				return collection.FirstOrDefault(x => matchResolver.IsMatch(fieldFunc(x), value));
+
+			return collection
+				.Where(x => matchResolver.IsMatch(fieldFunc(x), value))
+				.Select(x => new { Match = x, IsStrictMatch = ODataNameMatchResolver.Strict.IsMatch(fieldFunc(x), value) })
+				.OrderBy(x => x.IsStrictMatch ? 0 : 1)
+				.Select(x => x.Match).FirstOrDefault();
 		}
 
 		public static T BestMatch<T>(this IEnumerable<T> collection,
 			Func<T, bool> condition, Func<T, string> fieldFunc, string value,
-			IPluralizer pluralizer)
+			INameMatchResolver matchResolver)
 			where T : class
 		{
-			return collection.FirstOrDefault(x => fieldFunc(x).Homogenize() == value.Homogenize() && condition(x))
-				?? collection.FirstOrDefault(x => NamesMatch(fieldFunc(x), value, pluralizer) && condition(x));
+			if (ReferenceEquals(matchResolver, ODataNameMatchResolver.Strict))
+				return collection.FirstOrDefault(x => condition(x) && matchResolver.IsMatch(fieldFunc(x), value));
+
+			return collection
+				.Where(x => condition(x) && matchResolver.IsMatch(fieldFunc(x), value))
+				.Select(x => new { Match = x, IsStrictMatch = ODataNameMatchResolver.Strict.IsMatch(fieldFunc(x), value) })
+				.OrderBy(x => x.IsStrictMatch ? 0 : 1)
+				.Select(x => x.Match).FirstOrDefault();
 		}
 
 		public static Exception NotSupportedExpression(Expression expression)
 		{
 			return new NotSupportedException(String.Format("Not supported expression of type {0} ({1}): {2}",
 				expression.GetType(), expression.NodeType, expression));
-		}
-
-		public static IEnumerable<PropertyInfo> GetMappedProperties(Type type)
-		{
-			return type.GetAllProperties().Where(x => !x.IsNotMapped());
 		}
 
 		public static Uri CreateAbsoluteUri(string baseUri, string relativePath)
@@ -146,87 +137,77 @@ namespace Simple.OData.Client
 			}
 		}
 
-		public static bool TryConvert(object value, Type targetType, out object result)
-		{
-			try
-			{
-				if (value == null)
-				{
-					result = targetType.IsValue() ? Activator.CreateInstance(targetType) : null;
-				}
-				else if (targetType == typeof(string))
-				{
-					result = value.ToString();
-				}
-				else if (targetType.IsEnumType() && value is string)
-				{
-					result = Enum.Parse(targetType, value.ToString(), true);
-				}
-				else if (targetType == typeof(byte[]) && value is string)
-				{
-					result = System.Convert.FromBase64String(value.ToString());
-				}
-				else if (targetType == typeof(string) && value is byte[])
-				{
-					result = System.Convert.ToBase64String((byte[])value);
-				}
-				else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && value is DateTimeOffset)
-				{
-					result = ((DateTimeOffset) value).DateTime;
-				}
-				else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) && value is DateTime)
-				{
-					result = new DateTimeOffset(((DateTime)value));
-				}
-				else if (targetType.IsEnumType())
-				{
-					result = Enum.ToObject(targetType, value);
-				}
-				else if (targetType == typeof(Guid) && value is string)
-				{
-					result = new Guid(value.ToString());
-				}
-				else if (Nullable.GetUnderlyingType(targetType) != null)
-				{
-					result = Convert(value, Nullable.GetUnderlyingType(targetType));
-				}
-				else if (CustomConverters.HasObjectConverter(targetType))
-				{
-					result = CustomConverters.Convert(value, targetType);
-				}
-				else
-				{
-					var descriptor = TypeDescriptor.GetConverter(targetType);
-					result = descriptor != null & descriptor.CanConvertTo(targetType)
-						? descriptor.ConvertTo(value, targetType)
-						: System.Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-				}
-				return true;
-			}
-			catch (Exception)
-			{
-				result = null;
-				return false;
-			}
-		}
-
-		public static object Convert(object value, Type targetType)
-		{
-			object result;
-
-			if (value == null && !targetType.IsValue())
-				return null;
-			else if (TryConvert(value, targetType, out result))
-				return result;
-
-			throw new FormatException(string.Format("Unable to convert value from type {0} to type {1}", value.GetType(), targetType));
-		}
-
 		public static bool IsSystemType(Type type)
 		{
 			return
 				type.FullName.StartsWith("System.") ||
 				type.FullName.StartsWith("Microsoft.");
+		}
+
+		public static bool IsDesktopPlatform()
+		{
+			var cmdm = Type.GetType("System.ComponentModel.DesignerProperties, PresentationFramework, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+			return cmdm != null;
+		}
+
+		public static Task<T> GetTaskFromResult<T>(T result)
+		{
+			return Task.FromResult(result);
+		}
+
+		public static bool NamedKeyValuesMatchKeyNames(IDictionary<string, object> namedKeyValues, INameMatchResolver resolver, IEnumerable<string> keyNames, out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
+		{
+			matchingNamedKeyValues = null;
+			if (namedKeyValues == null || keyNames == null)
+				return false;
+
+			if (keyNames.Count() == namedKeyValues.Count)
+			{
+				var tmpMatchingNamedKeyValues = new List<KeyValuePair<string, object>>();
+				foreach (var keyProperty in keyNames)
+				{
+					var namedKeyValue = namedKeyValues.FirstOrDefault(x => resolver.IsMatch(x.Key, keyProperty));
+					if (namedKeyValue.Key != null)
+					{
+						tmpMatchingNamedKeyValues.Add(new KeyValuePair<string, object>(keyProperty, namedKeyValue.Value));
+					}
+					else
+					{
+						break;
+					}
+				}
+				if (tmpMatchingNamedKeyValues.Count == keyNames.Count())
+				{
+					matchingNamedKeyValues = tmpMatchingNamedKeyValues;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public static bool NamedKeyValuesContainKeyNames(IDictionary<string, object> namedKeyValues, INameMatchResolver resolver, IEnumerable<string> keyNames, out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
+		{
+			matchingNamedKeyValues = null;
+			if (namedKeyValues == null || keyNames == null)
+				return false;
+
+			var tmpMatchingNamedKeyValues = new List<KeyValuePair<string, object>>();
+			foreach (var namedKeyValue in namedKeyValues)
+			{
+				var keyProperty = keyNames.FirstOrDefault(x => resolver.IsMatch(x, namedKeyValue.Key));
+				if (keyProperty != null)
+				{
+					tmpMatchingNamedKeyValues.Add(new KeyValuePair<string, object>(keyProperty, namedKeyValue.Value));
+				}
+			}
+			if (tmpMatchingNamedKeyValues.Any())
+			{
+				matchingNamedKeyValues = tmpMatchingNamedKeyValues;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

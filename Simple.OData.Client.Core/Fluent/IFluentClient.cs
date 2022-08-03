@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Simple.OData.Client
     /// Provides access to OData operations in a fluent style.
     /// </summary>
     /// <typeparam name="T">The entity type.</typeparam>
-    public interface IFluentClient<T,FT>
+    public interface IFluentClient<T, FT>
         where T : class
     {
         /// <summary>
@@ -102,6 +103,12 @@ namespace Simple.OData.Client
         /// <param name="functionName">Name of the function.</param>
         /// <returns>Self.</returns>
         FT Function(string functionName);
+        /// <summary>
+        /// Sets the OData function name.
+        /// </summary>
+        /// <param name="functionName">Name of the function.</param>
+        /// <returns>Self.</returns>
+        IBoundClient<U> Function<U>(string functionName) where U : class;
         /// <summary>
         /// Sets the OData action name.
         /// </summary>
@@ -288,6 +295,23 @@ namespace Simple.OData.Client
         FT QueryOptions<U>(Expression<Func<U, bool>> expression);
 
         /// <summary>
+        /// Adds a header to be included in the HTTP request.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <param name="value">The header value.</param>
+        /// <remarks>Ignored in batch actions. For batch headers use the <see cref="ODataBatch.WithHeader(string, string)"/> method.</remarks>
+        /// <returns>Self.</returns>
+        FT WithHeader(string name, string value);
+        /// <summary>
+        /// Adds a collection of headers to be included in the HTTP request.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <param name="value">The header value.</param>
+        /// <remarks>Ignored in batch actions. For batch headers use the <see cref="ODataBatch.WithHeaders(IDictionary{string, string})"/> method.</remarks>
+        /// <returns>Self.</returns>
+        FT WithHeaders(IEnumerable<KeyValuePair<string, string>> headers);
+
+        /// <summary>
         /// Selects retrieval of an entity media stream.
         /// </summary>
         /// <returns>Self.</returns>
@@ -399,9 +423,20 @@ namespace Simple.OData.Client
         /// <summary>
         /// Executes the OData function or action.
         /// </summary>
+        /// <returns>Execution result.</returns>
+        Task<U> ExecuteAsSingleAsync<U>();
+        /// <summary>
+        /// Executes the OData function or action.
+        /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Action execution result.</returns>
         Task<T> ExecuteAsSingleAsync(CancellationToken cancellationToken);
+        /// <summary>
+        /// Executes the OData function or action.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Action execution result.</returns>
+        Task<U> ExecuteAsSingleAsync<U>(CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the OData function or action and returns collection.
@@ -435,6 +470,13 @@ namespace Simple.OData.Client
         /// <typeparam name="U">The type of the result array.</typeparam>
         /// <returns>Execution result.</returns>
         Task<U[]> ExecuteAsArrayAsync<U>();
+
+        /// <summary>
+        /// Executes the OData function or action and returns an array.
+        /// </summary>
+        /// <returns>Execution result.</returns>
+        Task<T[]> ExecuteAsArrayAsync();
+
         /// <summary>
         /// Executes the OData function or action and returns an array.
         /// </summary>

@@ -32,17 +32,15 @@ namespace Simple.OData.Client.V4.Adapter
 		public async Task<ODataResponse> GetResponseAsync(IODataResponseMessageAsync responseMessage)
 		{
 			if (responseMessage.StatusCode == (int)HttpStatusCode.NoContent)
-				return ODataResponse.FromErrorResponse(responseMessage.StatusCode);
+				return ODataResponse.FromErrorResponse(TypeCache, responseMessage.StatusCode);
 
-			var readerSettings = new ODataMessageReaderSettings();
-			readerSettings.MessageQuotas.MaxReceivedMessageSize = Int32.MaxValue;
-			readerSettings.ShouldIncludeAnnotation = x => _session.Settings.IncludeAnnotationsInResults;
+			var readerSettings = _session.ToReaderSettings();
 			using (var messageReader = new ODataMessageReader(responseMessage, readerSettings, _model))
 			{
-				var payloadKind = messageReader.DetectPayloadKind();
+				var payloadKind = messageReader.DetectPayloadKind().ToList();
 				if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Error))
 				{
-					return ODataResponse.FromErrorResponse(responseMessage.StatusCode, ReadErrorDetails(messageReader, readerSettings));
+					return ODataResponse.FromErrorResponse(TypeCache, responseMessage.StatusCode, ReadErrorDetails(messageReader, readerSettings));
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Value))
 				{
@@ -52,12 +50,12 @@ namespace Simple.OData.Client.V4.Adapter
 					}
 					else
 					{
-						return ODataResponse.FromValueStream(await responseMessage.GetStreamAsync(), responseMessage is ODataBatchOperationResponseMessage);
+						return ODataResponse.FromValueStream(TypeCache, await responseMessage.GetStreamAsync(), responseMessage is ODataBatchOperationResponseMessage);
 					}
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Batch))
 				{
-					return await ReadResponse(messageReader.CreateODataBatchReader());
+					return await ReadResponse(messageReader.CreateODataBatchReader()).ConfigureAwait(false);
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.ResourceSet))
 				{
@@ -69,8 +67,15 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Property))
 				{
-					var property = messageReader.ReadProperty();
-					return ODataResponse.FromProperty(property.Name, GetPropertyValue(property.Value));
+					if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Resource))
+					{
+						return ReadResponse(messageReader.CreateODataResourceReader(), responseMessage);
+					}
+					else
+					{
+						var property = messageReader.ReadProperty();
+						return ODataResponse.FromProperty(TypeCache, property.Name, GetPropertyValue(property.Value));
+					}
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Delta))
 				{
@@ -103,12 +108,12 @@ namespace Simple.OData.Client.V4.Adapter
 					case ODataBatchReaderState.Operation:
 						var operationMessage = odataReader.CreateOperationResponseMessage();
 						if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
-							batch.Add(ODataResponse.FromErrorResponse(operationMessage.StatusCode));
+							batch.Add(ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
 							var responseStream = await operationMessage.GetStreamAsync();
 							var exception = WebRequestException.CreateFromFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
-							var errorResponse = ODataResponse.FromErrorResponse(operationMessage.StatusCode, ReadErrorDetails(operationMessage), exception);
+							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode, ReadErrorDetails(operationMessage), exception);
 
 							batch.Add(errorResponse);
 						}
@@ -120,7 +125,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 			}
 
-			return ODataResponse.FromBatch(batch);
+			return ODataResponse.FromBatch(TypeCache, batch);
 		}
 
 		private ODataResponse ReadResponse(ODataCollectionReader odataReader)
@@ -146,7 +151,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 			}
 
-			return ODataResponse.FromCollection(collection);
+			return ODataResponse.FromCollection(TypeCache, collection);
 		}
 
 		private ODataResponse ReadResponse(ODataReader odataReader, IODataResponseMessageAsync responseMessage)
@@ -189,7 +194,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 			}
 
-			return ODataResponse.FromNode(rootNode, responseMessage.Headers);
+			return ODataResponse.FromNode(TypeCache, rootNode, responseMessage.Headers);
 		}
 
 		ODataErrorDetails ReadErrorDetails(ODataBatchOperationResponseMessage operationMessage)
@@ -238,10 +243,18 @@ namespace Simple.OData.Client.V4.Adapter
 			string etag = null;
 			if (_session.Adapter.GetMetadata().IsTypeWithId(odataEntry.TypeName))
 			{
-				id = odataEntry.Id.AbsoluteUri;
-				readLink = odataEntry.ReadLink;
-				editLink = odataEntry.EditLink;
-				etag = odataEntry.ETag;
+				try
+				{
+					// odataEntry.Id is null for transient entities (s. http://docs.oasis-open.org/odata/odata-json-format/v4.0/errata03/os/odata-json-format-v4.0-errata03-os-complete.html#_Toc453766634)
+					id = odataEntry.Id != null ? odataEntry.Id.AbsoluteUri : null;
+					readLink = odataEntry.ReadLink;
+					editLink = odataEntry.EditLink;
+					etag = odataEntry.ETag;
+				}
+				catch (ODataException)
+				{
+					// Ingored
+				}
 			}
 
 			return new ODataEntryAnnotations
@@ -250,7 +263,7 @@ namespace Simple.OData.Client.V4.Adapter
 				TypeName = odataEntry.TypeName,
 				ReadLink = readLink,
 				EditLink = editLink,
-                ETag = etag,
+				ETag = etag,
 				MediaResource = CreateAnnotations(odataEntry.MediaResource),
 				InstanceAnnotations = odataEntry.InstanceAnnotations,
 			};

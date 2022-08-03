@@ -18,7 +18,12 @@ namespace Simple.OData.Client
             _session = session;
         }
 
-		public abstract Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage);
+        protected ITypeCache TypeCache
+        {
+	        get { return _session.TypeCache; }
+        }
+
+        public abstract Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage);
 
 		public async Task AssignBatchActionResultsAsync(IODataClient client,
             ODataResponse batchResponse, IList<Func<IODataClient, Task>> actions, IList<int> responseIndexes)

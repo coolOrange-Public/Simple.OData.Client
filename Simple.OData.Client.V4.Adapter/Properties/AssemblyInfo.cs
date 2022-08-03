@@ -26,4 +26,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Simple.OData.Client.V4.Adapter")]
 #endif
 
-[assembly: AssemblyDescription("OData V4 adapter for the client library for .NET 4.x, Windows Store, Silverlight 5, Windows Phone 8, Mond for Android and MonoTouch platforms")]
+[assembly: AssemblyDescription("OData V4 adapter for the client library for .NET 4.x, .NET Standard, .NET Core, iOS and Android.")]

@@ -163,22 +163,22 @@ namespace Simple.OData.Client
 			{
 				return (Func<object, TMember>)getterCache.GetOrAdd(new CacheType
 					(instance.GetType(), typeof(TMember), memberInfo),
-					key => BuildSetterAccessor(typeof(object), typeof(TMember), memberInfo));
+					key => BuildGetterAccessor(typeof(object), typeof(TMember), memberInfo));
 			}
 		}
 
 		struct CacheType
 		{
-			Type _instance;
-			Type _member;
-			MemberInfo _memberInfo;
+			Type Instance { get; set; }
+			Type Member { get; set; }
+			MemberInfo MemberInfo { get; set; }
 
 			public CacheType(Type instance, Type member, MemberInfo memberInfo)
 				: this()
 			{
-				_instance = instance;
-				_member = member;
-				_memberInfo = memberInfo;
+				Instance = instance;
+				Member = member;
+				MemberInfo = memberInfo;
 			}
 		}
 

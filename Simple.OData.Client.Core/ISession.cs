@@ -24,15 +24,15 @@ namespace Simple.OData.Client
         /// </summary>
         IMetadata Metadata { get; }
 
-	    /// <summary>
-	    /// Gets MetadataCache
-	    /// </summary>
-		MetadataCache MetadataCache { get;  }
+        /// <summary>
+        /// Gets MetadataCache
+        /// </summary>
+        EdmMetadataCache MetadataCache { get; }
 
         /// <summary>
-        /// Gets the word pluralizer.
+        /// Gets type information for this session.
         /// </summary>
-        IPluralizer Pluralizer { get; }
+        ITypeCache TypeCache { get; }
 
         /// <summary>
         /// Writes a trace message.

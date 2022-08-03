@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Simple.OData.Client
@@ -12,7 +13,7 @@ namespace Simple.OData.Client
         private readonly Session _session;
         private readonly RequestRunner _requestRunner;
         private readonly Lazy<IBatchWriter> _lazyBatchWriter;
-        private readonly SimpleDictionary<object, IDictionary<string, object>> _batchEntries;
+        private readonly ConcurrentDictionary<object, IDictionary<string, object>> _batchEntries;
         private readonly ODataResponse _batchResponse;
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Simple.OData.Client
             _requestRunner = new RequestRunner(_session);
         }
 
-        internal ODataClient(ODataClientSettings settings, SimpleDictionary<object, IDictionary<string, object>> batchEntries)
+        internal ODataClient(ODataClientSettings settings, ConcurrentDictionary<object, IDictionary<string, object>> batchEntries)
             : this(settings)
         {
             if (batchEntries != null)
@@ -64,7 +65,7 @@ namespace Simple.OData.Client
             _requestRunner = client._requestRunner;
         }
 
-        internal ODataClient(ODataClient client, SimpleDictionary<object, IDictionary<string, object>> batchEntries)
+        internal ODataClient(ODataClient client, ConcurrentDictionary<object, IDictionary<string, object>> batchEntries)
             :this(client)
         {
             if (batchEntries != null)
@@ -84,7 +85,8 @@ namespace Simple.OData.Client
         internal ODataResponse BatchResponse { get { return _batchResponse; } }
         internal bool IsBatchRequest { get { return _lazyBatchWriter != null; } }
         internal bool IsBatchResponse { get { return _batchResponse != null; } }
-        internal SimpleDictionary<object, IDictionary<string, object>> BatchEntries { get { return _batchEntries; } }
+        internal ConcurrentDictionary<object, IDictionary<string, object>> BatchEntries { get { return _batchEntries; } }
+        internal Lazy<IBatchWriter> BatchWriter { get { return _lazyBatchWriter; } }
 
         /// <summary>
         /// Parses the OData service metadata string.
@@ -105,10 +107,7 @@ namespace Simple.OData.Client
         /// </summary>
         public static void ClearMetadataCache()
         {
-            lock (MetadataCache.Instances)
-            {
-                MetadataCache.Instances.Clear();
-            }
+	        EdmMetadataCache.Clear();
         }
 
         /// <summary>
@@ -120,7 +119,7 @@ namespace Simple.OData.Client
         /// </returns>
         public IBoundClient<IDictionary<string, object>> For(string collectionName)
         {
-            return GetFluentClient().For(collectionName);
+            return GetBoundClient().For(collectionName);
         }
 
         /// <summary>
@@ -168,7 +167,7 @@ namespace Simple.OData.Client
             return GetUnboundClient<T>();
         }
 
-        private BoundClient<IDictionary<string, object>> GetFluentClient()
+        private BoundClient<IDictionary<string, object>> GetBoundClient()
         {
             return new BoundClient<IDictionary<string, object>>(this, _session);
         }
@@ -180,12 +179,28 @@ namespace Simple.OData.Client
         }
 
         /// <summary>
-        /// Sets the word pluralizer used when resolving metadata objects.
+        /// Allows callers to manipulate the request headers in between request executions.
+        /// Useful for retrieval of x-csrf-tokens when you want to update the request header
+        /// with the retrieved token on subsequent requests.
+        /// <para>
+        /// Note that this overrides any current <see cref="ODataClientSettings.BeforeRequest"/> method.
+        /// </para>
         /// </summary>
-        /// <param name="pluralizer">The pluralizer.</param>
-        public void SetPluralizer(IPluralizer pluralizer)
+        /// <param name="headers">The list of headers to update.</param>
+        public void UpdateRequestHeaders(Dictionary<string, IEnumerable<string>> headers)
         {
-            _session.Pluralizer = pluralizer;
+	        _settings.BeforeRequest += (request) =>
+	        {
+		        foreach (var header in headers)
+		        {
+			        if (request.Headers.Contains(header.Key))
+			        {
+				        request.Headers.Remove(header.Key);
+			        }
+
+			        request.Headers.Add(header.Key, header.Value);
+		        }
+	        };
         }
     }
 }
