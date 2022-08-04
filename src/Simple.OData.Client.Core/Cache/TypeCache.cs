@@ -264,11 +264,13 @@ namespace Simple.OData.Client
 				{
 					result = ((DateTimeOffset)value).DateTime;
 				}
-				else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && ImplicitConversionTo<DateTime>(value) is MethodInfo)
+				else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) &&
+				         ImplicitConversionTo<DateTime>(value) is MethodInfo)
 				{
 					result = (DateTime)ImplicitConversionTo<DateTime>(value).Invoke(value, new object[] { value });
 				}
-				else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) && value is DateTime)
+				else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) &&
+				         value is DateTime)
 				{
 					result = new DateTimeOffset((DateTime)value);
 				}
@@ -295,6 +297,7 @@ namespace Simple.OData.Client
 						? descriptor.ConvertTo(value, targetType)
 						: System.Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
 				}
+
 				return true;
 			}
 			catch (Exception)
@@ -324,7 +327,8 @@ namespace Simple.OData.Client
 			return resolver;
 		}
 
-		private TypeCacheResolver InternalRegister(Type type, bool dynamicType = false, string dynamicContainerName = null)
+		private TypeCacheResolver InternalRegister(Type type, bool dynamicType = false,
+			string dynamicContainerName = null)
 		{
 			var resolver = new TypeCacheResolver(type, NameMatchResolver, dynamicType, dynamicContainerName);
 
@@ -337,7 +341,7 @@ namespace Simple.OData.Client
 		{
 			return value.GetType().GetMethods()
 				.FirstOrDefault(m => string.Equals(m.Name, "op_Implicit")
-									 && m.ReturnType == typeof(T));
+				                     && m.ReturnType == typeof(T));
 		}
 	}
 }

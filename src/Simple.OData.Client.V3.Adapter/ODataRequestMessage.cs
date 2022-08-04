@@ -7,44 +7,44 @@ using Microsoft.Data.OData;
 namespace Simple.OData.Client.V3.Adapter
 {
 	internal class ODataRequestMessage : IODataRequestMessageAsync
-    {
-        private MemoryStream _stream;
-        private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
+	{
+		private MemoryStream _stream;
+		private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
 
-        public ODataRequestMessage()
-        {
-        }
+		public ODataRequestMessage()
+		{
+		}
 
-        public string GetHeader(string headerName)
-        {
-            string value;
-            return _headers.TryGetValue(headerName, out value) ? value : null;
-        }
+		public string GetHeader(string headerName)
+		{
+			string value;
+			return _headers.TryGetValue(headerName, out value) ? value : null;
+		}
 
-        public void SetHeader(string headerName, string headerValue)
-        {
-            _headers.Add(headerName, headerValue);
-        }
+		public void SetHeader(string headerName, string headerValue)
+		{
+			_headers.Add(headerName, headerValue);
+		}
 
-        public Stream GetStream()
-        {
-            return _stream ?? (_stream = new MemoryStream());
-        }
+		public Stream GetStream()
+		{
+			return _stream ?? (_stream = new MemoryStream());
+		}
 
-        public Task<Stream> GetStreamAsync()
-        {
-            var completionSource = new TaskCompletionSource<Stream>();
-            completionSource.SetResult(this.GetStream());
-            return completionSource.Task;
-        }
+		public Task<Stream> GetStreamAsync()
+		{
+			var completionSource = new TaskCompletionSource<Stream>();
+			completionSource.SetResult(this.GetStream());
+			return completionSource.Task;
+		}
 
-        public IEnumerable<KeyValuePair<string, string>> Headers
-        {
-            get { return _headers; }
-        }
+		public IEnumerable<KeyValuePair<string, string>> Headers
+		{
+			get { return _headers; }
+		}
 
-        public Uri Url { get; set; }
+		public Uri Url { get; set; }
 
-        public string Method { get; set; }
-    }
+		public string Method { get; set; }
+	}
 }

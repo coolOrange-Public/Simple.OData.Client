@@ -20,7 +20,8 @@ namespace Simple.OData.Client
 		/// <param name="nameMatchResolver">Name match resolver.</param>
 		/// <param name="dynamicType">Whether the cached type is dynamic.</param>
 		/// <param name="dynamicContainerName">Dynamic container name.</param>
-		public TypeCacheResolver(Type type, INameMatchResolver nameMatchResolver, bool dynamicType = false, string dynamicContainerName = "DynamicProperties")
+		public TypeCacheResolver(Type type, INameMatchResolver nameMatchResolver, bool dynamicType = false,
+			string dynamicContainerName = "DynamicProperties")
 		{
 			_nameMatchResolver = nameMatchResolver;
 
@@ -138,101 +139,107 @@ namespace Simple.OData.Client
 
 		public PropertyInfo AnnotationsProperty { get; private set; }
 
-        /// <summary>
-        /// Gets a mapped property
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public PropertyInfo GetMappedProperty(string propertyName)
-        {
-            return (from t in MappedPropertiesWithNames where _nameMatchResolver.IsMatch(t.Item2, propertyName) select t.Item1).FirstOrDefault();
-        }
+		/// <summary>
+		/// Gets a mapped property
+		/// </summary>
+		/// <param name="propertyName"></param>
+		/// <returns></returns>
+		public PropertyInfo GetMappedProperty(string propertyName)
+		{
+			return (from t in MappedPropertiesWithNames
+				where _nameMatchResolver.IsMatch(t.Item2, propertyName)
+				select t.Item1).FirstOrDefault();
+		}
 
-        public string GetMappedName(PropertyInfo propertyInfo)
-        {
-            return (from t in MappedPropertiesWithNames where t.Item1 == propertyInfo select t.Item2).FirstOrDefault();
-        }
+		public string GetMappedName(PropertyInfo propertyInfo)
+		{
+			return (from t in MappedPropertiesWithNames where t.Item1 == propertyInfo select t.Item2).FirstOrDefault();
+		}
 
-        public string GetMappedName(string propertyName)
-        {
-            return (from t in MappedPropertiesWithNames where _nameMatchResolver.IsMatch(t.Item1.Name, propertyName) select t.Item2).FirstOrDefault();
-        }
+		public string GetMappedName(string propertyName)
+		{
+			return (from t in MappedPropertiesWithNames
+				where _nameMatchResolver.IsMatch(t.Item1.Name, propertyName)
+				select t.Item2).FirstOrDefault();
+		}
 
-        public PropertyInfo GetAnyProperty(string propertyName)
-        {
-            var currentType = Type;
-            while (currentType != null && currentType != typeof(object))
-            {
-                var property = currentType.GetTypeInfo().GetDeclaredProperty(propertyName);
-                if (property != null)
+		public PropertyInfo GetAnyProperty(string propertyName)
+		{
+			var currentType = Type;
+			while (currentType != null && currentType != typeof(object))
+			{
+				var property = currentType.GetTypeInfo().GetDeclaredProperty(propertyName);
+				if (property != null)
 				{
 					return property;
 				}
 
 				currentType = currentType.GetTypeInfo().BaseType;
-            }
-            return null;
-        }
+			}
 
-        public PropertyInfo GetDeclaredProperty(string propertyName)
-        {
-            return TypeInfo.GetDeclaredProperty(propertyName);
-        }
+			return null;
+		}
 
-        public FieldInfo GetAnyField(string fieldName, bool includeNonPublic = false)
-        {
-            var currentType = Type;
-            while (currentType != null && currentType != typeof(object))
-            {
-                var field = currentType.GetDeclaredField(fieldName);
-                if (field != null)
+		public PropertyInfo GetDeclaredProperty(string propertyName)
+		{
+			return TypeInfo.GetDeclaredProperty(propertyName);
+		}
+
+		public FieldInfo GetAnyField(string fieldName, bool includeNonPublic = false)
+		{
+			var currentType = Type;
+			while (currentType != null && currentType != typeof(object))
+			{
+				var field = currentType.GetDeclaredField(fieldName);
+				if (field != null)
 				{
 					return field;
 				}
 
 				currentType = currentType.GetTypeInfo().BaseType;
-            }
-            return null;
-        }
+			}
 
-        public FieldInfo GetDeclaredField(string fieldName)
-        {
-            return TypeInfo.GetDeclaredField(fieldName);
-        }
+			return null;
+		}
 
-        public MethodInfo GetDeclaredMethod(string methodName)
-        {
-            return TypeInfo.GetDeclaredMethod(methodName);
-        }
+		public FieldInfo GetDeclaredField(string fieldName)
+		{
+			return TypeInfo.GetDeclaredField(fieldName);
+		}
 
-        public IEnumerable<ConstructorInfo> GetDeclaredConstructors()
-        {
-            return TypeInfo.DeclaredConstructors.Where(x => !x.IsStatic);
-        }
+		public MethodInfo GetDeclaredMethod(string methodName)
+		{
+			return TypeInfo.GetDeclaredMethod(methodName);
+		}
 
-        public ConstructorInfo GetDefaultConstructor()
-        {
-            return GetDeclaredConstructors().SingleOrDefault(x => x.GetParameters().Length == 0);
-        }
+		public IEnumerable<ConstructorInfo> GetDeclaredConstructors()
+		{
+			return TypeInfo.DeclaredConstructors.Where(x => !x.IsStatic);
+		}
 
-        public TypeAttributes GetTypeAttributes()
-        {
-            return TypeInfo.Attributes;
-        }
+		public ConstructorInfo GetDefaultConstructor()
+		{
+			return GetDeclaredConstructors().SingleOrDefault(x => x.GetParameters().Length == 0);
+		}
 
-        public Type[] GetGenericTypeArguments()
-        {
-            return TypeInfo.GenericTypeArguments;
-        }
+		public TypeAttributes GetTypeAttributes()
+		{
+			return TypeInfo.Attributes;
+		}
 
-        public bool IsTypeAssignableFrom(Type otherType)
-        {
-            return TypeInfo.IsAssignableFrom(otherType.GetTypeInfo());
-        }
+		public Type[] GetGenericTypeArguments()
+		{
+			return TypeInfo.GenericTypeArguments;
+		}
 
-        public bool HasCustomAttribute(Type attributeType, bool inherit)
-        {
-            return TypeInfo.GetCustomAttribute(attributeType, inherit) != null;
-        }
-    }
+		public bool IsTypeAssignableFrom(Type otherType)
+		{
+			return TypeInfo.IsAssignableFrom(otherType.GetTypeInfo());
+		}
+
+		public bool HasCustomAttribute(Type attributeType, bool inherit)
+		{
+			return TypeInfo.GetCustomAttribute(attributeType, inherit) != null;
+		}
+	}
 }

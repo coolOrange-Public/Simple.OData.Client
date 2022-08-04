@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Simple.OData.Client.Extensions;
 
 namespace Simple.OData.Client
@@ -103,8 +102,8 @@ namespace Simple.OData.Client
 
 				this.EntityCollection =
 					string.IsNullOrEmpty(Details.DerivedCollectionName)
-					? entityCollection
-					: _sesson.Metadata.GetDerivedEntityCollection(entityCollection, Details.DerivedCollectionName);
+						? entityCollection
+						: _sesson.Metadata.GetDerivedEntityCollection(entityCollection, Details.DerivedCollectionName);
 			}
 		}
 
@@ -147,7 +146,8 @@ namespace Simple.OData.Client
 			if (Details.Filter == null && !ReferenceEquals(details.FilterExpression, null))
 			{
 				bool isAlternateKey;
-				Details.NamedKeyValues = TryInterpretFilterExpressionAsKey(details.FilterExpression, out isAlternateKey);
+				Details.NamedKeyValues =
+					TryInterpretFilterExpressionAsKey(details.FilterExpression, out isAlternateKey);
 				Details.IsAlternateKey = isAlternateKey;
 
 				if (Details.NamedKeyValues == null)
@@ -161,6 +161,7 @@ namespace Simple.OData.Client
 							entityCollection = collection;
 						}
 					}
+
 					Details.Filter = details.FilterExpression.Format(
 						new ExpressionContext(_sesson, entityCollection, null, this.DynamicPropertiesContainerName));
 				}
@@ -169,6 +170,7 @@ namespace Simple.OData.Client
 					Details.KeyValues = null;
 					Details.TopCount = -1;
 				}
+
 				if (details.FilterExpression.HasTypeConstraint(details.DerivedCollectionName))
 				{
 					Details.DerivedCollectionName = null;
@@ -235,13 +237,14 @@ namespace Simple.OData.Client
 						keyValue = Details.KeyValues[index];
 						found = true;
 					}
+
 					if (found)
 					{
-						var value = keyValue is ODataExpression ?
-							(keyValue as ODataExpression).Value : keyValue;
+						var value = keyValue is ODataExpression ? (keyValue as ODataExpression).Value : keyValue;
 						namedKeyValues.Add(keyNames[index], value);
 					}
 				}
+
 				return namedKeyValues;
 			}
 		}
@@ -257,13 +260,15 @@ namespace Simple.OData.Client
 
 				var entryData = new Dictionary<string, object>();
 				foreach (var key in Details.EntryData.Keys.Where(x =>
-					!string.Equals(x, Details.DynamicPropertiesContainerName, StringComparison.OrdinalIgnoreCase)))
+					         !string.Equals(x, Details.DynamicPropertiesContainerName,
+						         StringComparison.OrdinalIgnoreCase)))
 				{
 					entryData.Add(key, Details.EntryData[key]);
 				}
 
 				object dynamicProperties;
-				if (Details.EntryData.TryGetValue(Details.DynamicPropertiesContainerName, out dynamicProperties) && dynamicProperties != null)
+				if (Details.EntryData.TryGetValue(Details.DynamicPropertiesContainerName, out dynamicProperties) &&
+				    dynamicProperties != null)
 				{
 					var kv = dynamicProperties as IDictionary<string, object>;
 					if (kv != null)
@@ -273,7 +278,8 @@ namespace Simple.OData.Client
 					}
 					else
 					{
-						throw new InvalidOperationException(string.Format("Property {0} must implement IDictionary<string,object> interface",
+						throw new InvalidOperationException(string.Format(
+							"Property {0} must implement IDictionary<string,object> interface",
 							Details.DynamicPropertiesContainerName));
 					}
 				}
@@ -282,7 +288,8 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private IDictionary<string, object> TryInterpretFilterExpressionAsKey(ODataExpression expression, out bool isAlternateKey)
+		private IDictionary<string, object> TryInterpretFilterExpressionAsKey(ODataExpression expression,
+			out bool isAlternateKey)
 		{
 			isAlternateKey = false;
 			var ok = false;
@@ -292,6 +299,7 @@ namespace Simple.OData.Client
 			{
 				ok = expression.ExtractLookupColumns(namedKeyValues);
 			}
+
 			if (!ok)
 				return null;
 
@@ -302,7 +310,8 @@ namespace Simple.OData.Client
 			return null;
 		}
 
-		private bool NamedKeyValuesMatchAnyKey(IDictionary<string, object> namedKeyValues, out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues, out bool isAlternateKey)
+		private bool NamedKeyValuesMatchAnyKey(IDictionary<string, object> namedKeyValues,
+			out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues, out bool isAlternateKey)
 		{
 			isAlternateKey = false;
 
@@ -318,14 +327,17 @@ namespace Simple.OData.Client
 			return false;
 		}
 
-		private bool NamedKeyValuesMatchPrimaryKey(IDictionary<string, object> namedKeyValues, out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
+		private bool NamedKeyValuesMatchPrimaryKey(IDictionary<string, object> namedKeyValues,
+			out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
 		{
 			var keyNames = _sesson.Metadata.GetDeclaredKeyPropertyNames(this.EntityCollection.Name).ToList();
 
-			return Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, keyNames, out matchingNamedKeyValues);
+			return Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, keyNames,
+				out matchingNamedKeyValues);
 		}
 
-		private bool NamedKeyValuesMatchAlternateKey(IDictionary<string, object> namedKeyValues, out IEnumerable<KeyValuePair<string, object>> alternateKeyNamedValues)
+		private bool NamedKeyValuesMatchAlternateKey(IDictionary<string, object> namedKeyValues,
+			out IEnumerable<KeyValuePair<string, object>> alternateKeyNamedValues)
 		{
 			alternateKeyNamedValues = null;
 
@@ -333,14 +345,16 @@ namespace Simple.OData.Client
 
 			foreach (var alternateKey in alternateKeys)
 			{
-				if (Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, alternateKey, out alternateKeyNamedValues))
+				if (Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, alternateKey,
+					    out alternateKeyNamedValues))
 					return true;
 			}
 
 			return false;
 		}
 
-		private bool TryExtractKeyFromNamedValues(IDictionary<string, object> namedValues, out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
+		private bool TryExtractKeyFromNamedValues(IDictionary<string, object> namedValues,
+			out IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues)
 		{
 			return Utils.NamedKeyValuesContainKeyNames(namedValues,
 				_sesson.Settings.NameMatchResolver,

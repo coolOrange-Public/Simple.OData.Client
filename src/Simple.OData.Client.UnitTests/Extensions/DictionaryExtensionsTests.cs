@@ -47,16 +47,15 @@ namespace Simple.OData.Client.Tests.Extensions
 			public int IntProperty { get; set; }
 		}
 
-        private ITypeCache TypeCache
-        {
-	        get { return TypeCaches.TypeCache("test", null); }
-        }
+		private ITypeCache TypeCache
+		{
+			get { return TypeCaches.TypeCache("test", null); }
+		}
 
 		[Fact]
 		public void ToObjectPrimitiveProperties()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 			};
@@ -69,8 +68,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectEnumPropertyFromInt()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "EnumProperty", EnumType.One },
 			};
 
@@ -81,8 +79,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectEnumPropertyFromString()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "EnumProperty", "One" },
 			};
 
@@ -93,8 +90,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectCombinedEnumPropertyFromInt()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "EnumProperty", EnumType.One | EnumType.Two },
 			};
 
@@ -105,8 +101,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectCombinedEnumPropertyFromString()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "EnumProperty", "One,Two" },
 			};
 
@@ -117,8 +112,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectUnknownProperty()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 				{ "UnknownProperty", "u" }
@@ -132,8 +126,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectPrivateSetter()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 				{ "StringPropertyPrivateSetter", "p" }
@@ -148,8 +141,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectField()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 				{ "StringField", "f" }
@@ -164,11 +156,10 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectStringArray()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
-				{ "StringArrayProperty", new [] {"x", "y", "z"}  }
+				{ "StringArrayProperty", new[] { "x", "y", "z" } }
 			};
 
 			var value = dict.ToObject<ClassType>(TypeCache);
@@ -183,11 +174,10 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectIntArray()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
-				{ "IntArrayProperty", new [] {1, 2, 3}  }
+				{ "IntArrayProperty", new[] { 1, 2, 3 } }
 			};
 
 			var value = dict.ToObject<ClassType>(TypeCache);
@@ -202,11 +192,10 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectIntCollection()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
-				{ "IntCollectionProperty", new Collection<int> {1, 2, 3}  }
+				{ "IntCollectionProperty", new Collection<int> { 1, 2, 3 } }
 			};
 
 			var value = dict.ToObject<ClassType>(TypeCache);
@@ -221,11 +210,12 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectCompoundProperty()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
-				{ "IntProperty", 1 },
-				{ "CompoundProperty", new Dictionary<string, object> { { "StringProperty", "z" }, { "IntProperty", 0 } }  }
+				{ "IntProperty", 1 }, {
+					"CompoundProperty",
+					new Dictionary<string, object> { { "StringProperty", "z" }, { "IntProperty", 0 } }
+				}
 			};
 
 			var value = dict.ToObject<ClassType>(TypeCache);
@@ -238,12 +228,10 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectCompoundCollectionProperty()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
-				{ "IntProperty", 1 },
-				{ "CompoundCollectionProperty", new[]
-					{
+				{ "IntProperty", 1 }, {
+					"CompoundCollectionProperty", new[] {
 						new Dictionary<string, object> { { "StringProperty", "x" }, { "IntProperty", 1 } },
 						new Dictionary<string, object> { { "StringProperty", "y" }, { "IntProperty", 2 } },
 						new Dictionary<string, object> { { "StringProperty", "z" }, { "IntProperty", 3 } },
@@ -265,8 +253,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectODataEntry()
 		{
-			var dict = new Dictionary<string, object>()
-			{
+			var dict = new Dictionary<string, object>() {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 			};
@@ -280,8 +267,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		public void ToObjectDynamicODataEntry()
 		{
 			var _ = ODataDynamic.Expression;
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "StringProperty", "a" },
 				{ "IntProperty", 1 },
 			};
@@ -297,10 +283,9 @@ namespace Simple.OData.Client.Tests.Extensions
 		public void ToObjectCollectionDynamicODataEntry()
 		{
 			var _ = ODataDynamic.Expression;
-			var dict = new[]
-			{
-				new Dictionary<string, object> {{"StringProperty", "a"}, {"IntProperty", 1}},
-				new Dictionary<string, object> {{"StringProperty", "b"}, {"IntProperty", 2}},
+			var dict = new[] {
+				new Dictionary<string, object> { { "StringProperty", "a" }, { "IntProperty", 1 } },
+				new Dictionary<string, object> { { "StringProperty", "b" }, { "IntProperty", 2 } },
 			};
 
 			var values = (dict.Select(x => x.ToObject<ODataEntry>(TypeCache, true)) as IEnumerable<dynamic>).ToArray();
@@ -314,12 +299,15 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectSpatialV3()
 		{
-			var dict = new Dictionary<string, object>
-			{
-				{ "PointV3", SpatialV3.GeographyPoint.Create(SpatialV3.CoordinateSystem.Geography(100), 1, 2, null, null) },
+			var dict = new Dictionary<string, object> {
+				{
+					"PointV3",
+					SpatialV3.GeographyPoint.Create(SpatialV3.CoordinateSystem.Geography(100), 1, 2, null, null)
+				},
 			};
 
-			TypeCache.Converter.RegisterTypeConverter(typeof(SpatialV3.GeographyPoint), V3.Adapter.TypeConverters.CreateGeographyPoint);
+			TypeCache.Converter.RegisterTypeConverter(typeof(SpatialV3.GeographyPoint),
+				V3.Adapter.TypeConverters.CreateGeographyPoint);
 
 			var value = dict.ToObject<ClassType>(TypeCache);
 			Assert.Equal(100, value.PointV3.CoordinateSystem.EpsgId);
@@ -330,12 +318,15 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectSpatialV4()
 		{
-			var dict = new Dictionary<string, object>
-			{
-				{ "PointV4", SpatialV4.GeographyPoint.Create(SpatialV4.CoordinateSystem.Geography(100), 1, 2, null, null) },
+			var dict = new Dictionary<string, object> {
+				{
+					"PointV4",
+					SpatialV4.GeographyPoint.Create(SpatialV4.CoordinateSystem.Geography(100), 1, 2, null, null)
+				},
 			};
 
-			TypeCache.Converter.RegisterTypeConverter(typeof(SpatialV4.GeographyPoint), V4.Adapter.TypeConverters.CreateGeographyPoint);
+			TypeCache.Converter.RegisterTypeConverter(typeof(SpatialV4.GeographyPoint),
+				V4.Adapter.TypeConverters.CreateGeographyPoint);
 
 			var value = dict.ToObject<ClassType>(TypeCache);
 			Assert.Equal(100, value.PointV4.CoordinateSystem.EpsgId);
@@ -346,8 +337,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectBaseType_NoType()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "TransportID", 1 },
 			};
 
@@ -358,9 +348,8 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectBaseType_Type()
 		{
-			var dict = new Dictionary<string, object>
-			{
-				{ FluentCommand.AnnotationsLiteral, new ODataEntryAnnotations { TypeName = "Northwind.Transport" }} ,
+			var dict = new Dictionary<string, object> {
+				{ FluentCommand.AnnotationsLiteral, new ODataEntryAnnotations { TypeName = "Northwind.Transport" } },
 				{ "TransportID", 1 },
 			};
 
@@ -371,8 +360,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectBaseType_SubType()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ FluentCommand.AnnotationsLiteral, new ODataEntryAnnotations { TypeName = "Northwind.Ship" } },
 				{ "TransportID", 1 },
 				{ "ShipName", "Sloop John B" },
@@ -388,8 +376,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectBaseType_MissingSubType()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ FluentCommand.AnnotationsLiteral, new ODataEntryAnnotations { TypeName = "Northwind.Plane" } },
 				{ "TransportID", 1 },
 				{ "PlaneName", "Concorde" },
@@ -407,8 +394,7 @@ namespace Simple.OData.Client.Tests.Extensions
 		[Fact]
 		public void ToObjectClassWithoutDefaultCtor()
 		{
-			var dict = new Dictionary<string, object>
-			{
+			var dict = new Dictionary<string, object> {
 				{ "Data", new ClassNoDefaultConstructor("test") },
 			};
 

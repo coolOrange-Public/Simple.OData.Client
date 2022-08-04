@@ -9,8 +9,11 @@ namespace Simple.OData.Client.Extensions
 {
 	static class DictionaryExtensions
 	{
-		private static ConcurrentDictionary<Type, ActivatorDelegate> _defaultActivators = new ConcurrentDictionary<Type, ActivatorDelegate>();
-		private static ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate> _collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
+		private static ConcurrentDictionary<Type, ActivatorDelegate> _defaultActivators =
+			new ConcurrentDictionary<Type, ActivatorDelegate>();
+
+		private static ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate> _collectionActivators =
+			new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
 
 		internal static Func<IDictionary<string, object>, ITypeCache, ODataEntry> CreateDynamicODataEntry { get; set; }
 
@@ -20,7 +23,8 @@ namespace Simple.OData.Client.Extensions
 			_collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
 		}
 
-		public static T ToObject<T>(this IDictionary<string, object> source, ITypeCache typeCache, bool dynamicObject = false)
+		public static T ToObject<T>(this IDictionary<string, object> source, ITypeCache typeCache,
+			bool dynamicObject = false)
 			where T : class
 		{
 			if (typeCache == null)
@@ -38,12 +42,14 @@ namespace Simple.OData.Client.Extensions
 				return CreateODataEntry(source, typeCache, dynamicObject) as T;
 
 			if (typeof(T) == typeof(string) || typeCache.IsValue(typeof(T)))
-				throw new InvalidOperationException(string.Format("Unable to convert structural data to {0}.", typeof(T).Name));
+				throw new InvalidOperationException(string.Format("Unable to convert structural data to {0}.",
+					typeof(T).Name));
 
 			return (T)ToObject(source, typeCache, typeof(T), dynamicObject);
 		}
 
-		public static object ToObject(this IDictionary<string, object> source, ITypeCache typeCache, Type type, bool dynamicObject = false)
+		public static object ToObject(this IDictionary<string, object> source, ITypeCache typeCache, Type type,
+			bool dynamicObject = false)
 		{
 			if (typeCache == null)
 			{
@@ -81,7 +87,8 @@ namespace Simple.OData.Client.Extensions
 			var dynamicPropertiesContainerName = typeCache.DynamicContainerName(type);
 			if (!string.IsNullOrEmpty(dynamicPropertiesContainerName))
 			{
-				dynamicProperties = CreateDynamicPropertiesContainer(type, typeCache, instance, dynamicPropertiesContainerName);
+				dynamicProperties =
+					CreateDynamicPropertiesContainer(type, typeCache, instance, dynamicPropertiesContainerName);
 			}
 
 			foreach (var item in source)
@@ -122,7 +129,8 @@ namespace Simple.OData.Client.Extensions
 			if (!resolver.IsMatch(odataType, type.Name))
 			{
 				// Ok, something other than the base type, see if we can match it
-				var derived = typeCache.GetDerivedTypes(type).FirstOrDefault(x => resolver.IsMatch(odataType, typeCache.GetMappedName(x)));
+				var derived = typeCache.GetDerivedTypes(type)
+					.FirstOrDefault(x => resolver.IsMatch(odataType, typeCache.GetMappedName(x)));
 				if (derived != null)
 				{
 					return derived;
@@ -141,7 +149,8 @@ namespace Simple.OData.Client.Extensions
 			return type;
 		}
 
-		private static PropertyInfo FindMatchingProperty(Type type, ITypeCache typeCache, KeyValuePair<string, object> item)
+		private static PropertyInfo FindMatchingProperty(Type type, ITypeCache typeCache,
+			KeyValuePair<string, object> item)
 		{
 			var property = typeCache.GetMappedProperty(type, item.Key);
 
@@ -164,7 +173,7 @@ namespace Simple.OData.Client.Extensions
 		{
 			return
 				(type.IsArray || typeCache.IsGeneric(type) &&
-				 typeCache.IsTypeAssignableFrom(typeof(System.Collections.IEnumerable), type)) &&
+					typeCache.IsTypeAssignableFrom(typeof(System.Collections.IEnumerable), type)) &&
 				(itemValue as System.Collections.IEnumerable) != null;
 		}
 
@@ -235,8 +244,7 @@ namespace Simple.OData.Client.Extensions
 			}
 			else
 			{
-				var collectionTypes = new[]
-				{
+				var collectionTypes = new[] {
 					typeof(IList<>).MakeGenericType(elementType),
 					typeof(IEnumerable<>).MakeGenericType(elementType)
 				};
@@ -244,7 +252,8 @@ namespace Simple.OData.Client.Extensions
 					? collectionTypes[0]
 					: collectionTypes[1];
 
-				var activator = _collectionActivators.GetOrAdd(new Tuple<Type, Type>(type, collectionType), type.CreateActivator(collectionType));
+				var activator = _collectionActivators.GetOrAdd(new Tuple<Type, Type>(type, collectionType),
+					type.CreateActivator(collectionType));
 				return activator != null ? activator.Invoke(arrayValue) : null;
 			}
 		}
@@ -299,29 +308,35 @@ namespace Simple.OData.Client.Extensions
 			}
 		}
 
-		private static ODataEntry CreateODataEntry(IDictionary<string, object> source, ITypeCache typeCache, bool dynamicObject = false)
+		private static ODataEntry CreateODataEntry(IDictionary<string, object> source, ITypeCache typeCache,
+			bool dynamicObject = false)
 		{
-			return dynamicObject && CreateDynamicODataEntry != null ?
-				CreateDynamicODataEntry(source, typeCache) :
-				new ODataEntry(source);
+			return dynamicObject && CreateDynamicODataEntry != null
+				? CreateDynamicODataEntry(source, typeCache)
+				: new ODataEntry(source);
 		}
 
-		private static IDictionary<string, object> CreateDynamicPropertiesContainer(Type type, ITypeCache typeCache, object instance, string dynamicPropertiesContainerName)
+		private static IDictionary<string, object> CreateDynamicPropertiesContainer(Type type, ITypeCache typeCache,
+			object instance, string dynamicPropertiesContainerName)
 		{
 			var property = typeCache.GetNamedProperty(type, dynamicPropertiesContainerName);
 
 			if (property == null)
-				throw new ArgumentException(string.Format("Type {0} does not have property {1} ", type, dynamicPropertiesContainerName));
+				throw new ArgumentException(string.Format("Type {0} does not have property {1} ", type,
+					dynamicPropertiesContainerName));
 
 			if (!typeCache.IsTypeAssignableFrom(typeof(IDictionary<string, object>), property.PropertyType))
-				throw new InvalidOperationException(string.Format("Property {0} must implement IDictionary<string,object> interface", dynamicPropertiesContainerName));
+				throw new InvalidOperationException(string.Format(
+					"Property {0} must implement IDictionary<string,object> interface",
+					dynamicPropertiesContainerName));
 
 			var dynamicProperties = new Dictionary<string, object>();
 			property.SetValue(instance, dynamicProperties, null);
 			return dynamicProperties;
 		}
 
-		private static object CreateInstanceOfAnonymousType(IDictionary<string, object> source, Type type, ITypeCache typeCache)
+		private static object CreateInstanceOfAnonymousType(IDictionary<string, object> source, Type type,
+			ITypeCache typeCache)
 		{
 			var constructor = FindConstructorOfAnonymousType(type, source);
 			if (constructor == null)
@@ -334,8 +349,10 @@ namespace Simple.OData.Client.Extensions
 			for (var parameterIndex = 0; parameterIndex < parameterInfos.Length; parameterIndex++)
 			{
 				var parameterInfo = parameterInfos[parameterIndex];
-				constructorParameters[parameterIndex] = ConvertValue(parameterInfo.ParameterType, typeCache, source[parameterInfo.Name]);
+				constructorParameters[parameterIndex] =
+					ConvertValue(parameterInfo.ParameterType, typeCache, source[parameterInfo.Name]);
 			}
+
 			return constructor.Invoke(constructorParameters);
 		}
 
@@ -345,7 +362,7 @@ namespace Simple.OData.Client.Extensions
 			{
 				var parameters = c.GetParameters();
 				return parameters.Length == source.Count &&
-					   parameters.All(p => source.ContainsKey(p.Name));
+				       parameters.All(p => source.ContainsKey(p.Name));
 			});
 		}
 	}

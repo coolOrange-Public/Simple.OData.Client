@@ -8,6 +8,7 @@
 		public const string Put = "PUT";
 		public const string Merge = "MERGE";
 		public const string Patch = "PATCH";
+
 		public const string Delete = "DELETE";
 		// ReSharper restore InconsistentNaming
 	}

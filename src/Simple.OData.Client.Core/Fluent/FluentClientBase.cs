@@ -282,7 +282,8 @@ namespace Simple.OData.Client
 
 		public FT OrderBy(Expression<Func<T, object>> expression)
 		{
-			this.Command.OrderBy(expression.ExtractColumnNames(_session.TypeCache).Select(x => new KeyValuePair<string, bool>(x, false)));
+			this.Command.OrderBy(expression.ExtractColumnNames(_session.TypeCache)
+				.Select(x => new KeyValuePair<string, bool>(x, false)));
 			return this as FT;
 		}
 
@@ -312,7 +313,8 @@ namespace Simple.OData.Client
 
 		public FT OrderByDescending(Expression<Func<T, object>> expression)
 		{
-			this.Command.OrderBy(expression.ExtractColumnNames(_session.TypeCache).Select(x => new KeyValuePair<string, bool>(x, true)));
+			this.Command.OrderBy(expression.ExtractColumnNames(_session.TypeCache)
+				.Select(x => new KeyValuePair<string, bool>(x, true)));
 			return this as FT;
 		}
 
@@ -383,7 +385,7 @@ namespace Simple.OData.Client
 		}
 
 		protected BoundClient<U> Link<U>(FluentCommand command, string linkName = null)
-		where U : class
+			where U : class
 		{
 			linkName = linkName ?? typeof(U).Name;
 			var links = linkName.Split('/');
@@ -395,11 +397,12 @@ namespace Simple.OData.Client
 				linkedClient.Command.Link(link);
 				linkCommand = linkedClient.Command;
 			}
+
 			return linkedClient;
 		}
 
 		protected BoundClient<U> Link<U>(FluentCommand command, ODataExpression expression)
-		where U : class
+			where U : class
 		{
 			return Link<U>(command, expression.Reference);
 		}
@@ -416,6 +419,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, linkName);
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -427,6 +431,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -437,6 +442,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -447,6 +453,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -457,6 +464,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -467,6 +475,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -477,6 +486,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<U>(this.Command, expression.ExtractColumnName(_session.TypeCache));
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -486,6 +496,7 @@ namespace Simple.OData.Client
 		{
 			return this.Link<IDictionary<string, object>>(this.Command, linkName);
 		}
+
 		/// <summary>
 		/// Navigates to the linked entity.
 		/// </summary>
@@ -504,6 +515,7 @@ namespace Simple.OData.Client
 		{
 			return _client.ExecuteAsync(_command, CancellationToken.None);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action.
 		/// </summary>
@@ -522,6 +534,7 @@ namespace Simple.OData.Client
 		{
 			return ExecuteAsSingleAsync(CancellationToken.None);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action and returns a single item.
 		/// </summary>
@@ -530,6 +543,7 @@ namespace Simple.OData.Client
 		{
 			return ExecuteAsSingleAsync<U>(CancellationToken.None);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action and returns a single item.
 		/// </summary>
@@ -541,6 +555,7 @@ namespace Simple.OData.Client
 				_client.ExecuteAsSingleAsync(_command, cancellationToken),
 				_command.SelectedColumns, _command.DynamicPropertiesContainerName);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action and returns a single item.
 		/// </summary>
@@ -561,6 +576,7 @@ namespace Simple.OData.Client
 				_client.ExecuteAsEnumerableAsync(_command, CancellationToken.None),
 				_command.SelectedColumns, _command.DynamicPropertiesContainerName);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action and returns enumerable result.
 		/// </summary>
@@ -581,6 +597,7 @@ namespace Simple.OData.Client
 		{
 			return _client.ExecuteAsScalarAsync<U>(_command, CancellationToken.None);
 		}
+
 		/// <summary>
 		/// Executes the OData function or action and returns scalar result.
 		/// </summary>
@@ -679,6 +696,7 @@ namespace Simple.OData.Client
 		{
 			return GetCommandTextAsync(CancellationToken.None);
 		}
+
 		/// <summary>
 		/// Gets the OData command text.
 		/// </summary>
@@ -696,33 +714,40 @@ namespace Simple.OData.Client
 		}
 
 		protected async Task<IEnumerable<T>> FilterAndTypeColumnsAsync(
-			Task<IEnumerable<IDictionary<string, object>>> entries, IList<string> selectedColumns, string dynamicPropertiesContainerName)
+			Task<IEnumerable<IDictionary<string, object>>> entries, IList<string> selectedColumns,
+			string dynamicPropertiesContainerName)
 		{
 			var result = FilterColumns(await entries.ConfigureAwait(false), selectedColumns);
 			return result != null ? result.Select(z => ConvertResult(z, dynamicPropertiesContainerName)) : null;
 		}
 
 		protected async Task<T> FilterAndTypeColumnsAsync(
-			Task<IDictionary<string, object>> entry, IList<string> selectedColumns, string dynamicPropertiesContainerName)
+			Task<IDictionary<string, object>> entry, IList<string> selectedColumns,
+			string dynamicPropertiesContainerName)
 		{
-			return ConvertResult(FilterColumns(await entry.ConfigureAwait(false), selectedColumns), dynamicPropertiesContainerName);
+			return ConvertResult(FilterColumns(await entry.ConfigureAwait(false), selectedColumns),
+				dynamicPropertiesContainerName);
 		}
 
 		protected async Task<Tuple<IEnumerable<T>, int>> FilterAndTypeColumnsAsync(
-			Task<Tuple<IEnumerable<IDictionary<string, object>>, int>> entries, IList<string> selectedColumns, string dynamicPropertiesContainerName)
+			Task<Tuple<IEnumerable<IDictionary<string, object>>, int>> entries, IList<string> selectedColumns,
+			string dynamicPropertiesContainerName)
 		{
 			var result = await entries.ConfigureAwait(false);
 			return new Tuple<IEnumerable<T>, int>(
-				FilterColumns(result.Item1, selectedColumns).Select(y => ConvertResult(y, dynamicPropertiesContainerName)),
+				FilterColumns(result.Item1, selectedColumns)
+					.Select(y => ConvertResult(y, dynamicPropertiesContainerName)),
 				result.Item2);
 		}
 
-		protected IEnumerable<IDictionary<string, object>> FilterColumns(IEnumerable<IDictionary<string, object>> entries, IList<string> selectedColumns)
+		protected IEnumerable<IDictionary<string, object>> FilterColumns(
+			IEnumerable<IDictionary<string, object>> entries, IList<string> selectedColumns)
 		{
 			return entries != null ? entries.Select(x => FilterColumns(x, selectedColumns)) : null;
 		}
 
-		protected IDictionary<string, object> FilterColumns(IDictionary<string, object> entry, IList<string> selectedColumns)
+		protected IDictionary<string, object> FilterColumns(IDictionary<string, object> entry,
+			IList<string> selectedColumns)
 		{
 			if (entry == null || selectedColumns == null || !selectedColumns.Any())
 			{
@@ -742,7 +767,7 @@ namespace Simple.OData.Client
 			}
 
 			if (result != null && result.Keys.Count == 1 && result.ContainsKey(FluentCommand.ResultLiteral) &&
-				TypeCache.IsValue(typeof(T)) || typeof(T) == typeof(string) || typeof(T) == typeof(object))
+			    TypeCache.IsValue(typeof(T)) || typeof(T) == typeof(string) || typeof(T) == typeof(object))
 			{
 				return TypeCache.Convert<T>(result.Values.First());
 			}
@@ -763,11 +788,11 @@ namespace Simple.OData.Client
 			{
 				var item = items.First();
 				return _session.Settings.NameMatchResolver.IsMatch(kv.Key, item) &&
-					   (kv.Value is IDictionary<string, object> && (kv.Value as IDictionary<string, object>)
-							.Any(x => IsSelectedColumn(x, string.Join("/", items.Skip(1)))) ||
-						kv.Value is IEnumerable<object> && (kv.Value as IEnumerable<object>)
-							.Any(x => x is IDictionary<string, object> && (x as IDictionary<string, object>)
-								.Any(y => IsSelectedColumn(y, string.Join("/", items.Skip(1))))));
+				       (kv.Value is IDictionary<string, object> && (kv.Value as IDictionary<string, object>)
+				        .Any(x => IsSelectedColumn(x, string.Join("/", items.Skip(1)))) ||
+				        kv.Value is IEnumerable<object> && (kv.Value as IEnumerable<object>)
+				        .Any(x => x is IDictionary<string, object> && (x as IDictionary<string, object>)
+					        .Any(y => IsSelectedColumn(y, string.Join("/", items.Skip(1))))));
 			}
 		}
 	}

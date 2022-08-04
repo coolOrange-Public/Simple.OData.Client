@@ -48,7 +48,7 @@ namespace Simple.OData.Client
 		public async Task<Stream> GetResponseStreamAsync(CancellationToken cancellationToken)
 		{
 			if (_responseMessage.IsSuccessStatusCode && _responseMessage.StatusCode != HttpStatusCode.NoContent &&
-				(_request.Method == RestVerbs.Get || _request.ResultRequired))
+			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var stream = new MemoryStream();
 				await _responseMessage.Content.CopyToAsync(stream);
@@ -77,10 +77,11 @@ namespace Simple.OData.Client
 			return ReadAsCollectionAsync(annotations, CancellationToken.None);
 		}
 
-		public async Task<IEnumerable<T>> ReadAsCollectionAsync(ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		public async Task<IEnumerable<T>> ReadAsCollectionAsync(ODataFeedAnnotations annotations,
+			CancellationToken cancellationToken)
 		{
 			if (_responseMessage.IsSuccessStatusCode && _responseMessage.StatusCode != HttpStatusCode.NoContent &&
-				(_request.Method == RestVerbs.Get || _request.ResultRequired))
+			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
 				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
@@ -105,7 +106,7 @@ namespace Simple.OData.Client
 		public async Task<T> ReadAsSingleAsync(CancellationToken cancellationToken)
 		{
 			if (_responseMessage.IsSuccessStatusCode && _responseMessage.StatusCode != HttpStatusCode.NoContent &&
-				(_request.Method == RestVerbs.Get || _request.ResultRequired))
+			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
 				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
@@ -128,7 +129,7 @@ namespace Simple.OData.Client
 		public async Task<U> ReadAsScalarAsync<U>(CancellationToken cancellationToken)
 		{
 			if (_responseMessage.IsSuccessStatusCode && _responseMessage.StatusCode != HttpStatusCode.NoContent &&
-				(_request.Method == RestVerbs.Get || _request.ResultRequired))
+			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
 				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
@@ -136,7 +137,9 @@ namespace Simple.OData.Client
 
 				var result = response.AsEntries(_session.Settings.IncludeAnnotationsInResults);
 
-				return result == null ? default(U) : _session.TypeCache.Convert<U>(ExtractScalar(result.FirstOrDefault()));
+				return result == null
+					? default(U)
+					: _session.TypeCache.Convert<U>(ExtractScalar(result.FirstOrDefault()));
 			}
 			else
 			{

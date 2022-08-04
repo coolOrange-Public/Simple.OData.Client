@@ -11,8 +11,7 @@ namespace Simple.OData.Client
 		private HttpConnection _httpConnection;
 		private EdmMetadataCache _metadataCache;
 
-		private Session(Uri baseUri, string metadataString) : this(new ODataClientSettings
-		{
+		private Session(Uri baseUri, string metadataString) : this(new ODataClientSettings {
 			BaseUri = baseUri,
 			MetadataDocument = metadataString
 		})
@@ -27,7 +26,8 @@ namespace Simple.OData.Client
 			}
 
 			Settings = settings;
-			MetadataCache = EdmMetadataCache.Instances.GetOrAdd(this.Settings.BaseUri.AbsoluteUri, new EdmMetadataCache(TypeCache));
+			MetadataCache =
+				EdmMetadataCache.Instances.GetOrAdd(this.Settings.BaseUri.AbsoluteUri, new EdmMetadataCache(TypeCache));
 			MetadataCache.SetMetadataDocument(settings.MetadataDocument);
 		}
 
@@ -94,7 +94,8 @@ namespace Simple.OData.Client
 					if (string.IsNullOrEmpty(this.Settings.MetadataDocument))
 					{
 						var response = await SendMetadataRequestAsync(cancellationToken).ConfigureAwait(false);
-						this.MetadataCache.SetMetadataDocument(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+						this.MetadataCache.SetMetadataDocument(await response.Content.ReadAsStringAsync()
+							.ConfigureAwait(false));
 					}
 					else
 					{

@@ -7,19 +7,26 @@ namespace Simple.OData.Client
 {
 	internal static class MemberAccessor
 	{
-		static readonly ConcurrentDictionary<CacheType, Delegate> getterCache = new ConcurrentDictionary<CacheType, Delegate>();
-		static readonly ConcurrentDictionary<CacheType, Delegate> setterCache = new ConcurrentDictionary<CacheType, Delegate>();
+		static readonly ConcurrentDictionary<CacheType, Delegate> getterCache =
+			new ConcurrentDictionary<CacheType, Delegate>();
 
-		static readonly ConcurrentDictionary<CacheType, Delegate> staticGetterCache = new ConcurrentDictionary<CacheType, Delegate>();
-		static readonly ConcurrentDictionary<CacheType, Delegate> staticSetterCache = new ConcurrentDictionary<CacheType, Delegate>();
+		static readonly ConcurrentDictionary<CacheType, Delegate> setterCache =
+			new ConcurrentDictionary<CacheType, Delegate>();
+
+		static readonly ConcurrentDictionary<CacheType, Delegate> staticGetterCache =
+			new ConcurrentDictionary<CacheType, Delegate>();
+
+		static readonly ConcurrentDictionary<CacheType, Delegate> staticSetterCache =
+			new ConcurrentDictionary<CacheType, Delegate>();
 
 		public static Delegate BuildGetterAccessor(Type type, Type returnType, MemberInfo memberInfo)
 		{
 			var parameter = Expression.Parameter(type);
 
 			var castedParameter =
-				type != memberInfo.DeclaringType ?
-				Expression.Convert(parameter, memberInfo.DeclaringType) : (Expression)parameter;
+				type != memberInfo.DeclaringType
+					? Expression.Convert(parameter, memberInfo.DeclaringType)
+					: (Expression)parameter;
 
 			var delegateType = Expression.GetDelegateType(new[] { typeof(object), returnType });
 			var body = (Expression)Expression.MakeMemberAccess(castedParameter, memberInfo);
@@ -47,36 +54,36 @@ namespace Simple.OData.Client
 			var valueParameter = Expression.Parameter(valueType);
 
 			var castedParameter =
-				type != memberInfo.DeclaringType ?
-				Expression.Convert(parameter, memberInfo.DeclaringType) : (Expression)parameter;
+				type != memberInfo.DeclaringType
+					? Expression.Convert(parameter, memberInfo.DeclaringType)
+					: (Expression)parameter;
 
 			var memberType = GetMemberType(memberInfo);
 			var castedValueParameter =
-				valueType != memberType ?
-				Expression.Convert(valueParameter, memberType) : (Expression)valueParameter;
+				valueType != memberType ? Expression.Convert(valueParameter, memberType) : (Expression)valueParameter;
 
 			var delegateType = Expression.GetDelegateType(new[] { typeof(object), valueType, typeof(void) });
 			return Expression.Lambda(delegateType,
 				Expression.Assign(
 					Expression.MakeMemberAccess(castedParameter, memberInfo),
 					castedValueParameter),
-					parameter, valueParameter).Compile();
+				parameter, valueParameter).Compile();
 		}
+
 		public static Delegate BuildStaticSetterAccessor(Type valueType, MemberInfo memberInfo)
 		{
 			var valueParameter = Expression.Parameter(valueType);
 
 			var memberType = GetMemberType(memberInfo);
 			var castedValueParameter =
-				valueType != memberType ?
-				Expression.Convert(valueParameter, memberType) : (Expression)valueParameter;
+				valueType != memberType ? Expression.Convert(valueParameter, memberType) : (Expression)valueParameter;
 
 			var delegateType = Expression.GetDelegateType(new[] { valueType, typeof(void) });
 			return Expression.Lambda(delegateType,
 				Expression.Assign(
 					Expression.MakeMemberAccess(null, memberInfo),
 					castedValueParameter),
-					valueParameter).Compile();
+				valueParameter).Compile();
 		}
 
 		private static Type GetMemberType(MemberInfo memberInfo)
@@ -109,8 +116,10 @@ namespace Simple.OData.Client
 		private static bool IsStatic(MemberInfo memberInfo)
 		{
 			if (memberInfo is PropertyInfo)
-				return (((PropertyInfo)memberInfo).CanRead && ((PropertyInfo)memberInfo).GetMethod != null && ((PropertyInfo)memberInfo).GetMethod.IsStatic)
-					|| (((PropertyInfo)memberInfo).CanWrite && ((PropertyInfo)memberInfo).SetMethod != null && ((PropertyInfo)memberInfo).SetMethod.IsStatic);
+				return (((PropertyInfo)memberInfo).CanRead && ((PropertyInfo)memberInfo).GetMethod != null &&
+				        ((PropertyInfo)memberInfo).GetMethod.IsStatic)
+				       || (((PropertyInfo)memberInfo).CanWrite && ((PropertyInfo)memberInfo).SetMethod != null &&
+				           ((PropertyInfo)memberInfo).SetMethod.IsStatic);
 			else if (memberInfo is FieldInfo)
 				return ((FieldInfo)memberInfo).IsStatic;
 			else
@@ -123,7 +132,8 @@ namespace Simple.OData.Client
 			if (TryGetMemberInfo(type, memberName, out memberInfo))
 				return memberInfo;
 
-			throw new InvalidOperationException(string.Format("Property or field {0} not found in type {1}", memberName, type.FullName));
+			throw new InvalidOperationException(string.Format("Property or field {0} not found in type {1}", memberName,
+				type.FullName));
 		}
 
 		private static void AssertMemberInfoType(MemberInfo memberInfo)
@@ -131,14 +141,18 @@ namespace Simple.OData.Client
 			if (memberInfo.MemberType == MemberTypes.Field || memberInfo.MemberType == MemberTypes.Property)
 				return;
 
-			throw new InvalidOperationException(string.Format("Member {0} is of member type {1}. Only property or field members can be access for value.", memberInfo.Name, memberInfo.MemberType));
+			throw new InvalidOperationException(string.Format(
+				"Member {0} is of member type {1}. Only property or field members can be access for value.",
+				memberInfo.Name, memberInfo.MemberType));
 		}
 
 		private static bool TryGetMemberInfo(Type type, string memberName, out MemberInfo memberInfo)
 		{
-			var propertyInfo = type.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			var fieldInfo = (propertyInfo == null) ?
-				 type.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) : null;
+			var propertyInfo = type.GetProperty(memberName,
+				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			var fieldInfo = (propertyInfo == null)
+				? type.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+				: null;
 
 			memberInfo = (MemberInfo)propertyInfo ?? fieldInfo;
 
@@ -156,13 +170,14 @@ namespace Simple.OData.Client
 
 			if (isStatic)
 			{
-				return (object _) => ((Func<TMember>)staticGetterCache.GetOrAdd(new CacheType(null, typeof(TMember), memberInfo),
+				return (object _) => ((Func<TMember>)staticGetterCache.GetOrAdd(
+					new CacheType(null, typeof(TMember), memberInfo),
 					key => BuildStaticGetterAccessor(typeof(TMember), memberInfo)))();
 			}
 			else
 			{
 				return (Func<object, TMember>)getterCache.GetOrAdd(new CacheType
-					(instance.GetType(), typeof(TMember), memberInfo),
+						(instance.GetType(), typeof(TMember), memberInfo),
 					key => BuildGetterAccessor(typeof(object), typeof(TMember), memberInfo));
 			}
 		}
@@ -271,7 +286,8 @@ namespace Simple.OData.Client
 			}
 			else
 			{
-				return (Action<object, TMember>)setterCache.GetOrAdd(new CacheType(instance.GetType(), typeof(TMember), memberInfo),
+				return (Action<object, TMember>)setterCache.GetOrAdd(
+					new CacheType(instance.GetType(), typeof(TMember), memberInfo),
 					key => BuildSetterAccessor(typeof(object), typeof(TMember), memberInfo));
 			}
 		}

@@ -12,16 +12,15 @@ namespace Simple.OData.Client
 		internal string Format(ExpressionContext context)
 		{
 			if (context.IsQueryOption && _operator != ExpressionType.Default &&
-				_operator != ExpressionType.And && _operator != ExpressionType.Equal)
+			    _operator != ExpressionType.And && _operator != ExpressionType.Equal)
 			{
 				throw new InvalidOperationException("Invalid custom query option.");
 			}
 
 			if (_operator == ExpressionType.Default && !this.IsValueConversion)
 			{
-				return this.Reference != null ?
-					FormatReference(context) : this.Function != null ?
-					FormatFunction(context) :
+				return this.Reference != null ? FormatReference(context) :
+					this.Function != null ? FormatFunction(context) :
 					FormatValue(context);
 			}
 			else if (this.IsValueConversion)
@@ -42,6 +41,7 @@ namespace Simple.OData.Client
 						}
 					}
 				}
+
 				return FormatExpression(expr, context);
 			}
 			else if (_operator == ExpressionType.Not || _operator == ExpressionType.Negate)
@@ -102,40 +102,44 @@ namespace Simple.OData.Client
 
 		private string FormatFunction(ExpressionContext context)
 		{
-			var adapterVersion = context.Session != null ? context.Session.Adapter.AdapterVersion : AdapterVersion.Default;
+			var adapterVersion = context.Session != null
+				? context.Session.Adapter.AdapterVersion
+				: AdapterVersion.Default;
 			FunctionToOperatorMapping operatorMapping;
-			if (FunctionToOperatorMapping.TryGetOperatorMapping(_functionCaller, Function, adapterVersion, out operatorMapping))
+			if (FunctionToOperatorMapping.TryGetOperatorMapping(_functionCaller, Function, adapterVersion,
+				    out operatorMapping))
 			{
 				return FormatMappedOperator(context, operatorMapping);
 			}
 
 			FunctionMapping functionMapping;
-			if (FunctionMapping.TryGetFunctionMapping(this.Function.FunctionName, this.Function.Arguments.Count(), adapterVersion, out functionMapping))
+			if (FunctionMapping.TryGetFunctionMapping(this.Function.FunctionName, this.Function.Arguments.Count(),
+				    adapterVersion, out functionMapping))
 			{
 				return FormatMappedFunction(context, functionMapping);
 			}
 			else if (string.Equals(this.Function.FunctionName, ODataLiteral.Any, StringComparison.OrdinalIgnoreCase) ||
-					 string.Equals(this.Function.FunctionName, ODataLiteral.All, StringComparison.OrdinalIgnoreCase))
+			         string.Equals(this.Function.FunctionName, ODataLiteral.All, StringComparison.OrdinalIgnoreCase))
 			{
 				return FormatAnyAllFunction(context);
 			}
 			else if (string.Equals(this.Function.FunctionName, ODataLiteral.IsOf, StringComparison.OrdinalIgnoreCase) ||
-					 string.Equals(this.Function.FunctionName, ODataLiteral.Cast, StringComparison.OrdinalIgnoreCase))
+			         string.Equals(this.Function.FunctionName, ODataLiteral.Cast, StringComparison.OrdinalIgnoreCase))
 			{
 				return FormatIsOfCastFunction(context);
 			}
 			else if (string.Equals(this.Function.FunctionName, "get_Item", StringComparison.Ordinal) &&
-				this.Function.Arguments.Count == 1)
+			         this.Function.Arguments.Count == 1)
 			{
 				return FormatArrayIndexFunction(context);
 			}
 			else if (string.Equals(this.Function.FunctionName, "HasFlag", StringComparison.Ordinal) &&
-				this.Function.Arguments.Count == 1)
+			         this.Function.Arguments.Count == 1)
 			{
 				return FormatEnumHasFlagFunction(context);
 			}
 			else if (string.Equals(this.Function.FunctionName, "ToString", StringComparison.Ordinal) &&
-				this.Function.Arguments.Count == 0)
+			         this.Function.Arguments.Count == 0)
 			{
 				return FormatToStringFunction(context);
 			}
@@ -145,22 +149,51 @@ namespace Simple.OData.Client
 				if (val.Value != null)
 				{
 					var formattedVal = ODataExpression.FromValue(
-						string.Equals(this.Function.FunctionName, "ToBoolean", StringComparison.Ordinal) ? Convert.ToBoolean(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToByte", StringComparison.Ordinal) ? Convert.ToByte(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToChar", StringComparison.Ordinal) ? Convert.ToChar(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToDateTime", StringComparison.Ordinal) ? Convert.ToDateTime(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToDecimal", StringComparison.Ordinal) ? Convert.ToDecimal(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToDouble", StringComparison.Ordinal) ? Convert.ToDouble(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToInt16", StringComparison.Ordinal) ? Convert.ToInt16(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToInt32", StringComparison.Ordinal) ? Convert.ToInt32(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToInt64", StringComparison.Ordinal) ? Convert.ToInt64(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToSByte", StringComparison.Ordinal) ? Convert.ToSByte(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToSingle", StringComparison.Ordinal) ? Convert.ToSingle(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToString", StringComparison.Ordinal) ? Convert.ToString(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToUInt16", StringComparison.Ordinal) ? Convert.ToUInt16(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToUInt32", StringComparison.Ordinal) ? Convert.ToUInt32(val.Value) :
-						string.Equals(this.Function.FunctionName, "ToUInt64", StringComparison.Ordinal) ? (object)Convert.ToUInt64(val.Value)
-						: null);
+						string.Equals(this.Function.FunctionName, "ToBoolean", StringComparison.Ordinal)
+							? Convert.ToBoolean(val.Value)
+							: string.Equals(this.Function.FunctionName, "ToByte", StringComparison.Ordinal)
+								? Convert.ToByte(val.Value)
+								: string.Equals(this.Function.FunctionName, "ToChar", StringComparison.Ordinal)
+									? Convert.ToChar(val.Value)
+									: string.Equals(this.Function.FunctionName, "ToDateTime", StringComparison.Ordinal)
+										? Convert.ToDateTime(val.Value)
+										: string.Equals(this.Function.FunctionName, "ToDecimal",
+											StringComparison.Ordinal)
+											? Convert.ToDecimal(val.Value)
+											: string.Equals(this.Function.FunctionName, "ToDouble",
+												StringComparison.Ordinal)
+												? Convert.ToDouble(val.Value)
+												: string.Equals(this.Function.FunctionName, "ToInt16",
+													StringComparison.Ordinal)
+													? Convert.ToInt16(val.Value)
+													: string.Equals(this.Function.FunctionName, "ToInt32",
+														StringComparison.Ordinal)
+														? Convert.ToInt32(val.Value)
+														: string.Equals(this.Function.FunctionName, "ToInt64",
+															StringComparison.Ordinal)
+															? Convert.ToInt64(val.Value)
+															: string.Equals(this.Function.FunctionName, "ToSByte",
+																StringComparison.Ordinal)
+																? Convert.ToSByte(val.Value)
+																: string.Equals(this.Function.FunctionName, "ToSingle",
+																	StringComparison.Ordinal)
+																	? Convert.ToSingle(val.Value)
+																	: string.Equals(this.Function.FunctionName,
+																		"ToString", StringComparison.Ordinal)
+																		? Convert.ToString(val.Value)
+																		: string.Equals(this.Function.FunctionName,
+																			"ToUInt16", StringComparison.Ordinal)
+																			? Convert.ToUInt16(val.Value)
+																			: string.Equals(this.Function.FunctionName,
+																				"ToUInt32", StringComparison.Ordinal)
+																				? Convert.ToUInt32(val.Value)
+																				: string.Equals(
+																					this.Function.FunctionName,
+																					"ToUInt64",
+																					StringComparison.Ordinal)
+																					? (object)Convert.ToUInt64(
+																						val.Value)
+																					: null);
 					if (formattedVal.Value != null)
 						return FormatExpression(formattedVal, context);
 				}
@@ -197,11 +230,13 @@ namespace Simple.OData.Client
 			}
 			else
 			{
-				entityCollection = context.Session.Metadata.NavigateToCollection(context.EntityCollection, navigationPath);
+				entityCollection =
+					context.Session.Metadata.NavigateToCollection(context.EntityCollection, navigationPath);
 			}
 
 			string formattedArguments;
-			if (!this.Function.Arguments.Any() && string.Equals(this.Function.FunctionName, ODataLiteral.Any, StringComparison.OrdinalIgnoreCase))
+			if (!this.Function.Arguments.Any() && string.Equals(this.Function.FunctionName, ODataLiteral.Any,
+				    StringComparison.OrdinalIgnoreCase))
 			{
 				formattedArguments = string.Empty;
 			}
@@ -209,12 +244,14 @@ namespace Simple.OData.Client
 			{
 				var targetQualifier = string.Format("x{0}",
 					ArgumentCounter >= 0 ? (1 + (ArgumentCounter++) % 9).ToString() : string.Empty);
-				var expressionContext = new ExpressionContext(context.Session, entityCollection, targetQualifier, context.DynamicPropertiesContainerName);
+				var expressionContext = new ExpressionContext(context.Session, entityCollection, targetQualifier,
+					context.DynamicPropertiesContainerName);
 				formattedArguments = string.Format("{0}:{1}", targetQualifier,
 					FormatExpression(this.Function.Arguments.First(), expressionContext));
 			}
 
-			var formattedNavigationPath = context.Session.Adapter.GetCommandFormatter().FormatNavigationPath(context.EntityCollection, navigationPath);
+			var formattedNavigationPath = context.Session.Adapter.GetCommandFormatter()
+				.FormatNavigationPath(context.EntityCollection, navigationPath);
 			return FormatScope(
 				string.Format("{0}/{1}({2})", formattedNavigationPath, this.Function.FunctionName.ToLower(),
 					formattedArguments), context);
@@ -225,10 +262,13 @@ namespace Simple.OData.Client
 			var formattedArguments = string.Empty;
 			if (!ReferenceEquals(this.Function.Arguments.First(), null) && !this.Function.Arguments.First().IsNull)
 			{
-				formattedArguments += FormatExpression(this.Function.Arguments.First(), new ExpressionContext(context.Session));
+				formattedArguments +=
+					FormatExpression(this.Function.Arguments.First(), new ExpressionContext(context.Session));
 				formattedArguments += ",";
 			}
-			formattedArguments += FormatExpression(this.Function.Arguments.Last(), new ExpressionContext(context.Session));
+
+			formattedArguments +=
+				FormatExpression(this.Function.Arguments.Last(), new ExpressionContext(context.Session));
 
 			return string.Format("{0}({1})", this.Function.FunctionName.ToLower(), formattedArguments);
 		}
@@ -316,7 +356,8 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private IEnumerable<string> BuildReferencePath(List<string> segmentNames, EntityCollection entityCollection, List<string> elementNames, ExpressionContext context)
+		private IEnumerable<string> BuildReferencePath(List<string> segmentNames, EntityCollection entityCollection,
+			List<string> elementNames, ExpressionContext context)
 		{
 			if (!elementNames.Any())
 			{
@@ -341,7 +382,8 @@ namespace Simple.OData.Client
 						entityCollection.Name, objectName);
 					var linkedEntityCollection = context.Session.Metadata.GetEntityCollection(linkName);
 					segmentNames.Add(propertyName);
-					return BuildReferencePath(segmentNames, linkedEntityCollection, elementNames.Skip(1).ToList(), context);
+					return BuildReferencePath(segmentNames, linkedEntityCollection, elementNames.Skip(1).ToList(),
+						context);
 				}
 				else if (IsFunction(objectName, context))
 				{
@@ -375,14 +417,18 @@ namespace Simple.OData.Client
 
 		private bool IsFunction(string objectName, ExpressionContext context)
 		{
-			var adapterVersion = context.Session != null ? context.Session.Adapter.AdapterVersion : AdapterVersion.Default;
+			var adapterVersion = context.Session != null
+				? context.Session.Adapter.AdapterVersion
+				: AdapterVersion.Default;
 			FunctionMapping _;
 			return FunctionMapping.TryGetFunctionMapping(objectName, 0, adapterVersion, out _);
 		}
 
 		private string FormatAsFunction(string objectName, ExpressionContext context)
 		{
-			var adapterVersion = context.Session != null ? context.Session.Adapter.AdapterVersion : AdapterVersion.Default;
+			var adapterVersion = context.Session != null
+				? context.Session.Adapter.AdapterVersion
+				: AdapterVersion.Default;
 			FunctionMapping mapping;
 			if (FunctionMapping.TryGetFunctionMapping(objectName, 0, adapterVersion, out mapping))
 			{

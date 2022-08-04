@@ -1,5 +1,6 @@
 ﻿{
-    "@odata.context": "https://demoodataendpoint.crm4.dynamics.com/api/data/v8.1/$metadata#accounts(name,Account_Tasks)",
+    "@odata.context":
+        "https://demoodataendpoint.crm4.dynamics.com/api/data/v8.1/$metadata#accounts(name,Account_Tasks)",
     "value": [
         {
             "@odata.etag": "W/\"596351\"",
@@ -68,7 +69,8 @@
                     "crmtaskassigneduniqueid": null
                 }
             ],
-            "Account_Tasks@odata.nextLink": "https://demoodataendpoint.crm4.dynamics.com/api/data/v8.1/accounts(11111111-4952-e611-80dd-c4346bacfc18)/Account_Tasks"
+            "Account_Tasks@odata.nextLink":
+                "https://demoodataendpoint.crm4.dynamics.com/api/data/v8.1/accounts(11111111-4952-e611-80dd-c4346bacfc18)/Account_Tasks"
         }
     ]
 }

@@ -9,7 +9,8 @@ namespace Simple.OData.Client
 		public ODataExpandAssociation(string name)
 		{
 			if (string.IsNullOrEmpty(name))
-				throw new ArgumentException(string.Format("Parameter {0} should not be null or empty.", "name"), "name");
+				throw new ArgumentException(string.Format("Parameter {0} should not be null or empty.", "name"),
+					"name");
 			Name = name;
 			ExpandAssociations = new List<ODataExpandAssociation>();
 			OrderByColumns = new List<ODataOrderByColumn>();
@@ -26,7 +27,8 @@ namespace Simple.OData.Client
 		public static ODataExpandAssociation From(string association)
 		{
 			if (string.IsNullOrEmpty(association))
-				throw new ArgumentException(string.Format("Parameter {0} should not be null or empty.", "association"), "association");
+				throw new ArgumentException(string.Format("Parameter {0} should not be null or empty.", "association"),
+					"association");
 
 			var items = association.Split('/');
 			var expandAssociation = new ODataExpandAssociation(items.First());

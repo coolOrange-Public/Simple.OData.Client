@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace Simple.OData.Client
 {
-    public interface IODataAdapter
-    {
-        AdapterVersion AdapterVersion { get; }
-        ODataPayloadFormat DefaultPayloadFormat { get; }
-        string ProtocolVersion { get; set; }
-        object Model { get; set; }
+	public interface IODataAdapter
+	{
+		AdapterVersion AdapterVersion { get; }
+		ODataPayloadFormat DefaultPayloadFormat { get; }
+		string ProtocolVersion { get; set; }
+		object Model { get; set; }
 
-        string GetODataVersionString();
+		string GetODataVersionString();
 
-        IMetadata GetMetadata();
-        ICommandFormatter GetCommandFormatter();
-        IResponseReader GetResponseReader();
-        IRequestWriter GetRequestWriter(Lazy<IBatchWriter> deferredBatchWriter);
-        IBatchWriter GetBatchWriter(IDictionary<object, IDictionary<string, object>> batchEntries);
-    }
+		IMetadata GetMetadata();
+		ICommandFormatter GetCommandFormatter();
+		IResponseReader GetResponseReader();
+		IRequestWriter GetRequestWriter(Lazy<IBatchWriter> deferredBatchWriter);
+		IBatchWriter GetBatchWriter(IDictionary<object, IDictionary<string, object>> batchEntries);
+	}
 }

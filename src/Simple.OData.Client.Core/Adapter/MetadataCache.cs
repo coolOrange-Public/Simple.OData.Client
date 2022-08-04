@@ -184,17 +184,20 @@ namespace Simple.OData.Client.Adapter
 
 		public bool HasStructuralProperty(string collectionName, string propertyName)
 		{
-			return sp.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.HasStructuralProperty(collectionName, propertyName));
+			return sp.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.HasStructuralProperty(collectionName, propertyName));
 		}
 
 		public string GetStructuralPropertyExactName(string collectionName, string propertyName)
 		{
-			return spen.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.GetStructuralPropertyExactName(collectionName, propertyName));
+			return spen.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.GetStructuralPropertyExactName(collectionName, propertyName));
 		}
 
 		public string GetStructuralPropertyPath(string collectionName, params string[] propertyNames)
 		{
-			return spp.GetOrAdd(string.Join("/", propertyNames), x => metadata.GetStructuralPropertyPath(collectionName, propertyNames));
+			return spp.GetOrAdd(string.Join("/", propertyNames),
+				x => metadata.GetStructuralPropertyPath(collectionName, propertyNames));
 		}
 
 		public IEnumerable<string> GetDeclaredKeyPropertyNames(string collectionName)
@@ -209,27 +212,33 @@ namespace Simple.OData.Client.Adapter
 
 		public IEnumerable<IEnumerable<string>> GetAlternateKeyPropertyNames(string collectionName)
 		{
-			return akpns.GetOrAdd(collectionName, x => metadata.GetAlternateKeyPropertyNames(collectionName).Select(y => (IList<string>)y.ToList()).ToList());
+			return akpns.GetOrAdd(collectionName,
+				x => metadata.GetAlternateKeyPropertyNames(collectionName).Select(y => (IList<string>)y.ToList())
+					.ToList());
 		}
 
 		public bool HasNavigationProperty(string collectionName, string propertyName)
 		{
-			return np.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.HasNavigationProperty(collectionName, propertyName));
+			return np.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.HasNavigationProperty(collectionName, propertyName));
 		}
 
 		public string GetNavigationPropertyExactName(string collectionName, string propertyName)
 		{
-			return npen.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.GetNavigationPropertyExactName(collectionName, propertyName));
+			return npen.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.GetNavigationPropertyExactName(collectionName, propertyName));
 		}
 
 		public string GetNavigationPropertyPartnerTypeName(string collectionName, string propertyName)
 		{
-			return nppt.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.GetNavigationPropertyPartnerTypeName(collectionName, propertyName));
+			return nppt.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.GetNavigationPropertyPartnerTypeName(collectionName, propertyName));
 		}
 
 		public bool IsNavigationPropertyCollection(string collectionName, string propertyName)
 		{
-			return npc.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName), x => metadata.IsNavigationPropertyCollection(collectionName, propertyName));
+			return npc.GetOrAdd(string.Format("{0}/{1}", collectionName, propertyName),
+				x => metadata.IsNavigationPropertyCollection(collectionName, propertyName));
 		}
 
 		public string GetFunctionFullName(string functionName)
@@ -257,7 +266,8 @@ namespace Simple.OData.Client.Adapter
 			return arc.GetOrAdd(functionName, x => metadata.GetActionReturnCollection(functionName));
 		}
 
-		public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null)
+		public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData,
+			string contentId = null)
 		{
 			// Copied from MetadataBase so we use caches for the property acquisition
 			var entryDetails = new EntryDetails();

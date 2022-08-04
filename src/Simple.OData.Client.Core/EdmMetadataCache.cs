@@ -6,7 +6,9 @@ namespace Simple.OData.Client
 	public class EdmMetadataCache
 	{
 		readonly ITypeCache _typeCache;
-		public static readonly ConcurrentDictionary<string, EdmMetadataCache> Instances = new ConcurrentDictionary<string, EdmMetadataCache>();
+
+		public static readonly ConcurrentDictionary<string, EdmMetadataCache> Instances =
+			new ConcurrentDictionary<string, EdmMetadataCache>();
 
 		string _metadataDocument;
 

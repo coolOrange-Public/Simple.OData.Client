@@ -81,6 +81,7 @@ namespace Simple.OData.Client
 			}
 		}
 	}
+
 	public class ODataErrorDetails
 	{
 		public string ErrorCode { get; private set; }
@@ -95,6 +96,7 @@ namespace Simple.OData.Client
 				InnerError = new ODataInnerErrorDetails(error.InnerError);
 		}
 	}
+
 	public class ODataInnerErrorDetails
 	{
 		public string Message { get; private set; }
@@ -111,6 +113,7 @@ namespace Simple.OData.Client
 				InnerError = new ODataInnerErrorDetails(innerError.InnerError);
 		}
 	}
+
 	public class ODataResponse
 	{
 		public int StatusCode { get; private set; }
@@ -151,8 +154,8 @@ namespace Simple.OData.Client
 				var data = this.Feed.Entries;
 				return data.Select(x =>
 					data.Any() && data.First().Data.ContainsKey(FluentCommand.ResultLiteral)
-					? ExtractDictionary(x, includeAnnotations)
-					: ExtractData(x, includeAnnotations));
+						? ExtractDictionary(x, includeAnnotations)
+						: ExtractData(x, includeAnnotations));
 			}
 			else
 			{
@@ -171,7 +174,8 @@ namespace Simple.OData.Client
 
 		public T AsScalar<T>()
 		{
-			Func<IDictionary<string, object>, object> extractScalar = x => (x == null) || !x.Any() ? null : x.Values.First();
+			Func<IDictionary<string, object>, object> extractScalar = x =>
+				(x == null) || !x.Any() ? null : x.Values.First();
 			var result = this.AsEntry(false);
 			var value = result == null ? null : extractScalar(result);
 
@@ -188,10 +192,10 @@ namespace Simple.OData.Client
 				.ToArray();
 		}
 
-		internal static ODataResponse FromNode(ITypeCache typeCache, ResponseNode node, IEnumerable<KeyValuePair<string, string>> headers)
+		internal static ODataResponse FromNode(ITypeCache typeCache, ResponseNode node,
+			IEnumerable<KeyValuePair<string, string>> headers)
 		{
-			return new ODataResponse(typeCache)
-			{
+			return new ODataResponse(typeCache) {
 				Feed = node.Feed ?? new AnnotatedFeed(node.Entry != null ? new[] { node.Entry } : null),
 				Headers = headers
 			};
@@ -199,44 +203,40 @@ namespace Simple.OData.Client
 
 		internal static ODataResponse FromProperty(ITypeCache typeCache, string propertyName, object propertyValue)
 		{
-			return FromFeed(typeCache, new[]
-			{
-				new Dictionary<string, object> { {propertyName ?? FluentCommand.ResultLiteral, propertyValue} }
+			return FromFeed(typeCache, new[] {
+				new Dictionary<string, object> { { propertyName ?? FluentCommand.ResultLiteral, propertyValue } }
 			});
 		}
 
 		internal static ODataResponse FromValueStream(ITypeCache typeCache, Stream stream, bool disposeStream = false)
 		{
-			return FromFeed(typeCache, new[]
-			{
-				new Dictionary<string, object> { {FluentCommand.ResultLiteral, Utils.StreamToString(stream, disposeStream)} }
+			return FromFeed(typeCache, new[] {
+				new Dictionary<string, object>
+					{ { FluentCommand.ResultLiteral, Utils.StreamToString(stream, disposeStream) } }
 			});
 		}
 
 		internal static ODataResponse FromCollection(ITypeCache typeCache, IList<object> collection)
 		{
-			return new ODataResponse(typeCache)
-			{
+			return new ODataResponse(typeCache) {
 				Feed = new AnnotatedFeed(collection.Select(
-						x => new AnnotatedEntry(new Dictionary<string, object>()
-						{
-							{ FluentCommand.ResultLiteral, x }
-						})))
+					x => new AnnotatedEntry(new Dictionary<string, object>() {
+						{ FluentCommand.ResultLiteral, x }
+					})))
 			};
 		}
 
 		internal static ODataResponse FromBatch(ITypeCache typeCache, IList<ODataResponse> batch)
 		{
-			return new ODataResponse(typeCache)
-			{
+			return new ODataResponse(typeCache) {
 				Batch = batch,
 			};
 		}
 
-		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
+		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode,
+			ODataErrorDetails errorDetails = null, Exception e = null)
 		{
-			return new ODataResponse(typeCache)
-			{
+			return new ODataResponse(typeCache) {
 				StatusCode = statusCode,
 				ErrorDetails = errorDetails,
 				Exception = e
@@ -248,10 +248,10 @@ namespace Simple.OData.Client
 			return FromFeed(typeCache, Enumerable.Empty<Dictionary<string, object>>());
 		}
 
-		private static ODataResponse FromFeed(ITypeCache typeCache, IEnumerable<IDictionary<string, object>> entries, ODataFeedAnnotations feedAnnotations = null)
+		private static ODataResponse FromFeed(ITypeCache typeCache, IEnumerable<IDictionary<string, object>> entries,
+			ODataFeedAnnotations feedAnnotations = null)
 		{
-			return new ODataResponse(typeCache)
-			{
+			return new ODataResponse(typeCache) {
 				Feed = new AnnotatedFeed(entries.Select(x => new AnnotatedEntry(x)), feedAnnotations)
 			};
 		}
@@ -275,7 +275,7 @@ namespace Simple.OData.Client
 
 			var data = entry.Data;
 			if (data.Keys.Count == 1 && data.ContainsKey(FluentCommand.ResultLiteral) &&
-				data.Values.First() is IDictionary<string, object>)
+			    data.Values.First() is IDictionary<string, object>)
 			{
 				return data.Values.First() as IDictionary<string, object>;
 			}
@@ -289,11 +289,11 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private IDictionary<string, object> DataWithAnnotations(IDictionary<string, object> data, ODataEntryAnnotations annotations)
+		private IDictionary<string, object> DataWithAnnotations(IDictionary<string, object> data,
+			ODataEntryAnnotations annotations)
 		{
-			var dataWithAnnotations = new Dictionary<string, object>(data)
-			{
-				{FluentCommand.AnnotationsLiteral, annotations}
+			var dataWithAnnotations = new Dictionary<string, object>(data) {
+				{ FluentCommand.AnnotationsLiteral, annotations }
 			};
 			return dataWithAnnotations;
 		}

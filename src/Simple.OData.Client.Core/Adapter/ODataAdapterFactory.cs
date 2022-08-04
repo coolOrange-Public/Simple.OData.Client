@@ -25,7 +25,8 @@ namespace Simple.OData.Client
 		private const string ModelAdapterV4TypeName = "Simple.OData.Client.V4.Adapter.ODataModelAdapter";
 
 		/// <inheritdoc />
-		public async virtual Task<IODataModelAdapter> CreateModelAdapterAsync(HttpResponseMessage response, ITypeCache typeCache)
+		public async virtual Task<IODataModelAdapter> CreateModelAdapterAsync(HttpResponseMessage response,
+			ITypeCache typeCache)
 		{
 			var protocolVersions = (await GetSupportedProtocolVersionsAsync(response).ConfigureAwait(false)).ToArray();
 
@@ -35,7 +36,9 @@ namespace Simple.OData.Client
 				if (loadModelAdapter != null)
 					return loadModelAdapter();
 			}
-			throw new NotSupportedException(string.Format("OData protocols {0} are not supported", string.Join(",", protocolVersions)));
+
+			throw new NotSupportedException(string.Format("OData protocols {0} are not supported",
+				string.Join(",", protocolVersions)));
 		}
 
 		/// <inheritdoc />
@@ -56,7 +59,8 @@ namespace Simple.OData.Client
 
 			var loadAdapter = GetAdapterLoader(modelAdapter, typeCache);
 			if (loadAdapter == null)
-				throw new NotSupportedException(string.Format("OData protocol {0} is not supported", modelAdapter.ProtocolVersion));
+				throw new NotSupportedException(string.Format("OData protocol {0} is not supported",
+					modelAdapter.ProtocolVersion));
 
 			return loadAdapter;
 		}
@@ -95,26 +99,32 @@ namespace Simple.OData.Client
 			if (modelAdapter.ProtocolVersion == ODataProtocolVersion.V1 ||
 			    modelAdapter.ProtocolVersion == ODataProtocolVersion.V2 ||
 			    modelAdapter.ProtocolVersion == ODataProtocolVersion.V3)
-				return session => LoadAdapter(AdapterV3AssemblyName, typeCache, AdapterV3TypeName, session, modelAdapter);
+				return session =>
+					LoadAdapter(AdapterV3AssemblyName, typeCache, AdapterV3TypeName, session, modelAdapter);
 			if (modelAdapter.ProtocolVersion == ODataProtocolVersion.V4)
-				return session => LoadAdapter(AdapterV4AssemblyName, typeCache, AdapterV4TypeName, session, modelAdapter);
+				return session =>
+					LoadAdapter(AdapterV4AssemblyName, typeCache, AdapterV4TypeName, session, modelAdapter);
 
 			return null;
 		}
 
-		private Func<IODataModelAdapter> GetModelAdapterLoader(string protocolVersion, object extraInfo, ITypeCache typeCache)
+		private Func<IODataModelAdapter> GetModelAdapterLoader(string protocolVersion, object extraInfo,
+			ITypeCache typeCache)
 		{
 			if (protocolVersion == ODataProtocolVersion.V1 ||
 			    protocolVersion == ODataProtocolVersion.V2 ||
 			    protocolVersion == ODataProtocolVersion.V3)
-				return () => LoadModelAdapter(typeCache, AdapterV3AssemblyName, ModelAdapterV3TypeName, protocolVersion, extraInfo);
+				return () => LoadModelAdapter(typeCache, AdapterV3AssemblyName, ModelAdapterV3TypeName, protocolVersion,
+					extraInfo);
 			if (protocolVersion == ODataProtocolVersion.V4)
-				return () => LoadModelAdapter(typeCache, AdapterV4AssemblyName, ModelAdapterV4TypeName, protocolVersion, extraInfo);
+				return () => LoadModelAdapter(typeCache, AdapterV4AssemblyName, ModelAdapterV4TypeName, protocolVersion,
+					extraInfo);
 
 			return null;
 		}
 
-		private IODataModelAdapter LoadModelAdapter(ITypeCache typeCache, string modelAdapterAssemblyName, string modelAdapterTypeName, params object[] ctorParams)
+		private IODataModelAdapter LoadModelAdapter(ITypeCache typeCache, string modelAdapterAssemblyName,
+			string modelAdapterTypeName, params object[] ctorParams)
 		{
 			try
 			{
@@ -124,7 +134,9 @@ namespace Simple.OData.Client
 			}
 			catch (Exception exception)
 			{
-				throw new InvalidOperationException(string.Format("Unable to load OData adapter from assembly {0}", modelAdapterAssemblyName), exception);
+				throw new InvalidOperationException(
+					string.Format("Unable to load OData adapter from assembly {0}", modelAdapterAssemblyName),
+					exception);
 			}
 		}
 
@@ -133,15 +145,16 @@ namespace Simple.OData.Client
 			var constructors = typeCache.GetDeclaredConstructors(type);
 			return constructors.Single(x =>
 				x.GetParameters().Count() == ctorParams.Count() &&
-				x.GetParameters().Last().ParameterType.GetTypeInfo().IsAssignableFrom(ctorParams.Last().GetType().GetTypeInfo()));
+				x.GetParameters().Last().ParameterType.GetTypeInfo()
+					.IsAssignableFrom(ctorParams.Last().GetType().GetTypeInfo()));
 		}
 
-		private IODataAdapter LoadAdapter(string adapterAssemblyName, ITypeCache typeCache, string adapterTypeName, params object[] ctorParams)
+		private IODataAdapter LoadAdapter(string adapterAssemblyName, ITypeCache typeCache, string adapterTypeName,
+			params object[] ctorParams)
 		{
 			try
 			{
-
-				var type = this.GetType().Assembly.GetType(adapterTypeName); 
+				var type = this.GetType().Assembly.GetType(adapterTypeName);
 				var constructors = typeCache.GetDeclaredConstructors(type);
 
 				var ctor = constructors.Single(x =>
@@ -152,7 +165,8 @@ namespace Simple.OData.Client
 			}
 			catch (Exception exception)
 			{
-				throw new InvalidOperationException(string.Format("Unable to load OData adapter from assembly {0}", adapterAssemblyName), exception);
+				throw new InvalidOperationException(
+					string.Format("Unable to load OData adapter from assembly {0}", adapterAssemblyName), exception);
 			}
 		}
 
@@ -170,8 +184,8 @@ namespace Simple.OData.Client
 				var protocolVersion = reader.GetAttribute("Version");
 
 				if (protocolVersion == ODataProtocolVersion.V1 ||
-					protocolVersion == ODataProtocolVersion.V2 ||
-					protocolVersion == ODataProtocolVersion.V3)
+				    protocolVersion == ODataProtocolVersion.V2 ||
+				    protocolVersion == ODataProtocolVersion.V3)
 				{
 					while (reader.Read())
 					{
@@ -180,7 +194,8 @@ namespace Simple.OData.Client
 							var version = reader.GetAttribute("m:" + HttpLiteral.MaxDataServiceVersion);
 							if (string.IsNullOrEmpty(version))
 								version = reader.GetAttribute("m:" + HttpLiteral.DataServiceVersion);
-							if (!string.IsNullOrEmpty(version) && string.Compare(version, protocolVersion, StringComparison.Ordinal) > 0)
+							if (!string.IsNullOrEmpty(version) &&
+							    string.Compare(version, protocolVersion, StringComparison.Ordinal) > 0)
 								protocolVersion = version;
 
 							break;

@@ -15,28 +15,33 @@ namespace Simple.OData.Client
 		/// </summary>
 		/// <returns>The media stream.</returns>
 		Task<Stream> GetStreamAsync();
+
 		/// <summary>
 		/// Retrieves a media stream by executing OData GET request.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>The media stream.</returns>
 		Task<Stream> GetStreamAsync(CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Retrieves a media stream as byte array by executing OData GET request.
 		/// </summary>
 		/// <returns>The media stream converted to byte array.</returns>
 		Task<byte[]> GetStreamAsArrayAsync();
+
 		/// <summary>
 		/// Retrieves a media stream as byte array by executing OData GET request.
 		/// </summary>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>The media stream converted to byte array.</returns>
 		Task<byte[]> GetStreamAsArrayAsync(CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Retrieves a media stream as string by executing OData GET request.
 		/// </summary>
 		/// <returns>The media stream converted to string.</returns>
 		Task<string> GetStreamAsStringAsync();
+
 		/// <summary>
 		/// Retrieves a media stream as string by executing OData GET request.
 		/// </summary>
@@ -51,6 +56,7 @@ namespace Simple.OData.Client
 		/// <param name="contentType">The media content type.</param>
 		/// <returns>Execution result.</returns>
 		Task<T> InsertStreamAsync(Stream stream, string contentType);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -59,6 +65,7 @@ namespace Simple.OData.Client
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Execution result.</returns>
 		Task<T> InsertStreamAsync(Stream stream, string contentType, CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -66,6 +73,7 @@ namespace Simple.OData.Client
 		/// <param name="contentType">The media content type.</param>
 		/// <returns>Execution result.</returns>
 		Task<T> InsertStreamAsync(byte[] streamContent, string contentType);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -74,12 +82,14 @@ namespace Simple.OData.Client
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Execution result.</returns>
 		Task<T> InsertStreamAsync(byte[] streamContent, string contentType, CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
 		/// <param name="streamContent">The media stream content represented as string.</param>
 		/// <returns>Execution result.</returns>
 		Task<T> InsertStreamAsync(string streamContent);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -97,6 +107,7 @@ namespace Simple.OData.Client
 		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
 		Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -105,7 +116,9 @@ namespace Simple.OData.Client
 		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Task instance.</returns>
-		Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken);
+		Task SetStreamAsync(Stream stream, string contentType, bool optimisticConcurrency,
+			CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -114,6 +127,7 @@ namespace Simple.OData.Client
 		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
 		Task SetStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -122,7 +136,9 @@ namespace Simple.OData.Client
 		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <returns>Task instance.</returns>
-		Task SetStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency, CancellationToken cancellationToken);
+		Task SetStreamAsync(byte[] streamContent, string contentType, bool optimisticConcurrency,
+			CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -130,6 +146,7 @@ namespace Simple.OData.Client
 		/// <param name="optimisticConcurrency">if set to <c>true</c> sets the resource ETag in the updated request header.</param>
 		/// <returns>Task instance.</returns>
 		Task SetStreamAsync(string streamContent, bool optimisticConcurrency);
+
 		/// <summary>
 		/// Assigns a media stream by executing OData PUT request.
 		/// </summary>
@@ -144,6 +161,7 @@ namespace Simple.OData.Client
 		/// </summary>
 		/// <returns>The command text.</returns>
 		Task<string> GetCommandTextAsync();
+
 		/// <summary>
 		/// Gets the OData command text.
 		/// </summary>

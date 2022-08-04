@@ -5,10 +5,10 @@ namespace Simple.OData.Client.Tests.Core
 {
 	public class DynamicContainerTests
 	{
-        private ITypeCache TypeCache
-        {
-	        get { return TypeCaches.TypeCache("test", null); }
-        }
+		private ITypeCache TypeCache
+		{
+			get { return TypeCaches.TypeCache("test", null); }
+		}
 
 		[Fact]
 		public void ContainerName()

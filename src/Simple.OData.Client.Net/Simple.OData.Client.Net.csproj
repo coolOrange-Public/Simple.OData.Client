@@ -53,14 +53,14 @@
     <Reference Include="Microsoft.Data.OData, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Data.OData.5.8.5\lib\net40\Microsoft.Data.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.OData.Core, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.OData.Core.7.8.3\lib\net45\Microsoft.OData.Core.dll</HintPath>
+    <Reference Include="Microsoft.OData.Core, Version=7.9.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.OData.Core.7.9.4\lib\net45\Microsoft.OData.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.OData.Edm, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.OData.Edm.7.8.3\lib\net45\Microsoft.OData.Edm.dll</HintPath>
+    <Reference Include="Microsoft.OData.Edm, Version=7.9.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.OData.Edm.7.9.4\lib\net45\Microsoft.OData.Edm.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Spatial, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Spatial.7.8.3\lib\net45\Microsoft.Spatial.dll</HintPath>
+    <Reference Include="Microsoft.Spatial, Version=7.9.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Spatial.7.9.4\lib\net45\Microsoft.Spatial.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -239,11 +239,11 @@
     <Compile Include="..\Simple.OData.Client.Core\Fluent\ClientWithResponse.cs">
       <Link>Fluent\ClientWithResponse.cs</Link>
     </Compile>
-    <Compile Include="..\Simple.OData.Client.Core\Fluent\CommandDetails.cs">
-      <Link>Fluent\CommandDetails.cs</Link>
-    </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\FluentClientBase.cs">
       <Link>Fluent\FluentClientBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Simple.OData.Client.Core\Fluent\FluentCommandDetails.cs">
+      <Link>Fluent\FluentCommandDetails.cs</Link>
     </Compile>
     <Compile Include="..\Simple.OData.Client.Core\Fluent\IBoundClient.cs">
       <Link>Fluent\IBoundClient.cs</Link>

@@ -12,6 +12,7 @@ namespace Simple.OData.Client.V4.Adapter
 		public string TypeName { get; set; }
 		public IDictionary<string, ODataCollectionValue> CollectionProperties { get; set; }
 		public IDictionary<string, ODataResource> StructuralProperties { get; set; }
+
 		public IEnumerable<ODataProperty> PrimitiveProperties
 		{
 			get { return this.Resource.Properties; }

@@ -1,33 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Simple.OData.Client
 {
-    public class EntityCollection
-    {
-        private readonly string _name;
-        private readonly EntityCollection _baseEntityCollection;
+	public class EntityCollection
+	{
+		internal EntityCollection(
+			string name,
+			EntityCollection baseEntityCollection = null)
+		{
+			Name = name;
+			BaseEntityCollection = baseEntityCollection;
+		}
 
-        internal EntityCollection(string name, EntityCollection baseEntityCollection = null)
-        {
-            _name = name;
-            _baseEntityCollection = baseEntityCollection;
-        }
+		public override string ToString()
+		{
+			return Name;
+		}
 
-        public override string ToString()
-        {
-            return _name;
-        }
+		public string Name { get; private set; }
 
-        public string Name
-        {
-            get { return _name; }
-        }
-
-        public EntityCollection BaseEntityCollection
-        {
-            get { return _baseEntityCollection; }
-        }
-    }
+		public EntityCollection BaseEntityCollection { get; private set; }
+	}
 }

@@ -26,6 +26,7 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
 				filterClause = new FilterClause(filter);
 				_underlyingDataAggregationBuilder.Add(filterClause);
 			}
+
 			return this;
 		}
 
@@ -41,6 +42,7 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
 				filterClause = new FilterClause(filter);
 				_underlyingDataAggregationBuilder.Add(filterClause);
 			}
+
 			return this;
 		}
 
@@ -55,9 +57,12 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
 				var aggregatedProperty = propertyValue as Tuple<string, ODataExpression>;
 				if (aggregatedProperty != null)
 				{
-					aggregationClauses.Add(new AggregationClause<object>(property.Name, aggregatedProperty.Item2 != null ? aggregatedProperty.Item2.Reference : null, aggregatedProperty.Item1));
+					aggregationClauses.Add(new AggregationClause<object>(property.Name,
+						aggregatedProperty.Item2 != null ? aggregatedProperty.Item2.Reference : null,
+						aggregatedProperty.Item1));
 				}
 			}
+
 			_underlyingDataAggregationBuilder.Add(aggregationClauses);
 			return this;
 		}
@@ -89,11 +94,13 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
 						if (aggregatedProperty != null)
 						{
 							aggregationClauses.Add(new AggregationClause<object>(property.Name,
-								aggregatedProperty.Item2 != null ? aggregatedProperty.Item2.Reference : null, aggregatedProperty.Item1));
+								aggregatedProperty.Item2 != null ? aggregatedProperty.Item2.Reference : null,
+								aggregatedProperty.Item1));
 						}
 					}
 				}
 			}
+
 			_underlyingDataAggregationBuilder.Add(new GroupByClause<object>(groupByColumns, aggregationClauses));
 			return this;
 		}

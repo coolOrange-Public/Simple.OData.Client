@@ -2,45 +2,46 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 
-namespace WebApiOData.V3.Samples.Models
+namespace WebApiOData.V3.Samples.Models 
 {
-    public class MoviesContext : DbContext
-    {
-        static MoviesContext()
-        {
-            Database.SetInitializer(new MoviesInitializer());
-        }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {
-            // Set the TimeStamp property to be an optimistic concurrency token.
-            // EF will use this to detect concurrency conflicts.
+public class MoviesContext : DbContext
+{
+	static MoviesContext()
+	{
+		Database.SetInitializer(new MoviesInitializer());
+	}
 
-            modelBuilder.Entity<Movie>()
-                .Property(m => m.TimeStamp)
-                .IsConcurrencyToken()
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
+	protected override void OnModelCreating(DbModelBuilder modelBuilder)
+	{
+		// Set the TimeStamp property to be an optimistic concurrency token.
+		// EF will use this to detect concurrency conflicts.
 
-            base.OnModelCreating(modelBuilder);
-        }
+		modelBuilder.Entity<Movie>()
+			.Property(m => m.TimeStamp)
+			.IsConcurrencyToken()
+			.HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
 
-        public DbSet<Movie> Movies { get; set; }
-    }
+		base.OnModelCreating(modelBuilder);
+	}
 
-    public class MoviesInitializer : DropCreateDatabaseAlways<MoviesContext>
-    {
-        protected override void Seed(MoviesContext context)
-        {
-            var movies = new List<Movie>()
-            {
-                new Movie() { Title = "Maximum Payback", Year = 1990 },
-                new Movie() { Title = "Inferno of Retribution", Year = 2005 },
-                new Movie() { Title = "Fatal Vengeance 2", Year = 2012 },
-                new Movie() { Title = "Sudden Danger", Year = 2012 },
-                new Movie() { Title = "Deadly Honor IV", Year = 1977 }
-            };
-            movies.ForEach(m => context.Movies.Add(m));
-            context.SaveChanges();
-        }
-    }
+	public DbSet<Movie> Movies { get; set; }
+}
+
+public class MoviesInitializer : DropCreateDatabaseAlways<MoviesContext>
+{
+	protected override void Seed(MoviesContext context)
+	{
+		var movies = new List<Movie>()
+			{
+				new Movie() { Title = "Maximum Payback", Year = 1990 },
+				new Movie() { Title = "Inferno of Retribution", Year = 2005 },
+				new Movie() { Title = "Fatal Vengeance 2", Year = 2012 },
+				new Movie() { Title = "Sudden Danger", Year = 2012 },
+				new Movie() { Title = "Deadly Honor IV", Year = 1977 }
+			};
+		movies.ForEach(m => context.Movies.Add(m));
+		context.SaveChanges();
+	}
+}
 }

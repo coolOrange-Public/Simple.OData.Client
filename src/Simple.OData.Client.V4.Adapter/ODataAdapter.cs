@@ -53,12 +53,15 @@ namespace Simple.OData.Client.V4.Adapter
 				case ODataProtocolVersion.V4:
 					return "V4";
 			}
-			throw new InvalidOperationException(string.Format("Unsupported OData protocol version: \"{0}\"", this.ProtocolVersion));
+
+			throw new InvalidOperationException(string.Format("Unsupported OData protocol version: \"{0}\"",
+				this.ProtocolVersion));
 		}
 
 		public override IMetadata GetMetadata()
 		{
-			return _metadata ?? (_metadata = new MetadataCache(new Metadata(Model, _session.Settings.NameMatchResolver, _session.Settings.IgnoreUnmappedProperties, _session.Settings.UnqualifiedNameCall)));
+			return _metadata ?? (_metadata = new MetadataCache(new Metadata(Model, _session.Settings.NameMatchResolver,
+				_session.Settings.IgnoreUnmappedProperties, _session.Settings.UnqualifiedNameCall)));
 		}
 
 		public override ICommandFormatter GetCommandFormatter()

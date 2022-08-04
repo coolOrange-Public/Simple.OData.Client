@@ -38,7 +38,8 @@ namespace Simple.OData.Client.V4.Adapter
 				var payloadKind = messageReader.DetectPayloadKind().ToList();
 				if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Error))
 				{
-					return ODataResponse.FromErrorResponse(TypeCache, responseMessage.StatusCode, ReadErrorDetails(messageReader, readerSettings));
+					return ODataResponse.FromErrorResponse(TypeCache, responseMessage.StatusCode,
+						ReadErrorDetails(messageReader, readerSettings));
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Value))
 				{
@@ -48,7 +49,8 @@ namespace Simple.OData.Client.V4.Adapter
 					}
 					else
 					{
-						return ODataResponse.FromValueStream(TypeCache, await responseMessage.GetStreamAsync(), responseMessage is ODataBatchOperationResponseMessage);
+						return ODataResponse.FromValueStream(TypeCache, await responseMessage.GetStreamAsync(),
+							responseMessage is ODataBatchOperationResponseMessage);
 					}
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Batch))
@@ -110,13 +112,17 @@ namespace Simple.OData.Client.V4.Adapter
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
 							var responseStream = await operationMessage.GetStreamAsync();
-							var exception = WebRequestException.CreateFromFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
-							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode, ReadErrorDetails(operationMessage), exception);
+							var exception =
+								WebRequestException.CreateFromFromBatchResponse(
+									(HttpStatusCode)operationMessage.StatusCode, responseStream);
+							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode,
+								ReadErrorDetails(operationMessage), exception);
 
 							batch.Add(errorResponse);
 						}
 						else
 							batch.Add(await GetResponseAsync(operationMessage));
+
 						break;
 					case ODataBatchReaderState.ChangesetEnd:
 						break;
@@ -201,7 +207,9 @@ namespace Simple.OData.Client.V4.Adapter
 			using (var messageReader = new ODataMessageReader(operationMessage, readerSettings))
 				return ReadErrorDetails(messageReader, readerSettings);
 		}
-		ODataErrorDetails ReadErrorDetails(ODataMessageReader responseMessageReader, ODataMessageReaderSettings readerSettings)
+
+		ODataErrorDetails ReadErrorDetails(ODataMessageReader responseMessageReader,
+			ODataMessageReaderSettings readerSettings)
 		{
 			readerSettings.Validations = ValidationKinds.None;
 			var error = responseMessageReader.ReadError();
@@ -217,14 +225,14 @@ namespace Simple.OData.Client.V4.Adapter
 				{
 					entryNode.Entry.Data.Add(property.Name, GetPropertyValue(property.Value));
 				}
+
 				entryNode.Entry.SetAnnotations(CreateAnnotations(odataEntry));
 			}
 		}
 
 		private ODataFeedAnnotations CreateAnnotations(ODataResourceSetBase feed)
 		{
-			return new ODataFeedAnnotations()
-			{
+			return new ODataFeedAnnotations() {
 				Id = feed.Id == null ? null : feed.Id.AbsoluteUri,
 				Count = feed.Count,
 				DeltaLink = feed.DeltaLink,
@@ -255,8 +263,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 			}
 
-			return new ODataEntryAnnotations
-			{
+			return new ODataEntryAnnotations {
 				Id = id,
 				TypeName = odataEntry.TypeName,
 				ReadLink = readLink,
@@ -269,13 +276,14 @@ namespace Simple.OData.Client.V4.Adapter
 
 		private ODataMediaAnnotations CreateAnnotations(ODataStreamReferenceValue value)
 		{
-			return value == null ? null : new ODataMediaAnnotations
-			{
-				ContentType = value.ContentType,
-				ReadLink = value.ReadLink,
-				EditLink = value.EditLink,
-				ETag = value.ETag,
-			};
+			return value == null
+				? null
+				: new ODataMediaAnnotations {
+					ContentType = value.ContentType,
+					ReadLink = value.ReadLink,
+					EditLink = value.EditLink,
+					ETag = value.ETag,
+				};
 		}
 
 		private object GetPropertyValue(object value)
@@ -298,8 +306,10 @@ namespace Simple.OData.Client.V4.Adapter
 						result = result.Substring(1, result.Length - 2);
 					}
 				}
+
 				return result;
 			}
+
 			if (value is ODataStreamReferenceValue)
 				return CreateAnnotations(value as ODataStreamReferenceValue);
 			return value;

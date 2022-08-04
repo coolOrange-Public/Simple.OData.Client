@@ -11,7 +11,8 @@ namespace Simple.OData.Client
 {
 	public partial class ODataClient
 	{
-		private async Task<IDictionary<string, object>> GetUpdatedResult(ResolvedCommand command, CancellationToken cancellationToken)
+		private async Task<IDictionary<string, object>> GetUpdatedResult(ResolvedCommand command,
+			CancellationToken cancellationToken)
 		{
 			var entryKey = command.Details.HasKey ? command.KeyValues : command.FilterAsKey;
 			var entryData = command.CommandData;
@@ -21,14 +22,18 @@ namespace Simple.OData.Client
 			{
 				updatedKey.Add(item);
 			}
+
 			var updatedCommand = new FluentCommand(command).Key(updatedKey);
-			return await FindEntryAsync(updatedCommand.Resolve(_session).Format(), cancellationToken).ConfigureAwait(false);
+			return await FindEntryAsync(updatedCommand.Resolve(_session).Format(), cancellationToken)
+				.ConfigureAwait(false);
 		}
 
-		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command,
+			ODataFeedAnnotations annotations, CancellationToken cancellationToken)
 		{
 			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers).ConfigureAwait(false);
+				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers)
+				.ConfigureAwait(false);
 
 			return await ExecuteRequestWithResultAsync(request, cancellationToken,
 				x =>
@@ -41,23 +46,27 @@ namespace Simple.OData.Client
 				x => Enumerable.Empty<IDictionary<string, object>>()).ConfigureAwait(false);
 		}
 
-		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command, CancellationToken cancellationToken)
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command,
+			CancellationToken cancellationToken)
 		{
 			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers).ConfigureAwait(false);
+				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers)
+				.ConfigureAwait(false);
 
 			return await ExecuteRequestWithResultAsync(request, cancellationToken,
 				x => x.AsEntries(_session.Settings.IncludeAnnotationsInResults),
 				x => Enumerable.Empty<IDictionary<string, object>>()).ConfigureAwait(false);
 		}
 
-		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(ResolvedCommand command, ODataFeedAnnotations annotations, CancellationToken cancellationToken)
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(ResolvedCommand command,
+			ODataFeedAnnotations annotations, CancellationToken cancellationToken)
 		{
 			var entityTypeName = command.EntityCollection != null
 				? _session.Metadata.GetQualifiedTypeName(command.EntityCollection.Name)
 				: null;
 			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName, command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
+				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName,
+					command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
 
 			return await ExecuteRequestWithResultAsync(request, cancellationToken,
 				x =>
@@ -70,47 +79,55 @@ namespace Simple.OData.Client
 				x => Enumerable.Empty<IDictionary<string, object>>()).ConfigureAwait(false);
 		}
 
-		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(ResolvedCommand command, CancellationToken cancellationToken)
+		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteActionAsync(ResolvedCommand command,
+			CancellationToken cancellationToken)
 		{
 			var entityTypeName = command.EntityCollection != null
 				? _session.Metadata.GetQualifiedTypeName(command.EntityCollection.Name)
 				: null;
 			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName, command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
+				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName,
+					command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
 
 			return await ExecuteRequestWithResultAsync(request, cancellationToken,
 				x => x.AsEntries(_session.Settings.IncludeAnnotationsInResults),
 				x => Enumerable.Empty<IDictionary<string, object>>()).ConfigureAwait(false);
 		}
 
-		private async Task ExecuteBatchActionsAsync(IList<Func<IODataClient, Task>> actions, IDictionary<string, string> headers, CancellationToken cancellationToken)
+		private async Task ExecuteBatchActionsAsync(IList<Func<IODataClient, Task>> actions,
+			IDictionary<string, string> headers, CancellationToken cancellationToken)
 		{
 			if (!actions.Any())
 				return;
 
 			var responseIndexes = new List<int>();
-			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes, headers).ConfigureAwait(false);
+			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes, headers)
+				.ConfigureAwait(false);
 			if (request != null)
 			{
 				// Execute batch and get response
-				using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+				using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken)
+					       .ConfigureAwait(false))
 				{
 					var responseReader = _session.Adapter.GetResponseReader();
 					var batchResponse = await responseReader.GetResponseAsync(response).ConfigureAwait(false);
 
 					// Replay batch operations to assign results
-					await responseReader.AssignBatchActionResultsAsync(this, batchResponse, actions, responseIndexes).ConfigureAwait(false);
+					await responseReader.AssignBatchActionResultsAsync(this, batchResponse, actions, responseIndexes)
+						.ConfigureAwait(false);
 				}
 			}
 		}
 
-		private async Task ExecuteBatchActionsAsync(IList<Func<IODataClient, Task>> actions, CancellationToken cancellationToken)
+		private async Task ExecuteBatchActionsAsync(IList<Func<IODataClient, Task>> actions,
+			CancellationToken cancellationToken)
 		{
 			if (!actions.Any())
 				return;
 
 			var responseIndexes = new List<int>();
-			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes).ConfigureAwait(false);
+			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes)
+				.ConfigureAwait(false);
 			if (request != null)
 			{
 				// Execute batch and get response
@@ -120,7 +137,8 @@ namespace Simple.OData.Client
 					var batchResponse = await responseReader.GetResponseAsync(response).ConfigureAwait(false);
 
 					// Replay batch operations to assign results
-					await responseReader.AssignBatchActionResultsAsync(this, batchResponse, actions, responseIndexes).ConfigureAwait(false);
+					await responseReader.AssignBatchActionResultsAsync(this, batchResponse, actions, responseIndexes)
+						.ConfigureAwait(false);
 				}
 			}
 		}
@@ -145,15 +163,17 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private async Task<T> ExecuteRequestWithResultAsync<T>(ODataRequest request, CancellationToken cancellationToken,
-			Func<ODataResponse, T> createResult, Func<ODataResponse, T> createEmptyResult, Func<T> createBatchResult = null)
+		private async Task<T> ExecuteRequestWithResultAsync<T>(ODataRequest request,
+			CancellationToken cancellationToken,
+			Func<ODataResponse, T> createResult, Func<ODataResponse, T> createEmptyResult,
+			Func<T> createBatchResult = null)
 		{
 			if (IsBatchRequest)
 				return createBatchResult != null
 					? createBatchResult()
 					: createEmptyResult != null
-					? createEmptyResult(null)
-					: default(T);
+						? createEmptyResult(null)
+						: default(T);
 
 			try
 			{
@@ -162,7 +182,7 @@ namespace Simple.OData.Client
 					var responseReader = _session.Adapter.GetResponseReader();
 					var odataResponse = await responseReader.GetResponseAsync(response).ConfigureAwait(false);
 					if (response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent &&
-						(request.Method == RestVerbs.Get || request.ResultRequired))
+					    (request.Method == RestVerbs.Get || request.ResultRequired))
 						return createResult(odataResponse);
 					return createEmptyResult != null ? createEmptyResult(odataResponse) : default(T);
 				}
@@ -176,7 +196,8 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private async Task<Stream> ExecuteGetStreamRequestAsync(ODataRequest request, CancellationToken cancellationToken)
+		private async Task<Stream> ExecuteGetStreamRequestAsync(ODataRequest request,
+			CancellationToken cancellationToken)
 		{
 			if (IsBatchRequest)
 				return Stream.Null;
@@ -186,7 +207,7 @@ namespace Simple.OData.Client
 				using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken))
 				{
 					if (response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent &&
-						(request.Method == RestVerbs.Get || request.ResultRequired))
+					    (request.Method == RestVerbs.Get || request.ResultRequired))
 					{
 						var stream = new MemoryStream();
 						await response.Content.CopyToAsync(stream).ConfigureAwait(false);
@@ -208,8 +229,9 @@ namespace Simple.OData.Client
 		}
 
 		private async Task<IEnumerable<IDictionary<string, object>>> IterateEntriesAsync(
-			  ResolvedCommand command, bool resultRequired,
-			  Func<string, IDictionary<string, object>, IDictionary<string, object>, bool, Task<IDictionary<string, object>>> funcAsync, CancellationToken cancellationToken)
+			ResolvedCommand command, bool resultRequired,
+			Func<string, IDictionary<string, object>, IDictionary<string, object>, bool,
+				Task<IDictionary<string, object>>> funcAsync, CancellationToken cancellationToken)
 		{
 			var collectionName = command.QualifiedEntityCollectionName;
 			var entryData = command.CommandData;
@@ -223,9 +245,11 @@ namespace Simple.OData.Client
 				var resultList = new List<IDictionary<string, object>>();
 				foreach (var entry in entryList)
 				{
-					resultList.Add(await funcAsync(collectionName, entry, entryData, resultRequired).ConfigureAwait(false));
+					resultList.Add(await funcAsync(collectionName, entry, entryData, resultRequired)
+						.ConfigureAwait(false));
 					if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 				}
+
 				result = resultList;
 			}
 
@@ -250,6 +274,7 @@ namespace Simple.OData.Client
 					++result;
 				}
 			}
+
 			return result;
 		}
 
@@ -267,7 +292,8 @@ namespace Simple.OData.Client
 				foreach (var entry in entryData)
 				{
 					var key = entry.Key;
-					if (key == FluentCommand.AnnotationsLiteral || key.StartsWith(FluentCommand.AnnotationsLiteral + "_"))
+					if (key == FluentCommand.AnnotationsLiteral ||
+					    key.StartsWith(FluentCommand.AnnotationsLiteral + "_"))
 						actions.Add(() => entryData.Remove(key));
 				}
 
@@ -302,7 +328,8 @@ namespace Simple.OData.Client
 				throw new InvalidOperationException("No entry key specified.");
 		}
 
-		private async Task<string> FormatEntryKeyAsync(string collection, IDictionary<string, object> entryKey, CancellationToken cancellationToken)
+		private async Task<string> FormatEntryKeyAsync(string collection, IDictionary<string, object> entryKey,
+			CancellationToken cancellationToken)
 		{
 			var entryIdent = await GetBoundClient()
 				.For(collection)
@@ -321,19 +348,22 @@ namespace Simple.OData.Client
 			return entryIdent;
 		}
 
-		private async Task EnrichWithMediaPropertiesAsync(IEnumerable<AnnotatedEntry> entries, ResolvedCommand command, CancellationToken cancellationToken)
+		private async Task EnrichWithMediaPropertiesAsync(IEnumerable<AnnotatedEntry> entries, ResolvedCommand command,
+			CancellationToken cancellationToken)
 		{
 			if (entries != null)
 			{
 				foreach (var entry in entries)
 				{
-					await EnrichWithMediaPropertiesAsync(entry, command.Details.MediaProperties, cancellationToken).ConfigureAwait(false);
+					await EnrichWithMediaPropertiesAsync(entry, command.Details.MediaProperties, cancellationToken)
+						.ConfigureAwait(false);
 					if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 				}
 			}
 		}
 
-		private async Task EnrichWithMediaPropertiesAsync(AnnotatedEntry entry, IEnumerable<string> mediaProperties, CancellationToken cancellationToken)
+		private async Task EnrichWithMediaPropertiesAsync(AnnotatedEntry entry, IEnumerable<string> mediaProperties,
+			CancellationToken cancellationToken)
 		{
 			if (entry != null && mediaProperties != null)
 			{
@@ -341,7 +371,8 @@ namespace Simple.OData.Client
 				entityMediaPropertyName = entityMediaPropertyName ?? FluentCommand.AnnotationsLiteral;
 				if (entry.Annotations != null)
 				{
-					await GetMediaStreamValueAsync(entry.Data, entityMediaPropertyName, entry.Annotations.MediaResource, cancellationToken).ConfigureAwait(false);
+					await GetMediaStreamValueAsync(entry.Data, entityMediaPropertyName, entry.Annotations.MediaResource,
+						cancellationToken).ConfigureAwait(false);
 				}
 
 				foreach (var propertyName in mediaProperties)
@@ -349,13 +380,15 @@ namespace Simple.OData.Client
 					object value;
 					if (entry.Data.TryGetValue(propertyName, out value))
 					{
-						await GetMediaStreamValueAsync(entry.Data, propertyName, value as ODataMediaAnnotations, cancellationToken).ConfigureAwait(false);
+						await GetMediaStreamValueAsync(entry.Data, propertyName, value as ODataMediaAnnotations,
+							cancellationToken).ConfigureAwait(false);
 					}
 				}
 			}
 		}
 
-		private async Task GetMediaStreamValueAsync(IDictionary<string, object> entry, string propertyName, ODataMediaAnnotations annotations, CancellationToken cancellationToken)
+		private async Task GetMediaStreamValueAsync(IDictionary<string, object> entry, string propertyName,
+			ODataMediaAnnotations annotations, CancellationToken cancellationToken)
 		{
 			var mediaLink = annotations == null ? null : annotations.ReadLink ?? annotations.EditLink;
 			if (mediaLink != null)

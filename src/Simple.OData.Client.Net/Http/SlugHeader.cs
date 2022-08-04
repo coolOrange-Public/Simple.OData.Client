@@ -16,11 +16,11 @@ namespace Simple.OData.Client.Http
 			_fields = new Dictionary<string, string>();
 		}
 
-		public SlugHeader(IDictionary<string,string> fields) :
+		public SlugHeader(IDictionary<string, string> fields) :
 			this()
 		{
 			foreach (var field in fields)
-				Add(field.Key,field.Value);
+				Add(field.Key, field.Value);
 		}
 
 		public void Add(string fieldKey, string fieldValue)
@@ -28,7 +28,7 @@ namespace Simple.OData.Client.Http
 			string value = null;
 			if (fieldValue != null)
 				value = ToSlugText(fieldValue);
-			
+
 			_fields[fieldKey] = value;
 		}
 
@@ -42,7 +42,7 @@ namespace Simple.OData.Client.Http
 					value = "'" + value.Remove(value.Length - doubleQuote.Length).Remove(0, doubleQuote.Length) + "'";
 				return value;
 			};
-			return string.Join(",", _fields.Select(kvp => kvp.Key + "="+getValue(kvp.Value)));
+			return string.Join(",", _fields.Select(kvp => kvp.Key + "=" + getValue(kvp.Value)));
 		}
 
 
@@ -56,7 +56,7 @@ namespace Simple.OData.Client.Http
 			var toRfc3986 = new StringBuilder();
 			Action<StringBuilder> escapeUriDataString = t =>
 			{
-				if(t.Length > 0)
+				if (t.Length > 0)
 					stringBuilder.Append(Rfc3986.EscapeUriDataString(t.ToString()));
 			};
 			foreach (var octet in utf8Encoded)
@@ -70,6 +70,7 @@ namespace Simple.OData.Client.Http
 					stringBuilder.Append(octet);
 				}
 			}
+
 			escapeUriDataString(toRfc3986);
 			return stringBuilder.ToString();
 		}
@@ -87,7 +88,7 @@ namespace Simple.OData.Client.Http
 	{
 		public static SlugHeader ToSlugHeader(this Microsoft.Data.OData.ODataEntry entry, IODataAdapter adapter)
 		{
-			return ToSlugHeader(entry, writer => new V3.Adapter.JsonWriter(adapter,writer, true));
+			return ToSlugHeader(entry, writer => new V3.Adapter.JsonWriter(adapter, writer, true));
 		}
 
 		public static SlugHeader ToSlugHeader(this Microsoft.OData.ODataResource entry)
@@ -95,7 +96,7 @@ namespace Simple.OData.Client.Http
 			return ToSlugHeader(entry, writer => new V4.Adapter.JsonWriter(writer, true));
 		}
 
-		static SlugHeader ToSlugHeader(dynamic entry, Func<TextWriter,IJsonWriter> getJsonWriter)
+		static SlugHeader ToSlugHeader(dynamic entry, Func<TextWriter, IJsonWriter> getJsonWriter)
 		{
 			var fields = new Dictionary<string, string>();
 			foreach (var property in entry.Properties)
@@ -105,6 +106,7 @@ namespace Simple.OData.Client.Http
 					jsonWriter.WriteJsonValue(property.Value);
 					fields[property.Name] = textWriter.ToString();
 				}
+
 			return new SlugHeader(fields);
 		}
 	}

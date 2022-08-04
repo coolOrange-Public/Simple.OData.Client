@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using Simple.OData.Client.Extensions;
 
 namespace Simple.OData.Client
 {
@@ -36,7 +36,9 @@ namespace Simple.OData.Client
 			else if (!string.IsNullOrEmpty(command.Details.LinkName))
 			{
 				var parent = new FluentCommand(command.Details.Parent).Resolve(_session);
-				commandText += string.Format("{0}/{1}", FormatCommand(parent), _session.Metadata.GetNavigationPropertyExactName(parent.EntityCollection.Name, command.Details.LinkName));
+				commandText += string.Format("{0}/{1}", FormatCommand(parent),
+					_session.Metadata.GetNavigationPropertyExactName(parent.EntityCollection.Name,
+						command.Details.LinkName));
 			}
 
 			if (command.Details.HasKey)
@@ -51,9 +53,11 @@ namespace Simple.OData.Client
 			}
 			else
 			{
-				if (!string.IsNullOrEmpty(command.Details.FunctionName) || !string.IsNullOrEmpty(command.Details.ActionName))
+				if (!string.IsNullOrEmpty(command.Details.FunctionName) ||
+				    !string.IsNullOrEmpty(command.Details.ActionName))
 				{
-					if (!string.IsNullOrEmpty(command.Details.CollectionName) || !string.IsNullOrEmpty(command.Details.LinkName))
+					if (!string.IsNullOrEmpty(command.Details.CollectionName) ||
+					    !string.IsNullOrEmpty(command.Details.LinkName))
 						commandText += "/";
 					if (!string.IsNullOrEmpty(command.Details.FunctionName))
 						commandText += _session.Metadata.GetFunctionFullName(command.Details.FunctionName);
@@ -62,7 +66,8 @@ namespace Simple.OData.Client
 				}
 
 				if (!string.IsNullOrEmpty(command.Details.FunctionName) && FunctionFormat == FunctionFormat.Key)
-					commandText += ConvertKeyValuesToUriLiteralExtractCollections(command.CommandData, collectionValues, false);
+					commandText +=
+						ConvertKeyValuesToUriLiteralExtractCollections(command.CommandData, collectionValues, false);
 
 				if (!string.IsNullOrEmpty(command.Details.DerivedCollectionName))
 				{
@@ -81,7 +86,7 @@ namespace Simple.OData.Client
 				? _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items.First())
 				: items.First();
 			var text = associationName;
-			if (items.Count() == 1)
+			if (items.Length == 1)
 			{
 				return text;
 			}
@@ -105,7 +110,8 @@ namespace Simple.OData.Client
 			return "(" + formattedKeyValues + ")";
 		}
 
-		public string ConvertKeyValuesToUriLiteralExtractCollections(IDictionary<string, object> data, IList<string> collectionValues, bool skipKeyNameForSingleValue)
+		public string ConvertKeyValuesToUriLiteralExtractCollections(IDictionary<string, object> data,
+			IList<string> collectionValues, bool skipKeyNameForSingleValue)
 		{
 			var escapedData = new Dictionary<string, object>();
 			int colIndex = 0;
@@ -115,7 +121,8 @@ namespace Simple.OData.Client
 				if (item.Value != null)
 				{
 					var itemType = item.Value.GetType();
-					if (itemType.IsArray || TypeCache.IsGeneric(itemType) && TypeCache.IsTypeAssignableFrom(typeof(System.Collections.IEnumerable), itemType))
+					if (itemType.IsArray || TypeCache.IsGeneric(itemType) &&
+					    TypeCache.IsTypeAssignableFrom(typeof(System.Collections.IEnumerable), itemType))
 					{
 						var itemAlias = string.Format("@p{0}", ++colIndex);
 						var collection = item.Value as System.Collections.IEnumerable;
@@ -124,7 +131,9 @@ namespace Simple.OData.Client
 						{
 							escapedCollection.Add(ConvertValueToUriLiteral(o, true));
 						}
-						collectionValues.Add(string.Format("{0}=[" + string.Join(",", escapedCollection) + "]", itemAlias));
+
+						collectionValues.Add(string.Format(CultureInfo.InvariantCulture,
+							"{0}=[" + string.Join(",", escapedCollection) + "]", itemAlias));
 						itemValue = itemAlias;
 					}
 					else
@@ -136,8 +145,10 @@ namespace Simple.OData.Client
 				{
 					itemValue = ConvertValueToUriLiteral(item.Value, true);
 				}
+
 				escapedData.Add(item.Key, itemValue);
 			}
+
 			var formattedKeyValues = escapedData.Count == 1 && skipKeyNameForSingleValue
 				? string.Join(",", escapedData)
 				: string.Join(",",
@@ -145,7 +156,8 @@ namespace Simple.OData.Client
 			return "(" + formattedKeyValues + ")";
 		}
 
-		protected abstract void FormatExpandSelectOrderby(IList<string> commandClauses, EntityCollection resultCollection, ResolvedCommand command);
+		protected abstract void FormatExpandSelectOrderby(IList<string> commandClauses,
+			EntityCollection resultCollection, ResolvedCommand command);
 
 		protected abstract void FormatInlineCount(IList<string> commandClauses);
 
@@ -167,7 +179,7 @@ namespace Simple.OData.Client
 			var aggregateClauses = new List<string>();
 
 			if (command.CommandData.Any() && !string.IsNullOrEmpty(command.Details.FunctionName) &&
-				FunctionFormat == FunctionFormat.Query)
+			    FunctionFormat == FunctionFormat.Query)
 				queryClauses.Add(string.Join("&", command.CommandData.Select(x => string.Format("{0}={1}",
 					x.Key, ConvertValueToUriLiteral(x.Value, true)))));
 
@@ -183,10 +195,11 @@ namespace Simple.OData.Client
 				queryClauses.Add(command.Details.QueryOptions);
 
 			var details = command.Details;
-			if (!ReferenceEquals(details.QueryOptionsExpression, null))
+			if (details.QueryOptionsExpression != null)
 			{
 				queryClauses.Add(details.QueryOptionsExpression.Format(new ExpressionContext(_session, true)));
 			}
+
 			if (command.Details.QueryOptionsKeyValues != null)
 			{
 				foreach (var kv in command.Details.QueryOptionsKeyValues)
@@ -208,16 +221,16 @@ namespace Simple.OData.Client
 			EntityCollection resultCollection;
 			if (command.Details.HasFunction)
 			{
-				resultCollection = _session.Adapter.GetMetadata().GetFunctionReturnCollection(command.Details.FunctionName);
-			}
-			else if (command.Details.HasAction)
-			{
-				resultCollection = _session.Adapter.GetMetadata().GetActionReturnCollection(command.Details.ActionName);
+				resultCollection = _session.Adapter.GetMetadata()
+					.GetFunctionReturnCollection(command.Details.FunctionName);
 			}
 			else
 			{
-				resultCollection = command.EntityCollection;
+				resultCollection = command.Details.HasAction
+					? _session.Adapter.GetMetadata().GetActionReturnCollection(command.Details.ActionName)
+					: command.EntityCollection;
 			}
+
 			if (resultCollection != null)
 				FormatExpandSelectOrderby(queryClauses, resultCollection, command);
 
@@ -236,7 +249,8 @@ namespace Simple.OData.Client
 			return text;
 		}
 
-		protected string FormatExpandItem(KeyValuePair<string, ODataExpandOptions> pathWithOptions, EntityCollection entityCollection)
+		protected string FormatExpandItem(KeyValuePair<string, ODataExpandOptions> pathWithOptions,
+			EntityCollection entityCollection)
 		{
 			return FormatNavigationPath(entityCollection, pathWithOptions.Key);
 		}
@@ -244,17 +258,18 @@ namespace Simple.OData.Client
 		protected string FormatSelectItem(string path, EntityCollection entityCollection)
 		{
 			var items = path.Split('/');
-			if (items.Count() == 1)
+			if (items.Length == 1)
 			{
 				return _session.Metadata.HasStructuralProperty(entityCollection.Name, path)
 					? _session.Metadata.GetStructuralPropertyExactName(entityCollection.Name, path)
 					: _session.Metadata.HasNavigationProperty(entityCollection.Name, path)
-					? _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, path)
-					: path;
+						? _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, path)
+						: path;
 			}
 			else
 			{
-				var associationName = _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items.First());
+				var associationName =
+					_session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items.First());
 				var text = associationName;
 				path = path.Substring(items.First().Length + 1);
 				entityCollection = _session.Metadata.GetEntityCollection(
@@ -266,13 +281,13 @@ namespace Simple.OData.Client
 		protected string FormatOrderByItem(KeyValuePair<string, bool> pathWithOrder, EntityCollection entityCollection)
 		{
 			var items = pathWithOrder.Key.Split('/');
-			if (items.Count() == 1)
+			if (items.Length == 1)
 			{
 				var clause = _session.Metadata.HasStructuralProperty(entityCollection.Name, pathWithOrder.Key)
 					? _session.Metadata.GetStructuralPropertyExactName(entityCollection.Name, pathWithOrder.Key)
 					: _session.Metadata.HasNavigationProperty(entityCollection.Name, pathWithOrder.Key)
-					? _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, pathWithOrder.Key)
-					: pathWithOrder.Key;
+						? _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, pathWithOrder.Key)
+						: pathWithOrder.Key;
 				if (pathWithOrder.Value)
 					clause += " desc";
 				return clause;
@@ -281,7 +296,8 @@ namespace Simple.OData.Client
 			{
 				if (_session.Metadata.HasNavigationProperty(entityCollection.Name, items[0]))
 				{
-					var associationName = _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items[0]);
+					var associationName =
+						_session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items[0]);
 					var text = associationName;
 					var item = pathWithOrder.Key.Substring(items.First().Length + 1);
 					entityCollection = _session.Metadata.GetEntityCollection(
@@ -309,7 +325,8 @@ namespace Simple.OData.Client
 		{
 			if (clauses.Any())
 			{
-				commandClauses.Add(string.Format("{0}={1}", clauseLiteral, string.Join(",", clauses.Select(x => formatItem(x, entityCollection)))));
+				commandClauses.Add(string.Format("{0}={1}", clauseLiteral,
+					string.Join(",", clauses.Select(x => formatItem(x, entityCollection)))));
 			}
 		}
 

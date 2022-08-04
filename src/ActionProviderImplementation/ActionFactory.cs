@@ -10,6 +10,7 @@ namespace ActionProviderImplementation
 	public class ActionFactory
 	{
 		IDataServiceMetadataProvider _metadata;
+
 		//TODO: make this list complete
 		static Type[] __primitives = new[] {
 			typeof(bool),
@@ -59,6 +60,7 @@ namespace ActionProviderImplementation
 				yield return action;
 			}
 		}
+
 		// Only allow EntityType or IQueryable<EntityType> for the binding parameter
 		private ResourceType GetBindingParameterResourceType(Type type)
 		{
@@ -72,8 +74,10 @@ namespace ActionProviderImplementation
 				if (type.GetGenericTypeDefinition() == typeof(IQueryable<>))
 					return resourceType;
 			}
+
 			throw new Exception(string.Format("Type {0} is not a valid binding parameter", type.FullName));
 		}
+
 		// Only allow Primitive/Complex or IEnumerable<Primitive>/IEnumerable<Complex>
 		private ResourceType GetParameterResourceType(Type type)
 		{
@@ -92,8 +96,10 @@ namespace ActionProviderImplementation
 			{
 				throw new Exception("IQueryable<> is not supported for non-binding parameters.");
 			}
+
 			return resourceType;
 		}
+
 		// Allow all types: Primitive/Complex/Entity and IQueryable<> and IEnumerable<>
 		private ResourceType GetResourceType(Type type)
 		{
@@ -105,12 +111,14 @@ namespace ActionProviderImplementation
 					if (typeDef == typeof(IEnumerable<>) || typeDef == typeof(IQueryable<>))
 					{
 						var elementResource = GetResourceType(type.GetGenericArguments().Single());
-						if ((elementResource.ResourceTypeKind | ResourceTypeKind.EntityType) == ResourceTypeKind.EntityType)
+						if ((elementResource.ResourceTypeKind | ResourceTypeKind.EntityType) ==
+						    ResourceTypeKind.EntityType)
 							return ResourceType.GetEntityCollectionResourceType(elementResource);
 						else
 							return ResourceType.GetCollectionResourceType(elementResource);
 					}
 				}
+
 				throw new Exception(string.Format("Generic action parameter type {0} not supported", type.ToString()));
 			}
 
@@ -122,7 +130,12 @@ namespace ActionProviderImplementation
 				throw new Exception(string.Format("Generic action parameter type {0} not supported", type.ToString()));
 			return resourceType;
 		}
-		// Given a type try to find the resource set.
+
+		/// <summary>
+		/// Given a type try to find the resource set.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
 		private ResourceSet GetResourceSet(ResourceType type)
 		{
 			if (type == null)
@@ -146,8 +159,10 @@ namespace ActionProviderImplementation
 					return GetResourceSet(type.BaseType);
 				}
 			}
+
 			return null;
 		}
+
 		private IEnumerable<ServiceActionParameter> GetParameters(MethodInfo method, bool isBindable)
 		{
 			IEnumerable<ParameterInfo> parameters = method.GetParameters();
@@ -155,11 +170,12 @@ namespace ActionProviderImplementation
 			{
 				var bindingParameter = parameters.First();
 				yield return new ServiceActionParameter(
-						bindingParameter.Name,
-						GetBindingParameterResourceType(bindingParameter.ParameterType)
+					bindingParameter.Name,
+					GetBindingParameterResourceType(bindingParameter.ParameterType)
 				);
 				parameters = parameters.Skip(1);
 			}
+
 			foreach (var parameter in parameters)
 			{
 				yield return new ServiceActionParameter(

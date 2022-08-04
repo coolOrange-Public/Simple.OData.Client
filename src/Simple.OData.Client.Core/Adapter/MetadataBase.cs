@@ -6,7 +6,8 @@ namespace Simple.OData.Client
 {
 	public abstract class MetadataBase : IMetadata
 	{
-		protected MetadataBase(INameMatchResolver nameMatchResolver, bool ignoreUnmappedProperties, bool unqualifiedNameCall)
+		protected MetadataBase(INameMatchResolver nameMatchResolver, bool ignoreUnmappedProperties,
+			bool unqualifiedNameCall)
 		{
 			IgnoreUnmappedProperties = ignoreUnmappedProperties;
 			NameMatchResolver = nameMatchResolver;
@@ -59,12 +60,14 @@ namespace Simple.OData.Client
 			{
 				if (SegmentsIncludeTypeSpecification(segments))
 				{
-					var baseEntitySet = this.GetEntityCollection(Utils.ExtractCollectionName(segments[segments.Length - 2]));
+					var baseEntitySet =
+						this.GetEntityCollection(Utils.ExtractCollectionName(segments[segments.Length - 2]));
 					return GetDerivedEntityCollection(baseEntitySet, Utils.ExtractCollectionName(segments.Last()));
 				}
 				else
 				{
-					return new EntityCollection(GetEntityCollectionExactName(Utils.ExtractCollectionName(segments.Last())));
+					return new EntityCollection(
+						GetEntityCollectionExactName(Utils.ExtractCollectionName(segments.Last())));
 				}
 			}
 			else
@@ -119,7 +122,8 @@ namespace Simple.OData.Client
 			return segments.Count() == 2 && SegmentsIncludeTypeSpecification(segments);
 		}
 
-		public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null)
+		public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData,
+			string contentId = null)
 		{
 			var entryDetails = new EntryDetails();
 
@@ -155,7 +159,8 @@ namespace Simple.OData.Client
 				}
 				else if (!IgnoreUnmappedProperties)
 				{
-					throw new UnresolvableObjectException(item.Key, String.Format("No property or association found for [{0}].", item.Key));
+					throw new UnresolvableObjectException(item.Key,
+						String.Format("No property or association found for [{0}].", item.Key));
 				}
 			}
 

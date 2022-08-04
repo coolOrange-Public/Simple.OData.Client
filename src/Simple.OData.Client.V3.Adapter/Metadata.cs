@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.Data.Edm;
 using Microsoft.Data.Edm.Library.Values;
 using Microsoft.Data.OData;
@@ -12,7 +11,8 @@ namespace Simple.OData.Client.V3.Adapter
 	{
 		private readonly IEdmModel _model;
 
-		public Metadata(IEdmModel model, INameMatchResolver nameMatchResolver, bool ignoreUnmappedProperties, bool unqualifiedNameCall)
+		public Metadata(IEdmModel model, INameMatchResolver nameMatchResolver, bool ignoreUnmappedProperties,
+			bool unqualifiedNameCall)
 			: base(nameMatchResolver, ignoreUnmappedProperties, unqualifiedNameCall)
 		{
 			_model = model;
@@ -25,21 +25,24 @@ namespace Simple.OData.Client.V3.Adapter
 
 		public override string GetNavigationPropertyMultiplicity(string collectionName, string propertyName)
 		{
-			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => navigationProperty.Multiplicity().ToString());
+			return ExecuteOnNavigationProperty(collectionName, propertyName,
+				navigationProperty => navigationProperty.Multiplicity().ToString());
 		}
 
 		public override string GetNavigationPropertyPartnerMultiplicity(string collectionName, string propertyName)
 		{
-			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty => (navigationProperty.Partner != null
-							? navigationProperty.Partner.Multiplicity()
-							: navigationProperty.Type.TypeKind() == EdmTypeKind.Collection
-							? EdmMultiplicity.Many
-							: navigationProperty.Type.TypeKind() == EdmTypeKind.Entity
+			return ExecuteOnNavigationProperty(collectionName, propertyName, navigationProperty =>
+				(navigationProperty.Partner != null
+					? navigationProperty.Partner.Multiplicity()
+					: navigationProperty.Type.TypeKind() == EdmTypeKind.Collection
+						? EdmMultiplicity.Many
+						: navigationProperty.Type.TypeKind() == EdmTypeKind.Entity
 							? EdmMultiplicity.ZeroOrOne
 							: EdmMultiplicity.Unknown).ToString());
 		}
 
-		T ExecuteOnNavigationProperty<T>(string collectionName, string propertyName, Func<IEdmNavigationProperty, T> execution)
+		T ExecuteOnNavigationProperty<T>(string collectionName, string propertyName,
+			Func<IEdmNavigationProperty, T> execution)
 		{
 			var navigationProperty = GetNavigationProperty(GetEntityType(collectionName).Name, propertyName);
 			return execution.Invoke(navigationProperty);
@@ -49,7 +52,7 @@ namespace Simple.OData.Client.V3.Adapter
 		{
 			var property = GetPropertyByName(collectionName, propertyName);
 			if (property.PropertyKind == EdmPropertyKind.Navigation &&
-				IsNavigationPropertyCollection(collectionName, propertyName))
+			    IsNavigationPropertyCollection(collectionName, propertyName))
 				return !GetNavigationPropertyPartnerMultiplicity(collectionName, propertyName)
 					.Equals("One", StringComparison.InvariantCulture);
 			return property.Type.IsNullable;
@@ -87,7 +90,8 @@ namespace Simple.OData.Client.V3.Adapter
 		{
 			var property = GetEntityType(collectionName).FindProperty(propertyName);
 			if (property == default(IEdmProperty))
-				throw new UnresolvableObjectException(propertyName, string.Format("Property [{0}] not found", propertyName));
+				throw new UnresolvableObjectException(propertyName,
+					string.Format("Property [{0}] not found", propertyName));
 			return property;
 		}
 
@@ -104,7 +108,8 @@ namespace Simple.OData.Client.V3.Adapter
 		public override IEnumerable<string> GetPropertyNames(string collectionName)
 		{
 			var keys = GetDeclaredKeyPropertyNames(collectionName);
-			return GetEntityType(collectionName).StructuralProperties().Where(x => !keys.Contains(x.Name)).Select(x => x.Name);
+			return GetEntityType(collectionName).StructuralProperties().Where(x => !keys.Contains(x.Name))
+				.Select(x => x.Name);
 		}
 
 		public override string GetEntityTypeName(string entitySetName)
@@ -125,7 +130,8 @@ namespace Simple.OData.Client.V3.Adapter
 				return entityType.Name;
 			}
 
-			throw new UnresolvableObjectException(collectionName, string.Format("Entity collection [{0}] not found", collectionName));
+			throw new UnresolvableObjectException(collectionName,
+				string.Format("Entity collection [{0}] not found", collectionName));
 		}
 
 		public override bool EntityCollectionRequiresOptimisticConcurrencyCheck(string collectionName)
@@ -150,7 +156,8 @@ namespace Simple.OData.Client.V3.Adapter
 				return entityType.Name;
 			}
 
-			throw new UnresolvableObjectException(entityTypeName, string.Format("Entity type [{0}] not found", entityTypeName));
+			throw new UnresolvableObjectException(entityTypeName,
+				string.Format("Entity type [{0}] not found", entityTypeName));
 		}
 
 		public override string GetEntityTypeExactName(string collectionName)
@@ -159,7 +166,8 @@ namespace Simple.OData.Client.V3.Adapter
 			if (entityType != null)
 				return entityType.Name;
 
-			throw new UnresolvableObjectException(collectionName, string.Format("Entity type [{0}] not found", collectionName));
+			throw new UnresolvableObjectException(collectionName,
+				string.Format("Entity type [{0}] not found", collectionName));
 		}
 
 		public override string GetLinkedCollectionName(string instanceTypeName, string typeName, out bool isSingleton)
@@ -177,7 +185,8 @@ namespace Simple.OData.Client.V3.Adapter
 			if (TryGetEntityType(typeName, out entityType))
 				return entityType.Name;
 
-			throw new UnresolvableObjectException(typeName, string.Format("Linked collection for type [{0}] not found", typeName));
+			throw new UnresolvableObjectException(typeName,
+				string.Format("Linked collection for type [{0}] not found", typeName));
 		}
 
 		public override string GetQualifiedTypeName(string typeName)
@@ -187,11 +196,13 @@ namespace Simple.OData.Client.V3.Adapter
 			{
 				return string.Join(".", entityType.Namespace, entityType.Name);
 			}
+
 			IEdmComplexType complexType;
 			if (TryGetComplexType(typeName, out complexType))
 			{
 				return string.Join(".", complexType.Namespace, complexType.Name);
 			}
+
 			IEdmEnumType enumType;
 			if (TryGetEnumType(typeName, out enumType))
 			{
@@ -222,7 +233,8 @@ namespace Simple.OData.Client.V3.Adapter
 
 		public override bool HasStructuralProperty(string collectionName, string propertyName)
 		{
-			return GetEntityType(collectionName).StructuralProperties().Any(x => NameMatchResolver.IsMatch(x.Name, propertyName));
+			return GetEntityType(collectionName).StructuralProperties()
+				.Any(x => NameMatchResolver.IsMatch(x.Name, propertyName));
 		}
 
 		public override string GetStructuralPropertyExactName(string collectionName, string propertyName)
@@ -246,12 +258,14 @@ namespace Simple.OData.Client.V3.Adapter
 				if (property.Type.IsPrimitive())
 					break;
 			}
+
 			return string.Join("/", exactNames.ToArray());
 		}
 
 		public override bool HasNavigationProperty(string collectionName, string propertyName)
 		{
-			return GetEntityType(collectionName).NavigationProperties().Any(x => NameMatchResolver.IsMatch(x.Name, propertyName));
+			return GetEntityType(collectionName).NavigationProperties()
+				.Any(x => NameMatchResolver.IsMatch(x.Name, propertyName));
 		}
 
 		public override string GetNavigationPropertyExactName(string collectionName, string propertyName)
@@ -264,7 +278,8 @@ namespace Simple.OData.Client.V3.Adapter
 			var navigationProperty = GetNavigationProperty(collectionName, propertyName);
 			IEdmEntityType entityType;
 			if (!TryGetEntityType(navigationProperty.Type, out entityType))
-				throw new UnresolvableObjectException(propertyName, string.Format("No association found for [{0}].", propertyName));
+				throw new UnresolvableObjectException(propertyName,
+					string.Format("No association found for [{0}].", propertyName));
 			return entityType.Name;
 		}
 
@@ -288,64 +303,66 @@ namespace Simple.OData.Client.V3.Adapter
 			return entityType.DeclaredKey.Select(x => x.Name);
 		}
 
-        public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
-        {
-            return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
-        }
+		public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
+		{
+			return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
+		}
 
-        /// <summary>
-        /// Gets a collection of key name collections that represent the alternate keys of the given entity.
-        /// As alternate keys are not supported on V3, this method will always return an empty enumeration.
-        /// </summary>
-        /// <param name="collectionName">The collection name of the entity</param>
-        /// <returns>An empty enumeration of string enumerations representing the key names</returns>
-        public override IEnumerable<IEnumerable<string>> GetAlternateKeyPropertyNames(string collectionName)
-        {
-            return Enumerable.Empty<IEnumerable<string>>();
-        }
+		/// <summary>
+		/// Gets a collection of key name collections that represent the alternate keys of the given entity.
+		/// As alternate keys are not supported on V3, this method will always return an empty enumeration.
+		/// </summary>
+		/// <param name="collectionName">The collection name of the entity</param>
+		/// <returns>An empty enumeration of string enumerations representing the key names</returns>
+		public override IEnumerable<IEnumerable<string>> GetAlternateKeyPropertyNames(string collectionName)
+		{
+			return Enumerable.Empty<IEnumerable<string>>();
+		}
 
-        public override string GetFunctionFullName(string functionName)
-        {
-            var function = GetFunction(functionName);
-            return function.Name;
-        }
+		public override string GetFunctionFullName(string functionName)
+		{
+			var function = GetFunction(functionName);
+			return function.Name;
+		}
 
-        public override EntityCollection GetFunctionReturnCollection(string functionName)
-        {
-            var function = GetFunction(functionName);
+		public override EntityCollection GetFunctionReturnCollection(string functionName)
+		{
+			var function = GetFunction(functionName);
 
-            if (function.ReturnType == null)
+			if (function.ReturnType == null)
 			{
 				return null;
 			}
 
-            IEdmEntityType entityType;
-            return !TryGetEntityType(function.ReturnType, out entityType) ? null : new EntityCollection(entityType.Name);
-        }
+			IEdmEntityType entityType;
+			return !TryGetEntityType(function.ReturnType, out entityType)
+				? null
+				: new EntityCollection(entityType.Name);
+		}
 
-        public override string GetFunctionVerb(string functionName)
-        {
-            var function = GetFunction(functionName);
-            var annotation = _model.GetAnnotationValue(function, ODataNamespace.Metadata, "HttpMethod");
+		public override string GetFunctionVerb(string functionName)
+		{
+			var function = GetFunction(functionName);
+			var annotation = _model.GetAnnotationValue(function, ODataNamespace.Metadata, "HttpMethod");
 			return annotation is EdmStringConstant ? (annotation as EdmStringConstant).Value : RestVerbs.Get;
-        }
+		}
 
-        public override string GetActionFullName(string actionName)
-        {
-            return GetFunctionFullName(actionName);
-        }
+		public override string GetActionFullName(string actionName)
+		{
+			return GetFunctionFullName(actionName);
+		}
 
-        public override EntityCollection GetActionReturnCollection(string actionName)
-        {
-            return GetFunctionReturnCollection(actionName);
-        }
+		public override EntityCollection GetActionReturnCollection(string actionName)
+		{
+			return GetFunctionReturnCollection(actionName);
+		}
 
-        private IEnumerable<IEdmEntitySet> GetEntitySets()
-        {
-            return _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-                .SelectMany(x => (x as IEdmEntityContainer).EntitySets());
-        }
+		private IEnumerable<IEdmEntitySet> GetEntitySets()
+		{
+			return _model.SchemaElements
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+				.SelectMany(x => (x as IEdmEntityContainer).EntitySets());
+		}
 
 		private IEdmEntitySet GetEntitySet(string entitySetName)
 		{
@@ -353,171 +370,181 @@ namespace Simple.OData.Client.V3.Adapter
 			if (TryGetEntitySet(entitySetName, out entitySet))
 				return entitySet;
 
-			throw new UnresolvableObjectException(entitySetName, string.Format("Entity set [{0}] not found", entitySetName));
+			throw new UnresolvableObjectException(entitySetName,
+				string.Format("Entity set [{0}] not found", entitySetName));
 		}
 
 		private bool TryGetEntitySet(string entitySetName, out IEdmEntitySet entitySet)
-        {
-            if (entitySetName.Contains("/"))
+		{
+			if (entitySetName.Contains("/"))
 			{
 				entitySetName = entitySetName.Split('/').First();
 			}
 
 			entitySet = _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-                .SelectMany(x => (x as IEdmEntityContainer).EntitySets())
-                .BestMatch(x => x.Name, entitySetName, NameMatchResolver);
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+				.SelectMany(x => (x as IEdmEntityContainer).EntitySets())
+				.BestMatch(x => x.Name, entitySetName, NameMatchResolver);
 
-            return entitySet != null;
-        }
+			return entitySet != null;
+		}
 
-        private IEnumerable<IEdmEntityType> GetEntityTypes()
-        {
-            return _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Entity)
-                .Select(x => x as IEdmEntityType);
-        }
+		private IEnumerable<IEdmEntityType> GetEntityTypes()
+		{
+			return _model.SchemaElements
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition &&
+				            (x as IEdmType).TypeKind == EdmTypeKind.Entity)
+				.Select(x => x as IEdmEntityType);
+		}
 
-        private IEdmEntityType GetEntityType(string collectionName)
-        {
+		private IEdmEntityType GetEntityType(string collectionName)
+		{
 			IEdmEntityType entityType;
 			if (TryGetEntityType(collectionName, out entityType))
 				return entityType;
 
-			throw new UnresolvableObjectException(collectionName, string.Format("Entity type [{0}] not found", collectionName));
-        }
+			throw new UnresolvableObjectException(collectionName,
+				string.Format("Entity type [{0}] not found", collectionName));
+		}
 
-        private bool TryGetEntityType(string collectionName, out IEdmEntityType entityType)
-        {
-            entityType = null;
-            if (collectionName.Contains("/"))
-            {
-                var segments = GetCollectionPathSegments(collectionName);
+		private bool TryGetEntityType(string collectionName, out IEdmEntityType entityType)
+		{
+			entityType = null;
+			if (collectionName.Contains("/"))
+			{
+				var segments = GetCollectionPathSegments(collectionName);
 
-                if (SegmentsIncludeTypeSpecification(segments))
-                {
-                    var derivedTypeName = segments.Last();
-                    var derivedType = GetEntityTypes().SingleOrDefault(x => x.FullName() == derivedTypeName);
-                    if (derivedType != null)
-                    {
-                        entityType = derivedType;
-                        return true;
-                    }
-                }
-                else
-                {
-                    var collection = NavigateToCollection(collectionName);
-                    entityType = GetEntityTypes().SingleOrDefault(x => x.Name == collection.Name);
-                    if (entityType != null)
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                var entitySet = GetEntitySets().BestMatch(x => x.Name, collectionName, NameMatchResolver);
-                if (entitySet != null)
-                {
-                    entityType = entitySet.ElementType;
-                    return true;
-                }
+				if (SegmentsIncludeTypeSpecification(segments))
+				{
+					var derivedTypeName = segments.Last();
+					var derivedType = GetEntityTypes().SingleOrDefault(x => x.FullName() == derivedTypeName);
+					if (derivedType != null)
+					{
+						entityType = derivedType;
+						return true;
+					}
+				}
+				else
+				{
+					var collection = NavigateToCollection(collectionName);
+					entityType = GetEntityTypes().SingleOrDefault(x => x.Name == collection.Name);
+					if (entityType != null)
+					{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				var entitySet = GetEntitySets().BestMatch(x => x.Name, collectionName, NameMatchResolver);
+				if (entitySet != null)
+				{
+					entityType = entitySet.ElementType;
+					return true;
+				}
 
-                var derivedType = GetEntityTypes().BestMatch(x => x.Name, collectionName, NameMatchResolver);
-                if (derivedType != null)
-                {
-                    var baseType = GetEntityTypes()
-                        .SingleOrDefault(x => _model.FindDirectlyDerivedTypes(x).Contains(derivedType));
-                    if (baseType != null && GetEntitySets().Any(x => x.ElementType == baseType))
-                    {
-                        entityType = derivedType;
-                        return true;
-                    }
-                    // Check if we can return it anyway
-                    entityType = derivedType;
-                    return true;
-                }
-            }
+				var derivedType = GetEntityTypes().BestMatch(x => x.Name, collectionName, NameMatchResolver);
+				if (derivedType != null)
+				{
+					var baseType = GetEntityTypes()
+						.SingleOrDefault(x => _model.FindDirectlyDerivedTypes(x).Contains(derivedType));
+					if (baseType != null && GetEntitySets().Any(x => x.ElementType == baseType))
+					{
+						entityType = derivedType;
+						return true;
+					}
 
-            return false;
-        }
+					// Check if we can return it anyway
+					entityType = derivedType;
+					return true;
+				}
+			}
 
-        private bool TryGetEntityType(IEdmTypeReference typeReference, out IEdmEntityType entityType)
-        {
-            entityType = typeReference.Definition.TypeKind == EdmTypeKind.Collection
-                ? (typeReference.Definition as IEdmCollectionType).ElementType.Definition as IEdmEntityType
-                : typeReference.Definition.TypeKind == EdmTypeKind.Entity
-                ? typeReference.Definition as IEdmEntityType
-                : null;
-            return entityType != null;
-        }
+			return false;
+		}
 
-        private IEdmComplexType GetComplexType(string typeName)
-        {
+		private bool TryGetEntityType(IEdmTypeReference typeReference, out IEdmEntityType entityType)
+		{
+			entityType = typeReference.Definition.TypeKind == EdmTypeKind.Collection
+				? (typeReference.Definition as IEdmCollectionType).ElementType.Definition as IEdmEntityType
+				: typeReference.Definition.TypeKind == EdmTypeKind.Entity
+					? typeReference.Definition as IEdmEntityType
+					: null;
+			return entityType != null;
+		}
+
+		private IEdmComplexType GetComplexType(string typeName)
+		{
 			IEdmComplexType complexType;
 			if (TryGetComplexType(typeName, out complexType))
 				return complexType;
 
 			throw new UnresolvableObjectException(typeName, string.Format("Enum [{0}] not found", typeName));
-        }
+		}
 
-        private bool TryGetComplexType(string typeName, out IEdmComplexType complexType)
-        {
-            complexType = _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Complex)
-                .Select(x => x as IEdmComplexType)
-                .BestMatch(x => x.Name, typeName, NameMatchResolver);
+		private bool TryGetComplexType(string typeName, out IEdmComplexType complexType)
+		{
+			complexType = _model.SchemaElements
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition &&
+				            (x as IEdmType).TypeKind == EdmTypeKind.Complex)
+				.Select(x => x as IEdmComplexType)
+				.BestMatch(x => x.Name, typeName, NameMatchResolver);
 
-            return complexType != null;
-        }
+			return complexType != null;
+		}
 
 		private bool TryGetEnumType(string typeName, out IEdmEnumType enumType)
-        {
-            enumType = _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Enum)
-                .Select(x => x as IEdmEnumType)
-                .BestMatch(x => x.Name, typeName, NameMatchResolver);
+		{
+			enumType = _model.SchemaElements
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition &&
+				            (x as IEdmType).TypeKind == EdmTypeKind.Enum)
+				.Select(x => x as IEdmEnumType)
+				.BestMatch(x => x.Name, typeName, NameMatchResolver);
 
-            return enumType != null;
-        }
+			return enumType != null;
+		}
 
-        private IEdmStructuralProperty GetStructuralProperty(string entitySetName, string propertyName)
-        {
-            var edmType = GetEntityType(entitySetName);
-            return GetStructuralProperty(edmType, propertyName);
-        }
+		private IEdmStructuralProperty GetStructuralProperty(string entitySetName, string propertyName)
+		{
+			var edmType = GetEntityType(entitySetName);
+			return GetStructuralProperty(edmType, propertyName);
+		}
 
-        private IEdmStructuralProperty GetStructuralProperty(IEdmStructuredType edmType, string propertyName)
-        {
-            var property = edmType.StructuralProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
+		private IEdmStructuralProperty GetStructuralProperty(IEdmStructuredType edmType, string propertyName)
+		{
+			var property = edmType.StructuralProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
 
-            if (property == null)
-				throw new UnresolvableObjectException(propertyName, string.Format("Structural property [{0}] not found", propertyName));
-
-			return property;
-        }
-
-        private IEdmNavigationProperty GetNavigationProperty(string entitySetName, string propertyName)
-        {
-            var property = GetEntityType(entitySetName).NavigationProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
-
-            if (property == null)
-				throw new UnresolvableObjectException(propertyName, string.Format("Navigation property [{0}] not found", propertyName));
+			if (property == null)
+				throw new UnresolvableObjectException(propertyName,
+					string.Format("Structural property [{0}] not found", propertyName));
 
 			return property;
-        }
+		}
 
-        private IEdmFunctionImport GetFunction(string functionName)
-        {
-            var function = _model.SchemaElements
-                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-                .SelectMany(x => (x as IEdmEntityContainer).FunctionImports())
-                .BestMatch(x => x.Name, functionName, NameMatchResolver);
+		private IEdmNavigationProperty GetNavigationProperty(string entitySetName, string propertyName)
+		{
+			var property = GetEntityType(entitySetName).NavigationProperties()
+				.BestMatch(x => x.Name, propertyName, NameMatchResolver);
 
-            if (function == null)
-				throw new UnresolvableObjectException(functionName, string.Format("Function [{0}] not found", functionName));
+			if (property == null)
+				throw new UnresolvableObjectException(propertyName,
+					string.Format("Navigation property [{0}] not found", propertyName));
+
+			return property;
+		}
+
+		private IEdmFunctionImport GetFunction(string functionName)
+		{
+			var function = _model.SchemaElements
+				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+				.SelectMany(x => (x as IEdmEntityContainer).FunctionImports())
+				.BestMatch(x => x.Name, functionName, NameMatchResolver);
+
+			if (function == null)
+				throw new UnresolvableObjectException(functionName,
+					string.Format("Function [{0}] not found", functionName));
 
 			return function;
-        }
-    }
+		}
+	}
 }

@@ -8,7 +8,10 @@ namespace Simple.OData.Client
 	{
 		public static INameMatchResolver Strict = new ExactMatchResolver();
 		public static INameMatchResolver Alpahumeric = new ExactMatchResolver(true);
-		public static INameMatchResolver AlpahumericCaseInsensitive = new ExactMatchResolver(true, StringComparison.InvariantCultureIgnoreCase);
+
+		public static INameMatchResolver AlpahumericCaseInsensitive =
+			new ExactMatchResolver(true, StringComparison.InvariantCultureIgnoreCase);
+
 		public static INameMatchResolver NotStrict = new BestMatchResolver();
 	}
 
@@ -23,7 +26,8 @@ namespace Simple.OData.Client
 		private readonly StringComparison _stringComparison;
 		private readonly bool _alphanumComparison;
 
-		public ExactMatchResolver(bool alphanumComparison = false, StringComparison stringComparison = StringComparison.InvariantCulture)
+		public ExactMatchResolver(bool alphanumComparison = false,
+			StringComparison stringComparison = StringComparison.InvariantCulture)
 		{
 			_alphanumComparison = alphanumComparison;
 			_stringComparison = stringComparison;
@@ -58,10 +62,10 @@ namespace Simple.OData.Client
 			requestedName = requestedName.Split('.').Last().Homogenize();
 
 			return actualName == requestedName ||
-				   (actualName == _pluralizer.Singularize(requestedName) ||
-					actualName == _pluralizer.Pluralize(requestedName) ||
-					_pluralizer.Singularize(actualName) == requestedName ||
-					_pluralizer.Pluralize(actualName) == requestedName);
+			       (actualName == _pluralizer.Singularize(requestedName) ||
+			        actualName == _pluralizer.Pluralize(requestedName) ||
+			        _pluralizer.Singularize(actualName) == requestedName ||
+			        _pluralizer.Pluralize(actualName) == requestedName);
 		}
 	}
 }
