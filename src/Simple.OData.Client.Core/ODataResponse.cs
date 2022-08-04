@@ -233,8 +233,7 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode,
-			ODataErrorDetails errorDetails = null, Exception e = null)
+		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
 		{
 			return new ODataResponse(typeCache) {
 				StatusCode = statusCode,

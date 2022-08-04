@@ -190,7 +190,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			batch += c => c
 				.For(x.Products)
 				.Filter(x.ProductName == "Test11")
-				.Set(new { UnitPrice = 22m })
+				.Set(new { UnitPrice = 22m }, false)
 				.UpdateEntryAsync(false);
 			batch += async c => product1 = await c
 				.For(x.Products)
@@ -225,7 +225,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var batch = new ODataBatch(settings);
 			batch += c => c
 				.For(x.Products)
-				.Set(new { ProductName = "Test12", UnitPrice = 21m })
+				.Set(new { ProductName = "Test12", UnitPrice = 21m }, false)
 				.InsertEntryAsync(false);
 			await batch.ExecuteAsync();
 
@@ -274,7 +274,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var batch = new ODataBatch(settings);
 			batch += async c => await c
 				.For(x.Categories)
-				.Set(category)
+				.Set(category, false)
 				.InsertEntryAsync();
 			batch += c => c
 				.For(x.Products)
@@ -302,11 +302,11 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var batch = new ODataBatch(settings);
 			batch += c => c
 				.For(x.Products)
-				.Set(product1)
+				.Set(product1, false)
 				.InsertEntryAsync(false);
 			batch += c => c
 				.For<Product>()
-				.Set(product2)
+				.Set(product2, false)
 				.InsertEntryAsync(false);
 			batch += async c => await c
 				.For(x.Categories)

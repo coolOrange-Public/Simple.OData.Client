@@ -10,11 +10,7 @@ namespace Simple.OData.Client
 	public partial class ODataClient : IODataClient
 	{
 		private readonly ODataClientSettings _settings;
-		private readonly Session _session;
 		private readonly RequestRunner _requestRunner;
-		private readonly Lazy<IBatchWriter> _lazyBatchWriter;
-		private readonly ConcurrentDictionary<object, IDictionary<string, object>> _batchEntries;
-		private readonly ODataResponse _batchResponse;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ODataClient"/> class.
@@ -48,14 +44,13 @@ namespace Simple.OData.Client
 			_requestRunner = new RequestRunner(_session);
 		}
 
-		internal ODataClient(ODataClientSettings settings,
-			ConcurrentDictionary<object, IDictionary<string, object>> batchEntries)
+		internal ODataClient(ODataClientSettings settings, ConcurrentDictionary<object, IDictionary<string, object>> batchEntries)
 			: this(settings)
 		{
 			if (batchEntries != null)
 			{
-				_batchEntries = batchEntries;
-				_lazyBatchWriter = new Lazy<IBatchWriter>(() => _session.Adapter.GetBatchWriter(_batchEntries));
+				BatchEntries = batchEntries;
+				BatchWriter = new Lazy<IBatchWriter>(() => Session.Adapter.GetBatchWriter(BatchEntries));
 			}
 		}
 
@@ -71,28 +66,26 @@ namespace Simple.OData.Client
 		{
 			if (batchEntries != null)
 			{
-				_batchEntries = batchEntries;
-				_lazyBatchWriter = new Lazy<IBatchWriter>(() => _session.Adapter.GetBatchWriter(_batchEntries));
+				BatchEntries = batchEntries;
+				BatchWriter = new Lazy<IBatchWriter>(() => Session.Adapter.GetBatchWriter(BatchEntries));
 			}
 		}
 
 		internal ODataClient(ODataClient client, ODataResponse batchResponse)
 		{
+			_settings = client._settings;
 			_session = client.Session as Session;
-			_batchResponse = batchResponse;
+			BatchResponse = batchResponse;
 		}
 
+		private readonly Session _session;
 		public ISession Session { get { return _session; } }
-		internal ODataResponse BatchResponse { get { return _batchResponse; } }
-		internal bool IsBatchRequest { get { return _lazyBatchWriter != null; } }
-		internal bool IsBatchResponse { get { return _batchResponse != null; } }
+		internal ODataResponse BatchResponse { get; private set; }
+		internal bool IsBatchRequest { get { return BatchWriter != null; } }
+		internal bool IsBatchResponse { get { return BatchResponse != null; } }
+		internal ConcurrentDictionary<object, IDictionary<string, object>> BatchEntries { get; private set; }
+		internal Lazy<IBatchWriter> BatchWriter { get; private set; }
 
-		internal ConcurrentDictionary<object, IDictionary<string, object>> BatchEntries
-		{
-			get { return _batchEntries; }
-		}
-
-		internal Lazy<IBatchWriter> BatchWriter { get { return _lazyBatchWriter; } }
 
 		/// <summary>
 		/// Parses the OData service metadata string.

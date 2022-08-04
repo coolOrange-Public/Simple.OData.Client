@@ -56,7 +56,7 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static WebRequestException CreateFromFromBatchResponse(HttpStatusCode statusCode, Stream responseStream)
+		public static WebRequestException CreateFromBatchResponse(HttpStatusCode statusCode, Stream responseStream)
 		{
 			var responseContent = Utils.StreamToString(responseStream, true);
 			return new WebRequestException(statusCode.ToString(), statusCode, null, responseContent, null);

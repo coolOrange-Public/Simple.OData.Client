@@ -536,7 +536,7 @@ namespace Simple.OData.Client
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateGetRequestAsync(commandText, true).ConfigureAwait(false);
 
 			return await ExecuteGetStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -557,7 +557,7 @@ namespace Simple.OData.Client
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreatePutRequestAsync(commandText, stream, contentType, optimisticConcurrency).ConfigureAwait(false);
 
 			await ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -573,7 +573,7 @@ namespace Simple.OData.Client
 			IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -597,7 +597,7 @@ namespace Simple.OData.Client
 			string functionName, IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntries(false);
+				return BatchResponse.AsEntries(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -619,7 +619,7 @@ namespace Simple.OData.Client
 			IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsScalar<T>();
+				return BatchResponse.AsScalar<T>();
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -638,7 +638,7 @@ namespace Simple.OData.Client
 			IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsArray<T>();
+				return BatchResponse.AsArray<T>();
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -686,7 +686,7 @@ namespace Simple.OData.Client
 			IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -710,7 +710,7 @@ namespace Simple.OData.Client
 			IDictionary<string, object> parameters, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntries(false);
+				return BatchResponse.AsEntries(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -732,7 +732,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsScalar<T>();
+				return BatchResponse.AsScalar<T>();
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -751,7 +751,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsArray<T>();
+				return BatchResponse.AsArray<T>();
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -816,9 +816,9 @@ namespace Simple.OData.Client
 		{
 			if (IsBatchResponse)
 			{
-				if (annotations != null && _batchResponse.Feed != null)
-					annotations.CopyFrom(_batchResponse.Feed.Annotations);
-				return _batchResponse.AsEntries(false);
+				if (annotations != null && BatchResponse.Feed != null)
+					annotations.CopyFrom(BatchResponse.Feed.Annotations);
+				return BatchResponse.AsEntries(false);
 			}
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
@@ -839,9 +839,9 @@ namespace Simple.OData.Client
 		{
 			if (IsBatchResponse)
 			{
-				if (annotations != null && _batchResponse.Feed != null)
-					annotations.CopyFrom(_batchResponse.Feed.Annotations);
-				return _batchResponse.AsEntries(false);
+				if (annotations != null && BatchResponse.Feed != null)
+					annotations.CopyFrom(BatchResponse.Feed.Annotations);
+				return BatchResponse.AsEntries(false);
 			}
 
 			var result = await FindAnnotatedEntriesAsync(commandText, scalarResult, annotations, headers, cancellationToken).ConfigureAwait(false);
@@ -870,7 +870,7 @@ namespace Simple.OData.Client
 			IDictionary<string, string> headers, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			var requestBuilder = new RequestBuilder(commandText, _session, this.BatchWriter, headers);
 			var request = await requestBuilder.GetRequestAsync(false, cancellationToken).ConfigureAwait(false);
@@ -886,7 +886,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -908,7 +908,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsScalar<object>();
+				return BatchResponse.AsScalar<object>();
 
 			var requestBuilder = new RequestBuilder(commandText, _session, this.BatchWriter, headers);
 			var request = await requestBuilder.GetRequestAsync(true, cancellationToken).ConfigureAwait(false);
@@ -924,7 +924,7 @@ namespace Simple.OData.Client
 		internal async Task<object> FindScalarAsync(FluentCommand command, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsScalar<object>();
+				return BatchResponse.AsScalar<object>();
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -939,7 +939,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -972,7 +972,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -1031,7 +1031,7 @@ namespace Simple.OData.Client
 			bool resultRequired, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntries(false);
+				return BatchResponse.AsEntries(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -1153,7 +1153,7 @@ namespace Simple.OData.Client
 			bool resultRequired, Stream stream, string contentType, CancellationToken cancellationToken)
 		{
 			var entryData = command.CommandData;
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateInsertRequestAsync(command.QualifiedEntityCollectionName, entryData, stream, resultRequired,
 					contentType);
 
@@ -1210,7 +1210,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntry(false);
+				return BatchResponse.AsEntry(false);
 
 			var result = await ExecuteAsEnumerableAsync(command, cancellationToken).ConfigureAwait(false);
 			return result == null ? null : result.FirstOrDefault();
@@ -1220,7 +1220,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntries(false);
+				return BatchResponse.AsEntries(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -1238,7 +1238,7 @@ namespace Simple.OData.Client
 			ODataFeedAnnotations annotations, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsEntries(false);
+				return BatchResponse.AsEntries(false);
 
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
 			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
@@ -1256,7 +1256,7 @@ namespace Simple.OData.Client
 		internal async Task<T> ExecuteAsScalarAsync<T>(FluentCommand command, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsScalar<T>();
+				return BatchResponse.AsScalar<T>();
 
 			var result = await ExecuteAsSingleAsync(command, cancellationToken).ConfigureAwait(false);
 			return IsBatchRequest
@@ -1269,7 +1269,7 @@ namespace Simple.OData.Client
 		internal async Task<T[]> ExecuteAsArrayAsync<T>(FluentCommand command, CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsArray<T>();
+				return BatchResponse.AsArray<T>();
 
 			var result = await ExecuteAsEnumerableAsync(command, cancellationToken).ConfigureAwait(false);
 			return IsBatchRequest
@@ -1286,7 +1286,7 @@ namespace Simple.OData.Client
 			CancellationToken cancellationToken)
 		{
 			if (IsBatchResponse)
-				return _batchResponse.AsArray<T>();
+				return BatchResponse.AsArray<T>();
 
 			var result = await ExecuteAsEnumerableAsync(command, annotations, cancellationToken).ConfigureAwait(false);
 			return IsBatchRequest

@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Entry = System.Collections.Generic.Dictionary<string, object>;
 
 namespace Simple.OData.Client.Tests.FluentApi
 {
-	using Entry = System.Collections.Generic.Dictionary<string, object>;
 
 	public class BatchTests : TestBase
 	{

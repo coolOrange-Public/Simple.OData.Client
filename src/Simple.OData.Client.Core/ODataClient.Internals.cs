@@ -31,7 +31,7 @@ namespace Simple.OData.Client
 		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command,
 			ODataFeedAnnotations annotations, CancellationToken cancellationToken)
 		{
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers)
 				.ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace Simple.OData.Client
 		private async Task<IEnumerable<IDictionary<string, object>>> ExecuteFunctionAsync(ResolvedCommand command,
 			CancellationToken cancellationToken)
 		{
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateFunctionRequestAsync(command.Format(), command.Details.FunctionName, command.Details.Headers)
 				.ConfigureAwait(false);
 
@@ -64,7 +64,7 @@ namespace Simple.OData.Client
 			var entityTypeName = command.EntityCollection != null
 				? _session.Metadata.GetQualifiedTypeName(command.EntityCollection.Name)
 				: null;
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName,
 					command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
 
@@ -85,7 +85,7 @@ namespace Simple.OData.Client
 			var entityTypeName = command.EntityCollection != null
 				? _session.Metadata.GetQualifiedTypeName(command.EntityCollection.Name)
 				: null;
-			var request = await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
+			var request = await _session.Adapter.GetRequestWriter(BatchWriter)
 				.CreateActionRequestAsync(command.Format(), command.Details.ActionName, entityTypeName,
 					command.CommandData, true, command.Details.Headers).ConfigureAwait(false);
 
@@ -101,7 +101,7 @@ namespace Simple.OData.Client
 				return;
 
 			var responseIndexes = new List<int>();
-			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes, headers)
+			var request = await BatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes, headers)
 				.ConfigureAwait(false);
 			if (request != null)
 			{
@@ -126,7 +126,7 @@ namespace Simple.OData.Client
 				return;
 
 			var responseIndexes = new List<int>();
-			var request = await _lazyBatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes)
+			var request = await BatchWriter.Value.CreateBatchRequestAsync(this, actions, responseIndexes)
 				.ConfigureAwait(false);
 			if (request != null)
 			{

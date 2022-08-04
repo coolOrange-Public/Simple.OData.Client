@@ -114,12 +114,9 @@ namespace Simple.OData.Client.V3.Adapter
 							batch.Add(ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
-							var responseStream = await operationMessage.GetStreamAsync();
-							var exception =
-								WebRequestException.CreateFromFromBatchResponse(
-									(HttpStatusCode)operationMessage.StatusCode, responseStream);
-							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode,
-								ReadErrorDetails(operationMessage), exception);
+							var responseStream = await operationMessage.GetStreamAsync().ConfigureAwait(false);
+							var exception = WebRequestException.CreateFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
+							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode, null, exception);
 							batch.Add(errorResponse);
 						}
 						else
@@ -205,7 +202,8 @@ namespace Simple.OData.Client.V3.Adapter
 		{
 			var readerSettings = new ODataMessageReaderSettings {
 				UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty,
-				DisableMessageStreamDisposal = true
+				DisableMessageStreamDisposal = true,
+				
 			};
 			using (var messageReader = new ODataMessageReader(responseMessage, readerSettings))
 			{

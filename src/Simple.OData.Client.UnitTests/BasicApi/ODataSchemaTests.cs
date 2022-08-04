@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -9,6 +10,11 @@ namespace Simple.OData.Client.Tests.BasicApi
 	{
 		private const string _serviceUrl = "http://services.odata.org/{0}/Northwind/Northwind.svc/";
 		private const int _expectedSchemaElementsCount = 27;
+
+		public ODataSchemaTests()
+		{
+			ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+		}
 
 		[Fact]
 		public async Task ReadMetadataV3()

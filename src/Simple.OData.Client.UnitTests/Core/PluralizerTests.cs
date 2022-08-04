@@ -29,7 +29,7 @@ namespace Simple.OData.Client.Tests.Core
 		[InlineData("Accesses", "Access")]
 		[InlineData("Lives", "Life")]
 		[InlineData("Codices", "Codex")]
-		[InlineData("Status", "Statuses")]
+		[InlineData("Statuses", "Status")]
 		public void SingularizeWord(string word, string expectedResult)
 		{
 			Assert.Equal(expectedResult, _pluralizer.Singularize(word));

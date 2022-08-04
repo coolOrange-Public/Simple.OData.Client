@@ -146,8 +146,7 @@ namespace Simple.OData.Client
 			if (Details.Filter == null && !ReferenceEquals(details.FilterExpression, null))
 			{
 				bool isAlternateKey;
-				Details.NamedKeyValues =
-					TryInterpretFilterExpressionAsKey(details.FilterExpression, out isAlternateKey);
+				Details.NamedKeyValues = TryInterpretFilterExpressionAsKey(details.FilterExpression, out isAlternateKey);
 				Details.IsAlternateKey = isAlternateKey;
 
 				if (Details.NamedKeyValues == null)
@@ -288,8 +287,7 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private IDictionary<string, object> TryInterpretFilterExpressionAsKey(ODataExpression expression,
-			out bool isAlternateKey)
+		private IDictionary<string, object> TryInterpretFilterExpressionAsKey(ODataExpression expression, out bool isAlternateKey)
 		{
 			isAlternateKey = false;
 			var ok = false;
@@ -345,8 +343,7 @@ namespace Simple.OData.Client
 
 			foreach (var alternateKey in alternateKeys)
 			{
-				if (Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, alternateKey,
-					    out alternateKeyNamedValues))
+				if (Utils.NamedKeyValuesMatchKeyNames(namedKeyValues, _sesson.Settings.NameMatchResolver, alternateKey, out alternateKeyNamedValues))
 					return true;
 			}
 

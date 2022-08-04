@@ -112,11 +112,8 @@ namespace Simple.OData.Client.V4.Adapter
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
 							var responseStream = await operationMessage.GetStreamAsync();
-							var exception =
-								WebRequestException.CreateFromFromBatchResponse(
-									(HttpStatusCode)operationMessage.StatusCode, responseStream);
-							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode,
-								ReadErrorDetails(operationMessage), exception);
+							var exception = WebRequestException.CreateFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
+							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode, null, exception);
 
 							batch.Add(errorResponse);
 						}
