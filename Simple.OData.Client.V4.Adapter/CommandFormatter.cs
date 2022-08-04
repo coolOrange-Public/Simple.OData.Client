@@ -51,16 +51,16 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (command.Details.ExpandAssociations.Any())
 			{
-				var groupedExpandAssociations = command.Details.ExpandAssociations.GroupBy(x => new KeyValuePair<ODataExpandAssociation, ODataExpandOptions>(x.Key, x.Value), x => x.Key);
+				var groupedExpandAssociations = command.Details.ExpandAssociations.GroupBy(x => Tuple.Create(x.Key, x.Value), x => x.Key);
 				var mergedExpandAssociations = groupedExpandAssociations
 					.Select(x =>
 					{
-						var mainAssociation = x.Key.Key;
+						var mainAssociation = x.Key.Item1;
 						foreach (var association in x.Where(a => a != mainAssociation))
 						{
 							mainAssociation = MergeExpandAssociations(mainAssociation, association).First();
 						}
-						return new KeyValuePair<ODataExpandAssociation, ODataExpandOptions>(mainAssociation, x.Key.Value);
+						return new KeyValuePair<ODataExpandAssociation, ODataExpandOptions>(mainAssociation, x.Key.Item2);
 					});
 
 				var formattedExpand = string.Join(",", mergedExpandAssociations.Select(x =>
@@ -194,123 +194,138 @@ namespace Simple.OData.Client.V4.Adapter
 			return text;
 		}
 
-		private static ODataExpandAssociation MergeExpandAssociations(ODataExpandAssociation expandAssociation, string path)
-		{
-			return MergeExpandAssociations(expandAssociation, ODataExpandAssociation.From(path)).First();
-		}
+        private static ODataExpandAssociation MergeExpandAssociations(ODataExpandAssociation expandAssociation, string path)
+        {
+            return MergeExpandAssociations(expandAssociation, ODataExpandAssociation.From(path)).First();
+        }
 
-		private static IEnumerable<ODataExpandAssociation> MergeExpandAssociations(ODataExpandAssociation first, ODataExpandAssociation second)
-		{
-			if (first.Name != second.Name && first.Name != "*") return new[] { first, second };
+        private static IEnumerable<ODataExpandAssociation> MergeExpandAssociations(ODataExpandAssociation first, ODataExpandAssociation second)
+        {
+            if (first.Name != second.Name && first.Name != "*")
+			{
+				return new [] {first, second};
+			}
 
 			var result = first.Clone();
-			result.OrderByColumns.AddRange(second.OrderByColumns.Except(first.OrderByColumns));
-			result.ExpandAssociations.Clear();
-			var groupedExpandAssociations = first.ExpandAssociations
-				.Concat(second.ExpandAssociations)
-				.GroupBy(x => x);
-			var mergedExpandAssociations = groupedExpandAssociations
-				.Select(x =>
-				{
-					var mainAssociation = x.Key;
-					foreach (var association in x.Where(a => a != mainAssociation))
-					{
-						mainAssociation = MergeExpandAssociations(mainAssociation, association).First();
-						mainAssociation.OrderByColumns.AddRange(association.OrderByColumns.Except(mainAssociation.OrderByColumns));
-					}
-					return mainAssociation;
-				});
+            result.OrderByColumns.AddRange(second.OrderByColumns.Except(first.OrderByColumns));
+            result.ExpandAssociations.Clear();
+            var groupedExpandAssociations = first.ExpandAssociations
+                .Concat(second.ExpandAssociations)
+                .GroupBy(x => x);
+            var mergedExpandAssociations = groupedExpandAssociations
+                .Select(x =>
+                {
+                    var mainAssociation = x.Key;
+                    foreach (var association in x.Where(a => a != mainAssociation))
+                    {
+                        mainAssociation = MergeExpandAssociations(mainAssociation, association).First();
+                        mainAssociation.OrderByColumns.AddRange(association.OrderByColumns.Except(mainAssociation.OrderByColumns));
+                    }
+                    return mainAssociation;
+                });
 
-			result.ExpandAssociations.AddRange(mergedExpandAssociations);
+            result.ExpandAssociations.AddRange(mergedExpandAssociations);
 
-			return new[] { result };
-		}
+            return new [] {result};
+        }
 
-		private static ODataExpandAssociation MergeOrderByColumns(ODataExpandAssociation expandAssociation, KeyValuePair<string, bool> orderByColumn)
-		{
-			if (string.IsNullOrEmpty(orderByColumn.Key))
+        private static ODataExpandAssociation MergeOrderByColumns(ODataExpandAssociation expandAssociation, KeyValuePair<string, bool> orderByColumn)
+        {
+            if (string.IsNullOrEmpty(orderByColumn.Key))
+			{
 				return expandAssociation;
+			}
 
 			var segments = orderByColumn.Key.Split('/');
-			if (segments[0] != expandAssociation.Name)
+            if (segments[0] != expandAssociation.Name)
+			{
 				return expandAssociation;
+			}
 
 			var result = expandAssociation.Clone();
-			MergeOrderByColumns(result, segments, orderByColumn.Value, 1);
-			return result;
-		}
+            MergeOrderByColumns(result, segments, orderByColumn.Value, 1);
+            return result;
+        }
 
-		private static void MergeOrderByColumns(ODataExpandAssociation expandAssociation,
-			string[] segments, bool descending, int currentIndex)
-		{
-			if (segments.Length == currentIndex)
+        private static void MergeOrderByColumns(ODataExpandAssociation expandAssociation,
+            string[] segments, bool descending, int currentIndex)
+        {
+            if (segments.Length == currentIndex)
+			{
 				return;
+			}
 
 			if (segments.Length == currentIndex + 1)
+            {
+                expandAssociation.OrderByColumns.Add(new ODataOrderByColumn(segments[currentIndex], descending));
+                return;
+            }
+
+            var nestedAssociation = expandAssociation.ExpandAssociations.FirstOrDefault(a => a.Name == segments[currentIndex]);
+            if (nestedAssociation != null)
+            {
+                MergeOrderByColumns(nestedAssociation, segments, descending, currentIndex + 1);
+            }
+        }
+
+        private IList<string> SelectPathSegmentColumns(
+            IList<string> columns, EntityCollection collection, IList<string> expandedPaths)
+        {
+            var expandedNavigationProperties = new HashSet<string>(
+                expandedPaths.Contains(StarString) ?
+                _session.Metadata.GetNavigationPropertyNames(collection.Name).Select(FormatFirstSegment) :
+                expandedPaths.Select(FormatFirstSegment));
+
+            return columns
+                .Where(x => !expandedNavigationProperties.Any(y => y.Equals(FormatFirstSegment(x))))
+                .ToList();
+        }
+
+        private bool IsInnerCollectionOrderBy(string expandAssociation, EntityCollection entityCollection, string orderByColumn)
+        {
+            var items = expandAssociation.Split('/');
+            if (items.First() != FormatFirstSegment(orderByColumn))
 			{
-				expandAssociation.OrderByColumns.Add(new ODataOrderByColumn(segments[currentIndex], descending));
-				return;
-			}
-
-			var nestedAssociation = expandAssociation.ExpandAssociations.FirstOrDefault(a => a.Name == segments[currentIndex]);
-			if (nestedAssociation != null)
-			{
-				MergeOrderByColumns(nestedAssociation, segments, descending, currentIndex + 1);
-			}
-		}
-
-		private IList<string> SelectPathSegmentColumns(
-			IList<string> columns, EntityCollection collection, IList<string> expandedPaths)
-		{
-			var expandedNavigationProperties = new HashSet<string>(
-				expandedPaths.Contains(StarString) ?
-				_session.Metadata.GetNavigationPropertyNames(collection.Name).Select(FormatFirstSegment) :
-				expandedPaths.Select(FormatFirstSegment));
-
-			return columns
-				.Where(x => !expandedNavigationProperties.Any(y => y.Equals(FormatFirstSegment(x))))
-				.ToList();
-		}
-
-		private bool IsInnerCollectionOrderBy(string expandAssociation, EntityCollection entityCollection, string orderByColumn)
-		{
-			var items = expandAssociation.Split('/');
-			if (items.First() != FormatFirstSegment(orderByColumn))
 				return false;
+			}
 
 			var associationName = _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, items.First());
-			if (_session.Metadata.IsNavigationPropertyCollection(entityCollection.Name, associationName))
-				return true;
-
-			if (items.Count() > 1)
+            if (_session.Metadata.IsNavigationPropertyCollection(entityCollection.Name, associationName))
 			{
-				expandAssociation = expandAssociation.Substring(items.First().Length + 1);
-				entityCollection = _session.Metadata.GetEntityCollection(
-				  _session.Metadata.GetNavigationPropertyPartnerTypeName(entityCollection.Name, associationName));
-
-				if (!HasMultipleSegments(orderByColumn) || FormatFirstSegment(orderByColumn) != FormatFirstSegment(expandAssociation))
-					return false;
-
-				orderByColumn = FormatSkipSegments(orderByColumn, 1);
-				return IsInnerCollectionOrderBy(expandAssociation, entityCollection, orderByColumn);
+				return true;
 			}
 
-			return false;
-		}
+			if (items.Count() > 1)
+            {
+                expandAssociation = expandAssociation.Substring(items.First().Length + 1);
+                entityCollection = _session.Metadata.GetEntityCollection(
+                  _session.Metadata.GetNavigationPropertyPartnerTypeName(entityCollection.Name, associationName));
 
-		private bool HasMultipleSegments(string path)
-		{
-			return path.Contains("/");
-		}
+                if (!HasMultipleSegments(orderByColumn) || FormatFirstSegment(orderByColumn) != FormatFirstSegment(expandAssociation))
+				{
+					return false;
+				}
 
-		private string FormatFirstSegment(string path)
-		{
-			return path.Split('/').First();
-		}
+				orderByColumn = FormatSkipSegments(orderByColumn, 1);
+                return IsInnerCollectionOrderBy(expandAssociation, entityCollection, orderByColumn);
+            }
 
-		private string FormatSkipSegments(string path, int skipCount)
-		{
-			return string.Join("/", path.Split('/').Skip(skipCount));
-		}
-	}
+            return false;
+        }
+
+        private bool HasMultipleSegments(string path)
+        {
+            return path.Contains("/");
+        }
+
+        private string FormatFirstSegment(string path)
+        {
+            return path.Split('/').First();
+        }
+
+        private string FormatSkipSegments(string path, int skipCount)
+        {
+            return string.Join("/", path.Split('/').Skip(skipCount));
+        }
+    }
 }

@@ -33,17 +33,17 @@ namespace Simple.OData.Client
 
         private static HttpClient CreateHttpClient(ODataClientSettings settings, HttpMessageHandler messageHandler)
         {
-            if (settings.RequestTimeout >= TimeSpan.FromMilliseconds(1))
-            {
-                return new HttpClient(messageHandler)
-                {
-                    Timeout = settings.RequestTimeout,
-                };
-            }
-            else
-            {
-                return new HttpClient(messageHandler);
-            }
+            if (settings.HttpClient != null)
+			{
+				return settings.HttpClient;
+			}
+
+			if (settings.RequestTimeout >= TimeSpan.FromMilliseconds(1))
+			{
+				return new HttpClient(messageHandler) { Timeout = settings.RequestTimeout };
+			}
+
+			return new HttpClient(messageHandler);
         }
 
         private static HttpMessageHandler CreateMessageHandler(ODataClientSettings settings)
@@ -56,12 +56,10 @@ namespace Simple.OData.Client
             {
                 var clientHandler = new HttpClientHandler();
 
-                // Perform this test to prevent failure to access Credentials/PreAuthenticate properties on SL5
                 if (settings.Credentials != null)
                 {
                     clientHandler.Credentials = settings.Credentials;
-                    if (clientHandler.SupportsPreAuthenticate())
-                        clientHandler.PreAuthenticate = true;
+                    clientHandler.PreAuthenticate = true;
                 }
 
                 if (settings.OnApplyClientHandler != null)

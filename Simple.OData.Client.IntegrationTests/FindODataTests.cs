@@ -6,7 +6,6 @@ using Xunit;
 
 namespace Simple.OData.Client.Tests
 {
-#if ODATA_V3
     public class FindODataTestsV2Atom : FindODataTests
     {
         public FindODataTestsV2Atom() : base(ODataV2ReadWriteUri, ODataPayloadFormat.Atom, 2) { }
@@ -26,14 +25,11 @@ namespace Simple.OData.Client.Tests
     {
         public FindODataTestsV3Json() : base(ODataV3ReadOnlyUri, ODataPayloadFormat.Json, 3) { }
     }
-#endif
 
-#if ODATA_V4
     public class FindODataTestsV4Json : FindODataTests
     {
         public FindODataTestsV4Json() : base(ODataV4ReadOnlyUri, ODataPayloadFormat.Json, 4) { }
     }
-#endif
 
     public abstract class FindODataTests : ODataTestBase
     {
@@ -81,7 +77,7 @@ namespace Simple.OData.Client.Tests
                 .Skip(1)
                 .Top(1)
                 .FindEntriesAsync();
-            Assert.Equal(1, products.Count());
+            Assert.Single(products);
         }
 
         [Fact]
@@ -92,6 +88,21 @@ namespace Simple.OData.Client.Tests
                 .OrderBy("Name")
                 .FindEntriesAsync()).First();
             Assert.Equal("Bread", product["Name"]);
+        }
+
+        [Fact]
+        public async Task OrderByNestedComplex()
+        {
+            var supplier = (await _client
+                .For("Suppliers")
+                .OrderBy("Address/City")
+                .FindEntriesAsync()).First();
+            Assert.Equal("Tokyo Traders", supplier["Name"]);
+            supplier = (await _client
+                .For("Suppliers")
+                .OrderByDescending("Address/City")
+                .FindEntriesAsync()).First();
+            Assert.Equal("Exotic Liquids", supplier["Name"]);
         }
 
         [Fact]
@@ -199,9 +210,11 @@ namespace Simple.OData.Client.Tests
         public async Task GetMediaStream()
         {
             if (_version == 2) // No media support in OData V2
-                return;
+			{
+				return;
+			}
 
-            var ad = await _client
+			var ad = await _client
                 .For("Advertisements")
                 .FindEntryAsync();
             var id = ad["ID"];
@@ -211,26 +224,28 @@ namespace Simple.OData.Client.Tests
                 .Media()
                 .GetStreamAsync();
             var text = Utils.StreamToString(stream);
-            Assert.True(text.StartsWith("Test stream data"));
+            Assert.StartsWith("Test stream data", text);
         }
 
         [Fact]
         public async Task GetNamedMediaStream()
         {
             if (_version == 2) // No media support in OData V2
-                return;
+			{
+				return;
+			}
 
-            var stream = await _client
+			var stream = await _client
                 .For("Persons")
                 .Key(1)
                 .NavigateTo("PersonDetail")
                 .Media("Photo")
                 .GetStreamAsync();
             var text = Utils.StreamToString(stream);
-            Assert.True(text.StartsWith("Test named stream data"));
+            Assert.StartsWith("Test named stream data", text);
         }
 
-        class PersonDetail
+		private class PersonDetail
         {
             public string Photo { get; set; }
         }
@@ -239,15 +254,17 @@ namespace Simple.OData.Client.Tests
         public async Task GetTypedNamedMediaStream()
         {
             if (_version == 2) // No media support in OData V2
-                return;
+			{
+				return;
+			}
 
-            var text = await _client
+			var text = await _client
                 .For("Persons")
                 .Key(1)
                 .NavigateTo<PersonDetail>()
                 .Media(x => x.Photo)
                 .GetStreamAsStringAsync();
-            Assert.True(text.StartsWith("Test named stream data"));
+            Assert.StartsWith("Test named stream data", text);
         }
     }
 }

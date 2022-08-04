@@ -11,7 +11,7 @@ namespace Simple.OData.ProductService.Controllers
 {
     public class WorkTaskModelsController : ODataController
     {
-        private ProductServiceContext db = new ProductServiceContext();
+        private readonly ProductServiceContext db = new();
 
 
         // GET odata/WorkTaskModels
@@ -85,7 +85,7 @@ namespace Simple.OData.ProductService.Controllers
                 return BadRequest(ModelState);
             }
 
-            WorkTaskModel workTaskModel = db.WorkTaskModels.Find(key);
+            var workTaskModel = db.WorkTaskModels.Find(key);
             if (workTaskModel == null)
             {
                 return NotFound();
@@ -115,7 +115,7 @@ namespace Simple.OData.ProductService.Controllers
         // DELETE odata/WorkTaskModels(5)
         public IHttpActionResult Delete([FromODataUri] Guid key)
         {
-            WorkTaskModel workTaskModel = db.WorkTaskModels.Find(key);
+            var workTaskModel = db.WorkTaskModels.Find(key);
             if (workTaskModel == null)
             {
                 return NotFound();

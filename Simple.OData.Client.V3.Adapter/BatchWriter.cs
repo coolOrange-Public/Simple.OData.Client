@@ -5,8 +5,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Data.OData;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client.V3.Adapter
 {
     public class BatchWriter : BatchWriterBase
@@ -20,34 +18,35 @@ namespace Simple.OData.Client.V3.Adapter
         {
         }
 
-#pragma warning disable 1998
-        public override async Task StartBatchAsync()
+        public async override Task StartBatchAsync()
         {
             _requestMessage = new ODataRequestMessage() { Url = _session.Settings.BaseUri };
             _messageWriter = new ODataMessageWriter(_requestMessage);
-            _batchWriter = await _messageWriter.CreateODataBatchWriterAsync();
-            await _batchWriter.WriteStartBatchAsync();
+            _batchWriter = await _messageWriter.CreateODataBatchWriterAsync().ConfigureAwait(false);
+            await _batchWriter.WriteStartBatchAsync().ConfigureAwait(false);
             this.HasOperations = true;
         }
-#pragma warning restore 1998
 
-#pragma warning disable 1998
-        public override async Task<HttpRequestMessage> EndBatchAsync()
+        public async override Task<HttpRequestMessage> EndBatchAsync()
         {
             if (_pendingChangeSet)
-                await _batchWriter.WriteEndChangesetAsync();
-            await _batchWriter.WriteEndBatchAsync();
-            var stream = await _requestMessage.GetStreamAsync();
+			{
+				await _batchWriter.WriteEndChangesetAsync().ConfigureAwait(false);
+			}
+
+			await _batchWriter.WriteEndBatchAsync().ConfigureAwait(false);
+            var stream = await _requestMessage.GetStreamAsync().ConfigureAwait(false);
             return CreateMessageFromStream(stream, _requestMessage.Url, _requestMessage.GetHeader);
         }
-#pragma warning restore 1998
 
-        protected override async Task StartChangesetAsync()
+        protected async override Task StartChangesetAsync()
         {
             if (_batchWriter == null)
-                await StartBatchAsync();
+			{
+				await StartBatchAsync().ConfigureAwait(false);
+			}
 
-            await _batchWriter.WriteStartChangesetAsync();
+			await _batchWriter.WriteStartChangesetAsync().ConfigureAwait(false);
         }
 
         protected override Task EndChangesetAsync()
@@ -55,34 +54,38 @@ namespace Simple.OData.Client.V3.Adapter
             return _batchWriter.WriteEndChangesetAsync();
         }
 
-        protected override async Task<object> CreateOperationMessageAsync(Uri uri, string method, string collection, string contentId, bool resultRequired)
+        protected async override Task<object> CreateOperationMessageAsync(Uri uri, string method, string collection, string contentId, bool resultRequired)
         {
             if (_batchWriter == null)
-                await StartBatchAsync();
+			{
+				await StartBatchAsync().ConfigureAwait(false);
+			}
 
-            return await CreateBatchOperationMessageAsync(uri, method, collection, contentId, resultRequired);
+			return await CreateBatchOperationMessageAsync(uri, method, collection, contentId, resultRequired).ConfigureAwait(false);
         }
 
-#pragma warning disable 1998
         private async Task<ODataBatchOperationRequestMessage> CreateBatchOperationMessageAsync(
             Uri uri, string method, string collection, string contentId, bool resultRequired)
         {
-            var message = await _batchWriter.CreateOperationRequestMessageAsync(method, uri);
+	        var message = await _batchWriter.CreateOperationRequestMessageAsync(method, uri).ConfigureAwait(false);
 
-            if (method != RestVerbs.Get && method != RestVerbs.Delete)
-                message.SetHeader(HttpLiteral.ContentId, contentId);
+	        if (method != RestVerbs.Get && method != RestVerbs.Delete)
+	        {
+		        message.SetHeader(HttpLiteral.ContentId, contentId);
+	        }
 
-            if (method == RestVerbs.Post || method == RestVerbs.Put || method == RestVerbs.Patch)
-                message.SetHeader(HttpLiteral.Prefer, resultRequired ? HttpLiteral.ReturnContent : HttpLiteral.ReturnNoContent);
+	        if (method == RestVerbs.Post || method == RestVerbs.Put || method == RestVerbs.Patch || method == RestVerbs.Merge)
+	        {
+		        message.SetHeader(HttpLiteral.Prefer, resultRequired ? HttpLiteral.ReturnContent : HttpLiteral.ReturnNoContent);
+	        }
 
-            if (collection != null && _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection) &&
-                (method == RestVerbs.Put || method == RestVerbs.Patch || method == RestVerbs.Delete))
-            {
-                message.SetHeader(HttpLiteral.IfMatch, EntityTagHeaderValue.Any.Tag);
-            }
+	        if (collection != null && _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection) &&
+	            (method == RestVerbs.Put || method == RestVerbs.Patch || method == RestVerbs.Merge || method == RestVerbs.Delete))
+	        {
+		        message.SetHeader(HttpLiteral.IfMatch, EntityTagHeaderValue.Any.Tag);
+	        }
 
-            return message;
-        }
-#pragma warning restore 1998
+	        return message;
+		}
     }
 }

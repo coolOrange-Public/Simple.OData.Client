@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data.Services.Providers;
+using System.Linq;
 using System.Reflection;
 
 namespace ActionProviderImplementation
 {
     public class ActionFactory
     {
-        IDataServiceMetadataProvider _metadata;
+		private readonly IDataServiceMetadataProvider _metadata;
+
         //TODO: make this list complete
-        static Type[] __primitives = new[] {
+		private static readonly Type[] __primitives = new[] {
             typeof(bool),
             typeof(short),
             typeof(int),
@@ -40,21 +40,23 @@ namespace ActionProviderImplementation
             {
                 var method = actionInfo.ActionMethod;
                 
-                string actionName = method.Name;
-                ResourceType returnType = method.ReturnType == typeof(void) ? null: GetResourceType(method.ReturnType);
-                ResourceSet resourceSet = GetResourceSet(returnType);
+				var actionName = method.Name;
+				var returnType = method.ReturnType == typeof(void) ? null : GetResourceType(method.ReturnType);
+				var resourceSet = GetResourceSet(returnType);
 
                 var parameters = GetParameters(method, actionInfo.Binding != OperationParameterBindingKind.Never);
-                ServiceAction action = new ServiceAction(
+				var action = new ServiceAction(
                     actionName,
                     returnType,
                     resourceSet,
                     actionInfo.Binding,
                     parameters
-                );
+				)
+				{
 
                 // Store the method associated with this Action.
-                action.CustomState = actionInfo;
+					CustomState = actionInfo
+				};
                 action.SetReadOnly();
                 yield return action;
             }
@@ -70,6 +72,7 @@ namespace ActionProviderImplementation
             else if (resourceType.ResourceTypeKind == ResourceTypeKind.EntityCollection)
             {
                 if (type.GetGenericTypeDefinition() == typeof(IQueryable<>))
+				{
                     return resourceType;
             }
             throw new Exception(string.Format("Type {0} is not a valid binding parameter", type.FullName));
@@ -106,18 +109,25 @@ namespace ActionProviderImplementation
                     { 
                         var elementResource = GetResourceType(type.GetGenericArguments().Single());
                         if ((elementResource.ResourceTypeKind | ResourceTypeKind.EntityType) == ResourceTypeKind.EntityType)
+						{
                             return ResourceType.GetEntityCollectionResourceType(elementResource);
+						}
                         else
+						{
                             return ResourceType.GetCollectionResourceType(elementResource);
                     }
                 }
                 throw new Exception(string.Format("Generic action parameter type {0} not supported", type.ToString()));
             }
+				throw new Exception($"Generic action parameter type {type} not supported");
+			}
 
             if (ActionFactory.__primitives.Contains(type))
+			{
                 return ResourceType.GetPrimitiveResourceType(type);
+			}
 
-            ResourceType resourceType = _metadata.Types.SingleOrDefault(s => s.Name == type.Name);
+			var resourceType = _metadata.Types.SingleOrDefault(s => s.Name == type.Name);
             if (resourceType == null)
                 throw new Exception(string.Format("Generic action parameter type {0} not supported", type.ToString()));
             return resourceType;
@@ -131,7 +141,7 @@ namespace ActionProviderImplementation
             }
             else if (type.ResourceTypeKind == ResourceTypeKind.EntityCollection)
             {
-                EntityCollectionResourceType ecType = type as EntityCollectionResourceType;
+				var ecType = type as EntityCollectionResourceType;
                 return GetResourceSet(ecType.ItemType);
             }
             else if (type.ResourceTypeKind == ResourceTypeKind.EntityType)

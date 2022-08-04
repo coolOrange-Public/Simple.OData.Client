@@ -3,8 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client.Adapter
 {
 	/// <summary>

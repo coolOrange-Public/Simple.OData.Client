@@ -16,7 +16,7 @@ namespace Simple.OData.Client.Tests.Core
         string GetContainedInFormat(string item, string text, bool escapeString = false);
     }
 
-    class ODataV3Format : IFormatSettings
+	internal class ODataV3Format : IFormatSettings
     {
         public int ODataVersion { get { return 3; } }
         public string LongNumberSuffix { get { return "L"; } }
@@ -28,16 +28,22 @@ namespace Simple.OData.Client.Tests.Core
         {
             var result = string.Format("datetimeoffset'{0}'", text);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
 
         public string GetGuidFormat(string text, bool escapeString = false)
         {
             var result = string.Format("guid'{0}'", text);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
 
         public string GetEnumFormat(object value, Type enumType, string ns, bool prefixFree = false, bool escapeString = false)
@@ -49,20 +55,26 @@ namespace Simple.OData.Client.Tests.Core
         {
             var result = string.Format("substringof('{0}',{1})", text, item);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
         
         public string GetContainedInFormat(string item, string text, bool escapeString = false)
         {
             var result = string.Format("substringof({0},'{1}')", item, text);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
     }
 
-    class ODataV4Format : IFormatSettings
+	internal class ODataV4Format : IFormatSettings
     {
         public ODataV4Format(bool escapeUri = false)
         {
@@ -90,24 +102,33 @@ namespace Simple.OData.Client.Tests.Core
                 ? string.Format("'{0}'", Enum.ToObject(enumType, value))
                 : string.Format("{0}.{1}'{2}'", ns, enumType.Name, Enum.ToObject(enumType, value));
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
 
         public string GetContainsFormat(string item, string text, bool escapeString = false)
         {
             var result = string.Format("contains({0},'{1}')", item, text);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
 
         public string GetContainedInFormat(string item, string text, bool escapeString = false)
         {
             var result = string.Format("contains('{0}',{1})", text, item);
             if (escapeString)
-                result = Uri.EscapeDataString(result);
-            return result;
+			{
+				result = Uri.EscapeDataString(result);
+			}
+
+			return result;
         }
     }
 }

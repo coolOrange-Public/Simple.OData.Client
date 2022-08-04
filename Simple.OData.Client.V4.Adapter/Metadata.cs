@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Vocabularies;
-
-#pragma warning disable 1591
 
 namespace Simple.OData.Client.V4.Adapter
 {
@@ -620,9 +619,11 @@ namespace Simple.OData.Client.V4.Adapter
 				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
 				.SelectMany(x => (x as IEdmEntityContainer).Elements
 					.Where(y => y.ContainerElementKind == EdmContainerElementKind.FunctionImport))
-					.BestMatch(x => x.Name, functionName, NameMatchResolver) as IEdmFunctionImport;
+				.BestMatch(x => x.Name, functionName, NameMatchResolver) as IEdmFunctionImport;
 			if (functionImport != null)
+			{
 				function = functionImport.Function;
+			}
 
 			if (function == null)
 			{
@@ -644,9 +645,11 @@ namespace Simple.OData.Client.V4.Adapter
 				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
 				.SelectMany(x => (x as IEdmEntityContainer).Elements
 					.Where(y => y.ContainerElementKind == EdmContainerElementKind.ActionImport))
-					.BestMatch(x => x.Name, actionName, NameMatchResolver) as IEdmActionImport;
+				.BestMatch(x => x.Name, actionName, NameMatchResolver) as IEdmActionImport;
 			if (actionImport != null)
+			{
 				action = actionImport.Action;
+			}
 
 			if (action == null)
 			{

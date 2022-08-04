@@ -15,7 +15,9 @@ namespace Simple.OData.Client
             expandExpressionVisitor.Visit(expression);
 
             if (expandExpressionVisitor.ExpandAssociations.Any())
+			{
                 return expandExpressionVisitor.ExpandAssociations;
+			}
 
             throw Utils.NotSupportedExpression(expression);
         }
@@ -47,7 +49,10 @@ namespace Simple.OData.Client
 
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            if (node.NodeType != ExpressionType.Convert) return base.VisitUnary(node);
+            if (node.NodeType != ExpressionType.Convert)
+			{
+				return base.VisitUnary(node);
+			}
             
             ExpandAssociations.AddRange(ExtractNestedExpandAssociations(node.Operand));
             return node;
@@ -56,7 +61,9 @@ namespace Simple.OData.Client
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (node.Arguments.Count != 2)
+			{
                 throw Utils.NotSupportedExpression(node);
+			}
 
             var association = AddNestedExpandAssociationAndGetDeepestChild(node.Arguments[0]);
 
@@ -72,7 +79,9 @@ namespace Simple.OData.Client
                 case "ThenBy":
                 {
                     if ((node.Arguments[0] is MethodCallExpression ? ((MethodCallExpression)node.Arguments[0]).Method.Name : null) == "Select")
+						{
                         throw Utils.NotSupportedExpression(node);
+						}
 
                     association.OrderByColumns
                         .AddRange(node.Arguments[1]
@@ -84,7 +93,9 @@ namespace Simple.OData.Client
                 case "ThenByDescending":
                 {
                     if ((node.Arguments[0] is MethodCallExpression ? ((MethodCallExpression)node.Arguments[0]).Method.Name : null) == "Select")
+						{
                         throw Utils.NotSupportedExpression(node);
+						}
 
                     association.OrderByColumns
                         .AddRange(node.Arguments[1]
@@ -97,9 +108,13 @@ namespace Simple.OData.Client
                     var filterExpression =
                         ODataExpression.FromLinqExpression(node.Arguments[1] is LambdaExpression ? ((LambdaExpression)node.Arguments[1]).Body : null);
                     if (ReferenceEquals(association.FilterExpression, null))
+						{
                         association.FilterExpression = filterExpression;
+						}
                     else
+						{
                         association.FilterExpression = association.FilterExpression && filterExpression;
+						}
 
                     return node;
                 }

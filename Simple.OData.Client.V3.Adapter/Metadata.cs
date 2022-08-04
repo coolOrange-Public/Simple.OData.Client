@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Data.Edm;
 using Microsoft.Data.Edm.Library.Values;
 using Microsoft.Data.OData;
-
-#pragma warning disable 1591
 
 namespace Simple.OData.Client.V3.Adapter
 {
@@ -100,22 +99,6 @@ namespace Simple.OData.Client.V3.Adapter
 		public override IEnumerable<string> GetEntityTypeNames()
 		{
 			return GetEntityTypes().Select(x => x.Name);
-		}
-
-		public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
-		{
-			return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
-		}
-
-		/// <summary>
-		/// Gets a collection of key name collections that represent the alternate keys of the given entity.
-		/// As alternate keys are not supported on V3, this method will always return an empty enumeration.
-		/// </summary>
-		/// <param name="collectionName">The collection name of the entity</param>
-		/// <returns>An empty enumeration of string enumerations representing the key names</returns>
-		public override IEnumerable<IEnumerable<string>> GetAlternateKeyPropertyNames(string collectionName)
-		{
-			return Enumerable.Empty<IEnumerable<string>>();
 		}
 
 		public override IEnumerable<string> GetPropertyNames(string collectionName)
@@ -305,46 +288,64 @@ namespace Simple.OData.Client.V3.Adapter
 			return entityType.DeclaredKey.Select(x => x.Name);
 		}
 
-		public override string GetFunctionFullName(string functionName)
-		{
-			var function = GetFunction(functionName);
-			return function.Name;
-		}
+        public override IEnumerable<string> GetNavigationPropertyNames(string collectionName)
+        {
+            return GetEntityType(collectionName).NavigationProperties().Select(x => x.Name);
+        }
 
-		public override EntityCollection GetFunctionReturnCollection(string functionName)
-		{
-			var function = GetFunction(functionName);
+        /// <summary>
+        /// Gets a collection of key name collections that represent the alternate keys of the given entity.
+        /// As alternate keys are not supported on V3, this method will always return an empty enumeration.
+        /// </summary>
+        /// <param name="collectionName">The collection name of the entity</param>
+        /// <returns>An empty enumeration of string enumerations representing the key names</returns>
+        public override IEnumerable<IEnumerable<string>> GetAlternateKeyPropertyNames(string collectionName)
+        {
+            return Enumerable.Empty<IEnumerable<string>>();
+        }
 
-			if (function.ReturnType == null)
+        public override string GetFunctionFullName(string functionName)
+        {
+            var function = GetFunction(functionName);
+            return function.Name;
+        }
+
+        public override EntityCollection GetFunctionReturnCollection(string functionName)
+        {
+            var function = GetFunction(functionName);
+
+            if (function.ReturnType == null)
+			{
 				return null;
+			}
 
-			IEdmEntityType entityType;
-			return !TryGetEntityType(function.ReturnType, out entityType) ? null : new EntityCollection(entityType.Name);
-		}
+            IEdmEntityType entityType;
+            return !TryGetEntityType(function.ReturnType, out entityType) ? null : new EntityCollection(entityType.Name);
+        }
 
-		public override string GetFunctionVerb(string functionName)
-		{
-			var function = GetFunction(functionName);
-			var annotation = _model.GetAnnotationValue(function, ODataNamespace.Metadata, "HttpMethod");
+        public override string GetFunctionVerb(string functionName)
+        {
+            var function = GetFunction(functionName);
+            var annotation = _model.GetAnnotationValue(function, ODataNamespace.Metadata, "HttpMethod");
 			return annotation is EdmStringConstant ? (annotation as EdmStringConstant).Value : RestVerbs.Get;
-		}
+        }
 
-		public override string GetActionFullName(string actionName)
-		{
-			return GetFunctionFullName(actionName);
-		}
+        public override string GetActionFullName(string actionName)
+        {
+            return GetFunctionFullName(actionName);
+        }
 
-		public override EntityCollection GetActionReturnCollection(string actionName)
-		{
-			return GetFunctionReturnCollection(actionName);
-		}
+        public override EntityCollection GetActionReturnCollection(string actionName)
+        {
+            return GetFunctionReturnCollection(actionName);
+        }
 
-		private IEnumerable<IEdmEntitySet> GetEntitySets()
-		{
-			return _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-				.SelectMany(x => (x as IEdmEntityContainer).EntitySets());
-		}
+        private IEnumerable<IEdmEntitySet> GetEntitySets()
+        {
+            return _model.SchemaElements
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+                .SelectMany(x => (x as IEdmEntityContainer).EntitySets());
+        }
 
 		private IEdmEntitySet GetEntitySet(string entitySetName)
 		{
@@ -356,175 +357,167 @@ namespace Simple.OData.Client.V3.Adapter
 		}
 
 		private bool TryGetEntitySet(string entitySetName, out IEdmEntitySet entitySet)
-		{
-			if (entitySetName.Contains("/"))
+        {
+            if (entitySetName.Contains("/"))
+			{
 				entitySetName = entitySetName.Split('/').First();
+			}
 
 			entitySet = _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-				.SelectMany(x => (x as IEdmEntityContainer).EntitySets())
-				.BestMatch(x => x.Name, entitySetName, NameMatchResolver);
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+                .SelectMany(x => (x as IEdmEntityContainer).EntitySets())
+                .BestMatch(x => x.Name, entitySetName, NameMatchResolver);
 
-			return entitySet != null;
-		}
+            return entitySet != null;
+        }
 
-		private IEnumerable<IEdmEntityType> GetEntityTypes()
-		{
-			return _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Entity)
-				.Select(x => x as IEdmEntityType);
-		}
+        private IEnumerable<IEdmEntityType> GetEntityTypes()
+        {
+            return _model.SchemaElements
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Entity)
+                .Select(x => x as IEdmEntityType);
+        }
 
-		private IEdmEntityType GetEntityType(string collectionName)
-		{
+        private IEdmEntityType GetEntityType(string collectionName)
+        {
 			IEdmEntityType entityType;
 			if (TryGetEntityType(collectionName, out entityType))
 				return entityType;
 
 			throw new UnresolvableObjectException(collectionName, string.Format("Entity type [{0}] not found", collectionName));
-		}
+        }
 
-		private bool TryGetEntityType(string collectionName, out IEdmEntityType entityType)
-		{
-			entityType = null;
-			if (collectionName.Contains("/"))
-			{
-				var segments = GetCollectionPathSegments(collectionName);
+        private bool TryGetEntityType(string collectionName, out IEdmEntityType entityType)
+        {
+            entityType = null;
+            if (collectionName.Contains("/"))
+            {
+                var segments = GetCollectionPathSegments(collectionName);
 
-				if (SegmentsIncludeTypeSpecification(segments))
-				{
-					var derivedTypeName = segments.Last();
-					var derivedType = GetEntityTypes().SingleOrDefault(x => x.FullName() == derivedTypeName);
-					if (derivedType != null)
-					{
-						entityType = derivedType;
-						return true;
-					}
-				}
-				else
-				{
-					var collection = NavigateToCollection(collectionName);
-					entityType = GetEntityTypes().SingleOrDefault(x => x.Name == collection.Name);
-					if (entityType != null)
-					{
-						return true;
-					}
-				}
-			}
-			else
-			{
-				var entitySet = GetEntitySets().BestMatch(x => x.Name, collectionName, NameMatchResolver);
-				if (entitySet != null)
-				{
-					entityType = entitySet.ElementType;
-					return true;
-				}
+                if (SegmentsIncludeTypeSpecification(segments))
+                {
+                    var derivedTypeName = segments.Last();
+                    var derivedType = GetEntityTypes().SingleOrDefault(x => x.FullName() == derivedTypeName);
+                    if (derivedType != null)
+                    {
+                        entityType = derivedType;
+                        return true;
+                    }
+                }
+                else
+                {
+                    var collection = NavigateToCollection(collectionName);
+                    entityType = GetEntityTypes().SingleOrDefault(x => x.Name == collection.Name);
+                    if (entityType != null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                var entitySet = GetEntitySets().BestMatch(x => x.Name, collectionName, NameMatchResolver);
+                if (entitySet != null)
+                {
+                    entityType = entitySet.ElementType;
+                    return true;
+                }
 
-				var derivedType = GetEntityTypes().BestMatch(x => x.Name, collectionName, NameMatchResolver);
-				if (derivedType != null)
-				{
-					var baseType = GetEntityTypes()
-						.SingleOrDefault(x => _model.FindDirectlyDerivedTypes(x).Contains(derivedType));
-					if (baseType != null && GetEntitySets().Any(x => x.ElementType == baseType))
-					{
-						entityType = derivedType;
-						return true;
-					}
-					// Check if we can return it anyway
-					entityType = derivedType;
-					return true;
-				}
-			}
+                var derivedType = GetEntityTypes().BestMatch(x => x.Name, collectionName, NameMatchResolver);
+                if (derivedType != null)
+                {
+                    var baseType = GetEntityTypes()
+                        .SingleOrDefault(x => _model.FindDirectlyDerivedTypes(x).Contains(derivedType));
+                    if (baseType != null && GetEntitySets().Any(x => x.ElementType == baseType))
+                    {
+                        entityType = derivedType;
+                        return true;
+                    }
+                    // Check if we can return it anyway
+                    entityType = derivedType;
+                    return true;
+                }
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		private bool TryGetEntityType(IEdmTypeReference typeReference, out IEdmEntityType entityType)
-		{
-			entityType = typeReference.Definition.TypeKind == EdmTypeKind.Collection
-				? (typeReference.Definition as IEdmCollectionType).ElementType.Definition as IEdmEntityType
-				: typeReference.Definition.TypeKind == EdmTypeKind.Entity
-					? typeReference.Definition as IEdmEntityType
-					: null;
-			return entityType != null;
-		}
+        private bool TryGetEntityType(IEdmTypeReference typeReference, out IEdmEntityType entityType)
+        {
+            entityType = typeReference.Definition.TypeKind == EdmTypeKind.Collection
+                ? (typeReference.Definition as IEdmCollectionType).ElementType.Definition as IEdmEntityType
+                : typeReference.Definition.TypeKind == EdmTypeKind.Entity
+                ? typeReference.Definition as IEdmEntityType
+                : null;
+            return entityType != null;
+        }
 
-		private IEdmComplexType GetComplexType(string typeName)
-		{
+        private IEdmComplexType GetComplexType(string typeName)
+        {
 			IEdmComplexType complexType;
 			if (TryGetComplexType(typeName, out complexType))
 				return complexType;
 
 			throw new UnresolvableObjectException(typeName, string.Format("Enum [{0}] not found", typeName));
-		}
+        }
 
-		private bool TryGetComplexType(string typeName, out IEdmComplexType complexType)
-		{
-			complexType = _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Complex)
-				.Select(x => x as IEdmComplexType)
-				.BestMatch(x => x.Name, typeName, NameMatchResolver);
+        private bool TryGetComplexType(string typeName, out IEdmComplexType complexType)
+        {
+            complexType = _model.SchemaElements
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Complex)
+                .Select(x => x as IEdmComplexType)
+                .BestMatch(x => x.Name, typeName, NameMatchResolver);
 
-			return complexType != null;
-		}
-
-		private IEdmEnumType GetEnumType(string typeName)
-		{
-			IEdmEnumType enumType;
-			if (TryGetEnumType(typeName, out enumType))
-				return enumType;
-
-			throw new UnresolvableObjectException(typeName, string.Format("Enum [{0}] not found", typeName));
-		}
+            return complexType != null;
+        }
 
 		private bool TryGetEnumType(string typeName, out IEdmEnumType enumType)
-		{
-			enumType = _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Enum)
-				.Select(x => x as IEdmEnumType)
-				.BestMatch(x => x.Name, typeName, NameMatchResolver);
+        {
+            enumType = _model.SchemaElements
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.TypeDefinition && (x as IEdmType).TypeKind == EdmTypeKind.Enum)
+                .Select(x => x as IEdmEnumType)
+                .BestMatch(x => x.Name, typeName, NameMatchResolver);
 
-			return enumType != null;
-		}
+            return enumType != null;
+        }
 
-		private IEdmStructuralProperty GetStructuralProperty(string entitySetName, string propertyName)
-		{
-			var edmType = GetEntityType(entitySetName);
-			return GetStructuralProperty(edmType, propertyName);
-		}
+        private IEdmStructuralProperty GetStructuralProperty(string entitySetName, string propertyName)
+        {
+            var edmType = GetEntityType(entitySetName);
+            return GetStructuralProperty(edmType, propertyName);
+        }
 
-		private IEdmStructuralProperty GetStructuralProperty(IEdmStructuredType edmType, string propertyName)
-		{
-			var property = edmType.StructuralProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
+        private IEdmStructuralProperty GetStructuralProperty(IEdmStructuredType edmType, string propertyName)
+        {
+            var property = edmType.StructuralProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
 
-			if (property == null)
+            if (property == null)
 				throw new UnresolvableObjectException(propertyName, string.Format("Structural property [{0}] not found", propertyName));
 
 			return property;
-		}
-		
-		private IEdmNavigationProperty GetNavigationProperty(string entitySetName, string propertyName)
-		{
-			var property = GetEntityType(entitySetName).NavigationProperties().BestMatch(
-				x => x.Name, propertyName, NameMatchResolver);
+        }
 
-			if (property == null)
+        private IEdmNavigationProperty GetNavigationProperty(string entitySetName, string propertyName)
+        {
+            var property = GetEntityType(entitySetName).NavigationProperties().BestMatch(x => x.Name, propertyName, NameMatchResolver);
+
+            if (property == null)
 				throw new UnresolvableObjectException(propertyName, string.Format("Navigation property [{0}] not found", propertyName));
 
 			return property;
-		}
+        }
 
-		private IEdmFunctionImport GetFunction(string functionName)
-		{
-			var function = _model.SchemaElements
-				.Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
-				.SelectMany(x => (x as IEdmEntityContainer).FunctionImports())
-				.BestMatch(x => x.Name, functionName, NameMatchResolver);
+        private IEdmFunctionImport GetFunction(string functionName)
+        {
+            var function = _model.SchemaElements
+                .Where(x => x.SchemaElementKind == EdmSchemaElementKind.EntityContainer)
+                .SelectMany(x => (x as IEdmEntityContainer).FunctionImports())
+                .BestMatch(x => x.Name, functionName, NameMatchResolver);
 
-			if (function == null)
+            if (function == null)
 				throw new UnresolvableObjectException(functionName, string.Format("Function [{0}] not found", functionName));
 
 			return function;
-		}
-	}
+        }
+    }
 }

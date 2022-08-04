@@ -5,8 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client
 {
     public abstract class ResponseReaderBase : IResponseReader
@@ -69,9 +67,13 @@ namespace Simple.OData.Client
         {
             var feedNode = nodeStack.Pop();
             if (nodeStack.Any())
+			{
                 nodeStack.Peek().Feed = feedNode.Feed;
+			}
             else
+			{
                 rootNode = feedNode;
+			}
             
             feedNode.Feed.SetAnnotations(feedAnnotations);            
         }

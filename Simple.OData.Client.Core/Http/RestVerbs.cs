@@ -1,5 +1,4 @@
-﻿
-namespace Simple.OData.Client
+﻿namespace Simple.OData.Client
 {
 	internal static class RestVerbs
 	{
@@ -7,7 +6,8 @@ namespace Simple.OData.Client
 		public const string Get = "GET";
 		public const string Post = "POST";
 		public const string Put = "PUT";
-		public const string Patch = "MERGE";
+		public const string Merge = "MERGE";
+		public const string Patch = "PATCH";
 		public const string Delete = "DELETE";
 		// ReSharper restore InconsistentNaming
 	}

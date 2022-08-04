@@ -19,7 +19,7 @@ namespace Simple.OData.ProductService.Controllers
     */
     public class ProductsController : ODataController
     {
-        private ProductServiceContext db = new ProductServiceContext();
+        private readonly ProductServiceContext db = new();
 
 
         // GET odata/Products
@@ -93,7 +93,7 @@ namespace Simple.OData.ProductService.Controllers
                 return BadRequest(ModelState);
             }
 
-            Product product = db.Products.Find(key);
+            var product = db.Products.Find(key);
             if (product == null)
             {
                 return NotFound();
@@ -123,7 +123,7 @@ namespace Simple.OData.ProductService.Controllers
         // DELETE odata/Products(5)
         public IHttpActionResult Delete([FromODataUri] int key)
         {
-            Product product = db.Products.Find(key);
+            var product = db.Products.Find(key);
             if (product == null)
             {
                 return NotFound();

@@ -103,7 +103,7 @@ namespace Simple.OData.Client
         /// <param name="name">The header name.</param>
         /// <param name="value">The header value.</param>
         /// <returns>Self.</returns>
-        public ODataBatch WithHeaders(IDictionary<string, string> headers)
+        public ODataBatch WithHeaders(IDictionary<string,string> headers)
         {
             foreach (var header in headers)
             {

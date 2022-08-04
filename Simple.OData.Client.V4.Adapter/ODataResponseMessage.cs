@@ -8,11 +8,7 @@ using Microsoft.OData;
 
 namespace Simple.OData.Client.V4.Adapter
 {
-#if SILVERLIGH
-    class ODataResponseMessage : IODataResponseMessage
-#else
-    class ODataResponseMessage : IODataResponseMessageAsync
-#endif
+	internal class ODataResponseMessage : IODataResponseMessageAsync
     {
         private readonly HttpResponseMessage _response;
 
@@ -26,7 +22,7 @@ namespace Simple.OData.Client.V4.Adapter
             var responseContent = _response.Content as StreamContent;
             if (responseContent != null)
             {
-                return responseContent.ReadAsStreamAsync();
+                return _response.Content.ReadAsStreamAsync();
             }
             else
             {
@@ -41,17 +37,25 @@ namespace Simple.OData.Client.V4.Adapter
             if (headerName == HttpLiteral.ContentType || headerName == HttpLiteral.ContentLength)
             {
                 if (_response.Content.Headers.Contains(headerName))
-                    return _response.Content.Headers.GetValues(headerName).FirstOrDefault();
-                else
-                    return null;
-            }
+				{
+					return _response.Content.Headers.GetValues(headerName).FirstOrDefault();
+				}
+				else
+				{
+					return null;
+				}
+			}
             else
             {
                 if (_response.Headers.Contains(headerName))
-                    return _response.Headers.GetValues(headerName).FirstOrDefault();
-                else
-                    return null;
-            }
+				{
+					return _response.Headers.GetValues(headerName).FirstOrDefault();
+				}
+				else
+				{
+					return null;
+				}
+			}
         }
 
         public Stream GetStream()

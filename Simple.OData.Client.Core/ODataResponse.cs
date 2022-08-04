@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using Simple.OData.Client.Extensions;
-
-#pragma warning disable 1591
 
 namespace Simple.OData.Client
 {
@@ -22,9 +21,13 @@ namespace Simple.OData.Client
 		public void SetAnnotations(ODataFeedAnnotations annotations)
 		{
 			if (this.Annotations == null)
+			{
 				this.Annotations = annotations;
+			}
 			else
+			{
 				this.Annotations.Merge(annotations);
+			}
 		}
 	}
 
@@ -43,17 +46,25 @@ namespace Simple.OData.Client
 		public void SetAnnotations(ODataEntryAnnotations annotations)
 		{
 			if (this.Annotations == null)
+			{
 				this.Annotations = annotations;
+			}
 			else
+			{
 				this.Annotations.Merge(annotations);
+			}
 		}
 
 		public void SetLinkAnnotations(ODataFeedAnnotations annotations)
 		{
 			if (this.LinkAnnotations == null)
+			{
 				this.LinkAnnotations = annotations;
+			}
 			else
+			{
 				this.LinkAnnotations.Merge(annotations);
+			}
 		}
 
 		public IDictionary<string, object> GetData(bool includeAnnotations)
@@ -100,16 +111,31 @@ namespace Simple.OData.Client
 				InnerError = new ODataInnerErrorDetails(innerError.InnerError);
 		}
 	}
-
 	public class ODataResponse
 	{
 		public int StatusCode { get; private set; }
+		public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
 		public AnnotatedFeed Feed { get; private set; }
 		public IList<ODataResponse> Batch { get; private set; }
 
 		public ODataErrorDetails ErrorDetails { get; private set; }
 		public Exception Exception { get; private set; }
-		public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
+
+		public string Location
+		{
+			get
+			{
+				return Headers != null ? Headers.FirstOrDefault(x => x.Key == "Location").Value : null;
+			}
+		}
+
+		public string ODataEntityId
+		{
+			get
+			{
+				return Headers != null ? Headers.FirstOrDefault(x => x.Key == "OData-EntityId").Value : null;
+			}
+		}
 
 		internal ITypeCache TypeCache { get; set; }
 
@@ -130,7 +156,7 @@ namespace Simple.OData.Client
 			}
 			else
 			{
-				return new IDictionary<string, object>[] { };
+				return Enumerable.Empty<IDictionary<string, object>>();
 			}
 		}
 
@@ -162,7 +188,7 @@ namespace Simple.OData.Client
 				.ToArray();
 		}
 
-		public static ODataResponse FromNode(ITypeCache typeCache, ResponseNode node, IEnumerable<KeyValuePair<string, string>> headers)
+		internal static ODataResponse FromNode(ITypeCache typeCache, ResponseNode node, IEnumerable<KeyValuePair<string, string>> headers)
 		{
 			return new ODataResponse(typeCache)
 			{
@@ -171,23 +197,23 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static ODataResponse FromProperty(ITypeCache typeCache, string propertyName, object propertyValue)
+		internal static ODataResponse FromProperty(ITypeCache typeCache, string propertyName, object propertyValue)
 		{
 			return FromFeed(typeCache, new[]
 			{
-				new Dictionary<string, object>() { {propertyName ?? FluentCommand.ResultLiteral, propertyValue} }
+				new Dictionary<string, object> { {propertyName ?? FluentCommand.ResultLiteral, propertyValue} }
 			});
 		}
 
-		public static ODataResponse FromValueStream(ITypeCache typeCache, Stream stream, bool disposeStream = false)
+		internal static ODataResponse FromValueStream(ITypeCache typeCache, Stream stream, bool disposeStream = false)
 		{
 			return FromFeed(typeCache, new[]
 			{
-				new Dictionary<string, object>() { {FluentCommand.ResultLiteral, Utils.StreamToString(stream, disposeStream)} }
+				new Dictionary<string, object> { {FluentCommand.ResultLiteral, Utils.StreamToString(stream, disposeStream)} }
 			});
 		}
 
-		public static ODataResponse FromCollection(ITypeCache typeCache, IList<object> collection)
+		internal static ODataResponse FromCollection(ITypeCache typeCache, IList<object> collection)
 		{
 			return new ODataResponse(typeCache)
 			{
@@ -199,9 +225,9 @@ namespace Simple.OData.Client
 			};
 		}
 
-		public static ODataResponse FromBatch(ITypeCache typeCache, IList<ODataResponse> batch)
+		internal static ODataResponse FromBatch(ITypeCache typeCache, IList<ODataResponse> batch)
 		{
-			return  new ODataResponse(typeCache)
+			return new ODataResponse(typeCache)
 			{
 				Batch = batch,
 			};
@@ -209,7 +235,7 @@ namespace Simple.OData.Client
 
 		public static ODataResponse FromErrorResponse(ITypeCache typeCache, int statusCode, ODataErrorDetails errorDetails = null, Exception e = null)
 		{
-			return  new ODataResponse(typeCache)
+			return new ODataResponse(typeCache)
 			{
 				StatusCode = statusCode,
 				ErrorDetails = errorDetails,
@@ -224,7 +250,7 @@ namespace Simple.OData.Client
 
 		private static ODataResponse FromFeed(ITypeCache typeCache, IEnumerable<IDictionary<string, object>> entries, ODataFeedAnnotations feedAnnotations = null)
 		{
-			return  new ODataResponse(typeCache)
+			return new ODataResponse(typeCache)
 			{
 				Feed = new AnnotatedFeed(entries.Select(x => new AnnotatedEntry(x)), feedAnnotations)
 			};
@@ -233,7 +259,9 @@ namespace Simple.OData.Client
 		private IDictionary<string, object> ExtractData(AnnotatedEntry entry, bool includeAnnotations)
 		{
 			if (entry == null || entry.Data == null)
+			{
 				return null;
+			}
 
 			return includeAnnotations ? DataWithAnnotations(entry.Data, entry.Annotations) : entry.Data;
 		}
@@ -241,7 +269,9 @@ namespace Simple.OData.Client
 		private IDictionary<string, object> ExtractDictionary(AnnotatedEntry entry, bool includeAnnotations)
 		{
 			if (entry == null || entry.Data == null)
+			{
 				return null;
+			}
 
 			var data = entry.Data;
 			if (data.Keys.Count == 1 && data.ContainsKey(FluentCommand.ResultLiteral) &&
@@ -259,11 +289,12 @@ namespace Simple.OData.Client
 			}
 		}
 
-		private IDictionary<string, object> DataWithAnnotations(
-			IDictionary<string, object> data, ODataEntryAnnotations annotations)
+		private IDictionary<string, object> DataWithAnnotations(IDictionary<string, object> data, ODataEntryAnnotations annotations)
 		{
-			var dataWithAnnotations = new Dictionary<string, object>(data);
-			dataWithAnnotations.Add(FluentCommand.AnnotationsLiteral, annotations);
+			var dataWithAnnotations = new Dictionary<string, object>(data)
+			{
+				{FluentCommand.AnnotationsLiteral, annotations}
+			};
 			return dataWithAnnotations;
 		}
 	}

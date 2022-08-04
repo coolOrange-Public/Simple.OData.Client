@@ -6,10 +6,10 @@ using System.Xml.Linq;
 
 namespace Simple.OData.Client.Extensions
 {
-    /// <summary>
-    /// Extension methods for <see cref="XElement"/>.
-    /// </summary>
-    static class XElementExtensions
+	/// <summary>
+	/// Extension methods for <see cref="XElement"/>.
+	/// </summary>
+	internal static class XElementExtensions
     {
         public static XElement Element(this XElement element, string prefix, string name)
         {
@@ -32,9 +32,12 @@ namespace Simple.OData.Client.Extensions
         {
             var result = element.Descendants(ResolvePrefix(element, prefix) + name);
 
-            if (result.Any()) return result;
+            if (result.Any())
+			{
+				return result;
+			}
 
-            if (string.IsNullOrEmpty(prefix))
+			if (string.IsNullOrEmpty(prefix))
             {
                 return element.Descendants().Where(
                     x => x.Name.LocalName == name && 

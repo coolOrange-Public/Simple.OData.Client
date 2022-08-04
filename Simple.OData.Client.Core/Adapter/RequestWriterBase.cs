@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Simple.OData.Client.Extensions;
 using Simple.OData.Client.Http;
-
-#pragma warning disable 1591
 
 namespace Simple.OData.Client
 {
@@ -59,7 +58,7 @@ namespace Simple.OData.Client
 			}
 			var entryContent = await WriteEntryContentAsync(RestVerbs.Post, collection, commandText, entryData, resultRequired, deep).ConfigureAwait(false);
 
-			var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData,entryContent, headers: headers)
+			var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData, entryContent, headers: headers)
 			{
 				ResultRequired = resultRequired
 			};
@@ -75,11 +74,18 @@ namespace Simple.OData.Client
 			var hasPropertiesToUpdate = entryDetails.Properties.Count > 0;
 			var usePatch = _session.Settings.PreferredUpdateMethod == ODataUpdateMethod.Patch || !hasPropertiesToUpdate;
 			if (HasUpdatedKeyProperties(collection, entryKey, entryData))
+			{
 				usePatch = false;
+			}
 
 			var updateMethod = usePatch ? RestVerbs.Patch : RestVerbs.Put;
 
-			var entryContent = await WriteEntryContentAsync(updateMethod, collection, entryIdent, entryData, resultRequired).ConfigureAwait(false);
+#pragma warning disable CS0618 // Type or member is obsolete - purpose of this test
+			updateMethod = _session.Settings.PreferredUpdateMethod == ODataUpdateMethod.Merge ? RestVerbs.Merge : updateMethod;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var entryContent = await WriteEntryContentAsync(
+				updateMethod, collection, entryIdent, entryData, resultRequired).ConfigureAwait(false);
 
 			var checkOptimisticConcurrency = _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection);
 			var request = new ODataRequest(updateMethod, _session, entryIdent, entryData, entryContent, headers: headers)
@@ -93,8 +99,10 @@ namespace Simple.OData.Client
 
 		public async Task<ODataRequest> CreateDeleteRequestAsync(string collection, string entryIdent, IDictionary<string, string> headers = null)
 		{
-			await WriteEntryContentAsync(RestVerbs.Delete, collection, entryIdent, null, false).ConfigureAwait(false);
-			var request = new ODataRequest(RestVerbs.Delete, _session, entryIdent)
+			await WriteEntryContentAsync(
+				RestVerbs.Delete, collection, entryIdent, null, false).ConfigureAwait(false);
+
+			var request = new ODataRequest(RestVerbs.Delete, _session, entryIdent, headers)
 			{
 				CheckOptimisticConcurrency = _session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection)
 			};
@@ -111,7 +119,7 @@ namespace Simple.OData.Client
 
 			var commandText = FormatLinkPath(entryIdent, associationName);
 			var linkContent = await WriteLinkContentAsync(linkMethod, commandText, linkIdent).ConfigureAwait(false);
-			var request = new ODataRequest(linkMethod, _session, commandText, null, linkContent)
+			var request = new ODataRequest(linkMethod, _session, commandText, null, linkContent, headers: headers)
 			{
 				IsLink = true,
 			};
@@ -122,10 +130,11 @@ namespace Simple.OData.Client
 		public async Task<ODataRequest> CreateUnlinkRequestAsync(string collection, string linkName, string entryIdent, string linkIdent, IDictionary<string, string> headers = null)
 		{
 			var associationName = _session.Metadata.GetNavigationPropertyExactName(collection, linkName);
-			await WriteEntryContentAsync(RestVerbs.Delete, collection, entryIdent, null, false).ConfigureAwait(false);
-
 			var commandText = FormatLinkPath(entryIdent, associationName, linkIdent);
-			var request = new ODataRequest(RestVerbs.Delete, _session, commandText)
+
+			await WriteEntryContentAsync(RestVerbs.Delete, collection, commandText, null, false).ConfigureAwait(false);
+
+			var request = new ODataRequest(RestVerbs.Delete, _session, commandText, headers)
 			{
 				IsLink = true,
 			};
@@ -139,7 +148,7 @@ namespace Simple.OData.Client
 
 			await WriteFunctionContentAsync(verb, commandText).ConfigureAwait(false);
 
-			var request = new ODataRequest(verb, _session, commandText)
+			var request = new ODataRequest(verb, _session, commandText, headers)
 			{
 				ResultRequired = true,
 			};
@@ -151,7 +160,7 @@ namespace Simple.OData.Client
 		{
 			var verb = RestVerbs.Post;
 			Stream entryContent = null;
-			ODataPayloadFormat usePayloadFormat = ODataPayloadFormat.Unspecified;
+			var usePayloadFormat = ODataPayloadFormat.Unspecified;
 
 			if (parameters != null && parameters.Any())
 			{
@@ -234,16 +243,23 @@ namespace Simple.OData.Client
 		private bool IsTextMediaType(string mediaType)
 		{
 			if (mediaType == null)
+			{
 				return true;
+			}
 
 			var items = mediaType.Split('/');
 			var type = items[0];
 			var subtype = items.Length > 0 ? items[1] : string.Empty;
 
 			if (type == "text")
+			{
 				return true;
+			}
+
 			if (subtype == "text" || subtype == "xml" || subtype == "json")
+			{
 				return true;
+			}
 
 			return false;
 		}

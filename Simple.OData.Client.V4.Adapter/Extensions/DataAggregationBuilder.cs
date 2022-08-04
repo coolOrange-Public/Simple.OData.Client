@@ -5,90 +5,105 @@ using System.Linq.Expressions;
 
 namespace Simple.OData.Client.V4.Adapter.Extensions
 {
-	internal abstract class DataAggregationBuilder
-	{
-		protected readonly List<IDataAggregationClause> DataAggregationClauses;
-		private DataAggregationBuilder _nextDataAggregationBuilder;
+    internal abstract class DataAggregationBuilder
+    {
+        protected readonly List<IDataAggregationClause> DataAggregationClauses;
+        private DataAggregationBuilder _nextDataAggregationBuilder;
 
-		protected DataAggregationBuilder()
-		{
-			DataAggregationClauses = new List<IDataAggregationClause>();
-		}
-
-		internal string Build(ResolvedCommand command, ISession session)
-		{
-			var context = new ExpressionContext(session, null, null, command.DynamicPropertiesContainerName);
-			var commandText = string.Empty;
-			foreach (var applyClause in DataAggregationClauses)
-			{
-				var formattedApplyClause = applyClause.Format(context);
-				if (string.IsNullOrEmpty(formattedApplyClause))
+        protected DataAggregationBuilder()
+        {
+            DataAggregationClauses = new List<IDataAggregationClause>();
+        }
+        
+        internal string Build(ResolvedCommand command, ISession session)
+        {
+            var context = new ExpressionContext(session, null, null, command.DynamicPropertiesContainerName);
+            var commandText = string.Empty;
+            foreach (var applyClause in DataAggregationClauses)
+            {
+                var formattedApplyClause = applyClause.Format(context);
+                if (string.IsNullOrEmpty(formattedApplyClause))
+				{
 					continue;
+				}
+
 				if (commandText.Length > 0)
+				{
 					commandText += "/";
+				}
+
 				commandText += formattedApplyClause;
-			}
+            }
 
-			return AddNextCommand(commandText, command, session);
-		}
+            return AddNextCommand(commandText, command, session);
+        }
 
-		internal void Append(DataAggregationBuilder nextDataAggregationBuilder)
-		{
-			if (_nextDataAggregationBuilder != null)
+        internal void Append(DataAggregationBuilder nextDataAggregationBuilder)
+        {
+            if (_nextDataAggregationBuilder != null)
+            {
+                _nextDataAggregationBuilder.Append(nextDataAggregationBuilder);
+                return;
+            }
+            _nextDataAggregationBuilder = nextDataAggregationBuilder;
+        }
+
+        private string AddNextCommand(string commandText, ResolvedCommand command, ISession session)
+        {
+            if (_nextDataAggregationBuilder == null)
 			{
-				_nextDataAggregationBuilder.Append(nextDataAggregationBuilder);
-				return;
+				return commandText;
 			}
-			_nextDataAggregationBuilder = nextDataAggregationBuilder;
-		}
-
-		private string AddNextCommand(string commandText, ResolvedCommand command, ISession session)
-		{
-			if (_nextDataAggregationBuilder == null) return commandText;
 
 			var nestedCommand = _nextDataAggregationBuilder.Build(command, session);
-			if (string.IsNullOrEmpty(nestedCommand)) return commandText;
+            if (string.IsNullOrEmpty(nestedCommand))
+			{
+				return commandText;
+			}
 
 			if (commandText.Length > 0)
+			{
 				commandText += "/";
+			}
+
 			commandText += nestedCommand;
 
-			return commandText;
-		}
-	}
-
-	/// <inheritdoc cref="IDataAggregation{T}"/>
-	internal class DataAggregationBuilder<T> : DataAggregationBuilder, IDataAggregation<T>
-		where T : class
-	{
-		private readonly ISession _session;
-
-		internal DataAggregationBuilder(ISession session) : base()
-		{
-			_session = session;
-		}
-
-		public IDataAggregation<T> Filter(Expression<Func<T, bool>> filter)
-		{
+            return commandText;
+        }
+    }
+    
+    /// <inheritdoc cref="IDataAggregation{T}"/>
+    internal class DataAggregationBuilder<T> : DataAggregationBuilder, IDataAggregation<T>
+        where T : class
+    {
+        private readonly ISession _session;
+        
+        internal DataAggregationBuilder(ISession session) : base()
+        {
+            _session = session;
+        }
+        
+        public IDataAggregation<T> Filter(Expression<Func<T, bool>> filter)
+        {
 			var filterClause = DataAggregationClauses.LastOrDefault() as FilterClause;
 			if (filterClause != null)
-				filterClause.Append(ODataExpression.FromLinqExpression(filter));
-			else
-			{
-				filterClause = new FilterClause(ODataExpression.FromLinqExpression(filter));
-				DataAggregationClauses.Add(filterClause);
-			}
-			return this;
-		}
+                filterClause.Append(ODataExpression.FromLinqExpression(filter));
+            else
+            {
+                filterClause = new FilterClause(ODataExpression.FromLinqExpression(filter));
+                DataAggregationClauses.Add(filterClause);
+            }
+            return this;
+        }
 
-		public IDataAggregation<TR> Aggregate<TR>(Expression<Func<T, IAggregationFunction<T>, TR>> aggregation) where TR : class
-		{
-			var aggregationClauses = ExtractAggregationClauses(aggregation);
-			DataAggregationClauses.Add(aggregationClauses);
-			var nextDataAggregationBuilder = new DataAggregationBuilder<TR>(_session);
-			Append(nextDataAggregationBuilder);
-			return nextDataAggregationBuilder;
-		}
+        public IDataAggregation<TR> Aggregate<TR>(Expression<Func<T, IAggregationFunction<T>, TR>> aggregation) where TR : class
+        {
+            var aggregationClauses = ExtractAggregationClauses(aggregation);
+            DataAggregationClauses.Add(aggregationClauses);
+            var nextDataAggregationBuilder = new DataAggregationBuilder<TR>(_session);
+            Append(nextDataAggregationBuilder);
+            return nextDataAggregationBuilder;
+        }
 
 		private static AggregationClauseCollection<T> ExtractAggregationClauses<TR>(Expression<Func<T, IAggregationFunction<T>, TR>> expression) where TR : class
 		{

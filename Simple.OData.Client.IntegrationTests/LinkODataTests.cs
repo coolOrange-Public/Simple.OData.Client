@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using Entry = System.Collections.Generic.Dictionary<string, object>;
 
 namespace Simple.OData.Client.Tests
 {
-#if ODATA_V3
     public class LinkODataTestsV2Atom : LinkODataTests
     {
         public LinkODataTestsV2Atom() : base(ODataV2ReadWriteUri, ODataPayloadFormat.Atom, 2) { }
@@ -28,14 +28,11 @@ namespace Simple.OData.Client.Tests
     {
         public LinkODataTestsV3Json() : base(ODataV3ReadWriteUri, ODataPayloadFormat.Json, 3) { }
     }
-#endif
 
-#if ODATA_V4
     public class LinkODataTestsV4Json : LinkODataTests
     {
         public LinkODataTestsV4Json() : base(ODataV4ReadWriteUri, ODataPayloadFormat.Json, 4) { }
     }
-#endif
 
     public abstract class LinkODataTests : ODataTestBase
     {
@@ -93,9 +90,13 @@ namespace Simple.OData.Client.Tests
                 .Expand(ProductCategoryName)
                 .FindEntryAsync();
             if (ProductCategoryName == "Categories")
-                Assert.DoesNotContain(ProductCategoryName, product.Keys);
-            else
-                Assert.Null(product[ProductCategoryName]);
-        }
+			{
+				Assert.Empty(product[ProductCategoryName] as IEnumerable);
+			}
+			else
+			{
+				Assert.Null(product[ProductCategoryName]);
+			}
+		}
     }
 }

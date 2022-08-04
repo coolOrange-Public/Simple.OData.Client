@@ -25,7 +25,7 @@ namespace Simple.OData.Client.Tests.Core
 	        get { return new ODataV3Format(); }
         }
 
-        protected override async Task<IRequestWriter> CreateBatchRequestWriter()
+        protected async override Task<IRequestWriter> CreateBatchRequestWriter()
         {
             return new V3.Adapter.RequestWriter(
                 _session,
@@ -47,7 +47,7 @@ namespace Simple.OData.Client.Tests.Core
 	        get { return new ODataV4Format(); }
         }
 
-        protected override async Task<IRequestWriter> CreateBatchRequestWriter()
+        protected async override Task<IRequestWriter> CreateBatchRequestWriter()
         {
             return new V4.Adapter.RequestWriter(
                 _session,
@@ -58,8 +58,8 @@ namespace Simple.OData.Client.Tests.Core
 
     public abstract class RequestWriterBatchTests : CoreTestBase
     {
-        private readonly Dictionary<object, IDictionary<string, object>> _batchContent =
-            new Dictionary<object, IDictionary<string, object>>(3);
+	    private readonly Dictionary<object, IDictionary<string, object>> _batchContent =
+		    new Dictionary<object, IDictionary<string, object>>(3);
 
         protected Dictionary<object, IDictionary<string, object>> BatchContent
         {

@@ -21,7 +21,7 @@ namespace Simple.OData.Client
 		public TypeCache(ITypeConverter converter, INameMatchResolver nameMatchResolver)
 		{
 			_cache = new ConcurrentDictionary<Type, TypeCacheResolver>();
-			NameMatchResolver = nameMatchResolver ?? ODataNameMatchResolver.Strict; 
+			NameMatchResolver = nameMatchResolver ?? ODataNameMatchResolver.Strict;
 			Converter = converter;
 		}
 
@@ -232,9 +232,13 @@ namespace Simple.OData.Client
 				if (value == null)
 				{
 					if (this.IsValue(targetType))
+					{
 						result = Activator.CreateInstance(targetType);
+					}
 					else
+					{
 						result = null;
+					}
 				}
 				else if (this.IsTypeAssignableFrom(targetType, value.GetType()))
 				{
@@ -304,7 +308,7 @@ namespace Simple.OData.Client
 		{
 			if (value == null && !this.IsValue(targetType))
 				return null;
-			
+
 			object result;
 			if (TryConvert(value, targetType, out result))
 				return result;
@@ -333,7 +337,7 @@ namespace Simple.OData.Client
 		{
 			return value.GetType().GetMethods()
 				.FirstOrDefault(m => string.Equals(m.Name, "op_Implicit")
-				                     && m.ReturnType == typeof(T));
+									 && m.ReturnType == typeof(T));
 		}
 	}
 }

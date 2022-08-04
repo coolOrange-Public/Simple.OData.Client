@@ -6,21 +6,23 @@ using Microsoft.OData.Edm.Vocabularies;
 
 namespace Simple.OData.Client.V4.Adapter
 {
-    class EdmDeltaModel : IEdmModel
+	internal class EdmDeltaModel : IEdmModel
     {
         private readonly IEdmModel _source;
         private readonly EdmEntityType _entityType;
 
-        public EdmDeltaModel(IEdmModel source, IEdmEntityType entityType, IEnumerable<string> propertyNames)
+        public EdmDeltaModel(IEdmModel source, IEdmEntityType entityType, ICollection<string> propertyNames)
         {
             _source = source;
-            _entityType = new EdmEntityType(entityType.Namespace, entityType.Name);
+            _entityType = new EdmEntityType(entityType.Namespace, entityType.Name, null, entityType.IsAbstract, entityType.IsOpen, entityType.HasStream);
 
             foreach (var property in entityType.StructuralProperties())
             {
                 if (propertyNames.Contains(property.Name))
-	                _entityType.AddStructuralProperty(property.Name, property.Type, property.DefaultValueString);
-            }
+				{
+					_entityType.AddStructuralProperty(property.Name, property.Type, property.DefaultValueString);
+				}
+			}
 
             foreach (var property in entityType.NavigationProperties())
             {
@@ -50,10 +52,14 @@ namespace Simple.OData.Client.V4.Adapter
         public IEdmSchemaType FindDeclaredType(string qualifiedName)
         {
             if (qualifiedName == _entityType.FullName())
-                return _entityType;
-            else
-                return _source.FindDeclaredType(qualifiedName);
-        }
+			{
+				return _entityType;
+			}
+			else
+			{
+				return _source.FindDeclaredType(qualifiedName);
+			}
+		}
 
         public IEnumerable<IEdmOperation> FindDeclaredBoundOperations(IEdmType bindingType) { return _source.FindDeclaredBoundOperations(bindingType); }
         public IEnumerable<IEdmOperation> FindDeclaredBoundOperations(string qualifiedName, IEdmType bindingType) { return _source.FindDeclaredBoundOperations(qualifiedName, bindingType); }

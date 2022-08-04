@@ -6,8 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Simple.OData.Client.Extensions;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client
 {
     public class DynamicODataEntry : ODataEntry, IDynamicMetaObjectProvider
@@ -49,8 +47,11 @@ namespace Simple.OData.Client
         {
             var value = base[propertyName];
             if (value is IDictionary<string, object>)
-                value = new DynamicODataEntry(value as IDictionary<string, object>, TypeCache);
-            return value;
+			{
+				value = new DynamicODataEntry(value as IDictionary<string, object>, TypeCache);
+			}
+
+			return value;
         }
 
         public DynamicMetaObject GetMetaObject(Expression parameter)

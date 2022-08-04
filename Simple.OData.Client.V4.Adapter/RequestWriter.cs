@@ -11,8 +11,6 @@ using Microsoft.Spatial;
 using Simple.OData.Client.Extensions;
 using Simple.OData.Client.Http;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client.V4.Adapter
 {
 	public class RequestWriter : RequestWriterBase
@@ -40,7 +38,9 @@ namespace Simple.OData.Client.V4.Adapter
 			if (_resourceEntries.TryGetValue(root, out entries))
 			{
 				foreach (var entry in entries)
+				{
 					_resourceEntryMap.Remove(entry);
+				}
 				_resourceEntries.Remove(root);
 			}
 		}
@@ -128,7 +128,7 @@ namespace Simple.OData.Client.V4.Adapter
 
 			var entityType = _model.FindDeclaredType(
 				_session.Metadata.GetQualifiedTypeName(collection)) as IEdmEntityType;
-			var model = method == RestVerbs.Patch ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
+			var model = (method == RestVerbs.Patch || method == RestVerbs.Merge) ? new EdmDeltaModel(_model, entityType, entryData.Keys) : _model;
 
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), model))
 			{
@@ -176,15 +176,17 @@ namespace Simple.OData.Client.V4.Adapter
 			}
 		}
 
-		protected override async Task<Stream> WriteFunctionContentAsync(string method, string commandText)
+		protected async override Task<Stream> WriteFunctionContentAsync(string method, string commandText)
 		{
 			if (IsBatch)
+			{
 				await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false);
+			}
 
 			return null;
 		}
 
-		protected override async Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, string boundTypeName, IDictionary<string, object> parameters)
+		protected async override Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, string boundTypeName, IDictionary<string, object> parameters)
 		{
 			var message = IsBatch
 				? await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false)
@@ -224,6 +226,7 @@ namespace Simple.OData.Client.V4.Adapter
 				return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
 			}
 		}
+
 		private async Task WriteOperationParameterAsync(ODataParameterWriter parameterWriter, IEdmOperationParameter operationParameter, string paramName, object paramValue)
 		{
 			switch (operationParameter.Type.Definition.TypeKind)
@@ -345,13 +348,11 @@ namespace Simple.OData.Client.V4.Adapter
 
 		protected override void AssignHeaders(ODataRequest request)
 		{
-			if (request.ResultRequired)
+			// Prefer in a GET or DELETE request does not have any effect per standard
+			if (request.Method != RestVerbs.Get && request.Method != RestVerbs.Delete)
 			{
-				request.Headers.Add(HttpLiteral.Prefer, HttpLiteral.ReturnRepresentation);
-			}
-			else
-			{
-				request.Headers.Add(HttpLiteral.Prefer, HttpLiteral.ReturnMinimal);
+				request.Headers[HttpLiteral.Prefer] =
+							   request.ResultRequired ? HttpLiteral.ReturnRepresentation : HttpLiteral.ReturnMinimal;
 			}
 		}
 
@@ -488,7 +489,7 @@ namespace Simple.OData.Client.V4.Adapter
 				EnableMessageStreamDisposal = IsBatch,
 				Validations = (Microsoft.OData.ValidationKinds)_session.Settings.Validations
 			};
-			var contentType = preferredContentType != null ? preferredContentType : ODataFormat.Json;
+			var contentType = preferredContentType ?? ODataFormat.Json;
 			settings.SetContentType(contentType);
 			return settings;
 		}
@@ -496,7 +497,7 @@ namespace Simple.OData.Client.V4.Adapter
 		private ODataResource CreateODataEntry(string typeName, IDictionary<string, object> properties, ODataResource root)
 		{
 			var entry = new ODataResource { TypeName = typeName };
-			root = root != null ? root : entry;
+			root = root ?? entry;
 
 			var entryType = _model.FindDeclaredType(entry.TypeName);
 			var typeProperties = typeof(IEdmEntityType).IsTypeAssignableFrom(entryType.GetType())
@@ -565,10 +566,12 @@ namespace Simple.OData.Client.V4.Adapter
 			return property != null ? GetPropertyValue(property.Type, value, root) : value;
 		}
 
-		object GetPropertyValue(IEdmTypeReference propertyType, object value, ODataResource root)
+		private object GetPropertyValue(IEdmTypeReference propertyType, object value, ODataResource root)
 		{
 			if (value == null)
+			{
 				return value;
+			}
 
 			switch (propertyType.TypeKind())
 			{
@@ -605,6 +608,9 @@ namespace Simple.OData.Client.V4.Adapter
 
 				case EdmTypeKind.Enum:
 					return new ODataEnumValue(value.ToString());
+
+				case EdmTypeKind.Untyped:
+					return new ODataUntypedValue { RawValue = value.ToString() };
 
 				case EdmTypeKind.None:
 					if (Converter.HasObjectConverter(value.GetType()))

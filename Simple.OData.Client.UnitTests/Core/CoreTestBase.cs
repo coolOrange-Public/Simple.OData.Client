@@ -6,8 +6,6 @@ using System.Text;
 using Microsoft.Data.OData;
 using Moq;
 
-#pragma warning disable 3008
-
 namespace Simple.OData.Client.Tests.Core
 {
     public abstract class CoreTestBase : IDisposable
@@ -45,15 +43,15 @@ namespace Simple.OData.Client.Tests.Core
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceNames = assembly.GetManifestResourceNames();
-            string completeResourceName = resourceNames.FirstOrDefault(o => o.EndsWith("." + resourceName, StringComparison.CurrentCultureIgnoreCase));
-            using (Stream resourceStream = assembly.GetManifestResourceStream(completeResourceName))
+            var completeResourceName = resourceNames.FirstOrDefault(o => o.EndsWith("." + resourceName, StringComparison.CurrentCultureIgnoreCase));
+            using (var resourceStream = assembly.GetManifestResourceStream(completeResourceName))
             {
                 TextReader reader = new StreamReader(resourceStream);
                 return reader.ReadToEnd();
             }
         }
 
-        public IODataResponseMessageAsync SetUpResourceMock(string resourceName)
+        public static IODataResponseMessageAsync SetUpResourceMock(string resourceName)
         {
             var document = GetResourceAsString(resourceName);
             var mock = new Mock<IODataResponseMessageAsync>();

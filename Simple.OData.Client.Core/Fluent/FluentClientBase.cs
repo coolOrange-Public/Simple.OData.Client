@@ -17,8 +17,6 @@ namespace Simple.OData.Client
 		where T : class
 		where FT : class
 	{
-#pragma warning disable 1591
-
 		protected readonly ODataClient _client;
 		internal readonly Session _session;
 		protected readonly FluentCommand _parentCommand;
@@ -40,7 +38,9 @@ namespace Simple.OData.Client
 			get
 			{
 				if (_command != null)
+				{
 					return _command;
+				}
 
 				lock (this)
 				{
@@ -404,7 +404,6 @@ namespace Simple.OData.Client
 			return Link<U>(command, expression.Reference);
 		}
 
-#pragma warning restore 1591
 
 		/// <summary>
 		/// Navigates to the linked entity.
@@ -688,12 +687,13 @@ namespace Simple.OData.Client
 		public async Task<string> GetCommandTextAsync(CancellationToken cancellationToken)
 		{
 			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
-			if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+			if (cancellationToken.IsCancellationRequested)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+			}
 
 			return this.Command.Resolve(_session).Format();
 		}
-
-#pragma warning disable 1591
 
 		protected async Task<IEnumerable<T>> FilterAndTypeColumnsAsync(
 			Task<IEnumerable<IDictionary<string, object>>> entries, IList<string> selectedColumns, string dynamicPropertiesContainerName)
@@ -743,9 +743,13 @@ namespace Simple.OData.Client
 
 			if (result != null && result.Keys.Count == 1 && result.ContainsKey(FluentCommand.ResultLiteral) &&
 				TypeCache.IsValue(typeof(T)) || typeof(T) == typeof(string) || typeof(T) == typeof(object))
+			{
 				return TypeCache.Convert<T>(result.Values.First());
+			}
 			else
+			{
 				return result.ToObject<T>(TypeCache, _dynamicResults);
+			}
 		}
 
 		private bool IsSelectedColumn(KeyValuePair<string, object> kv, string columnName)
@@ -766,8 +770,5 @@ namespace Simple.OData.Client
 								.Any(y => IsSelectedColumn(y, string.Join("/", items.Skip(1))))));
 			}
 		}
-
-#pragma warning restore 1591
-
 	}
 }

@@ -37,7 +37,7 @@ namespace Simple.OData.Client.Tests.Core
             var response = SetUpResourceMock("MultipleProducts.xml");
             var responseReader = new ResponseReader(_session, await _client.GetMetadataAsync<IEdmModel>());
             var result = (await responseReader.GetResponseAsync(response)).Feed.Entries;
-            Assert.Equal(20, result.Count());
+            Assert.Equal(20, result.Count);
             Assert.Equal(productProperties, result.First().Data.Count);
         }
 
@@ -57,7 +57,7 @@ namespace Simple.OData.Client.Tests.Core
             var response = SetUpResourceMock("MultipleProductsWithCategory.xml");
             var responseReader = new ResponseReader(_session, await _client.GetMetadataAsync<IEdmModel>());
             var result = (await responseReader.GetResponseAsync(response)).Feed.Entries;
-            Assert.Equal(20, result.Count());
+            Assert.Equal(20, result.Count);
             Assert.Equal(productProperties + 1, result.First().Data.Count);
             Assert.Equal(categoryProperties, (result.First().Data["Category"] as IDictionary<string, object>).Count);
         }
@@ -79,7 +79,7 @@ namespace Simple.OData.Client.Tests.Core
             var response = SetUpResourceMock("MultipleCategoriesWithProducts.xml");
             var responseReader = new ResponseReader(_session, await _client.GetMetadataAsync<IEdmModel>());
             var result = (await responseReader.GetResponseAsync(response)).Feed.Entries;
-            Assert.Equal(8, result.Count());
+            Assert.Equal(8, result.Count);
             Assert.Equal(categoryProperties + 1, result.First().Data.Count);
             Assert.Equal(12, (result.First().Data["Products"] as IEnumerable<IDictionary<string, object>>).Count());
             Assert.Equal(productProperties, (result.First().Data["Products"] as IEnumerable<IDictionary<string, object>>).First().Count);
@@ -195,7 +195,7 @@ namespace Simple.OData.Client.Tests.Core
             return ParseSchema("ArrayOfNested");
         }
 
-        private Task ParseSchema(string schemaName)
+        private static Task ParseSchema(string schemaName)
         {
             var document = GetResourceAsString(schemaName + ".edmx");
             var metadata = ODataClient.ParseMetadataString<IEdmModel>(document);

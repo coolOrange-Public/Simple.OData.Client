@@ -2,8 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client
 {
 	public interface IRequestWriter
@@ -20,5 +18,5 @@ namespace Simple.OData.Client
 		Task<ODataRequest> CreateInsertRequestAsync(string collection, IDictionary<string, object> entryData, Stream stream, bool resultRequired, string mediaType = null);
 		Task<ODataRequest> CreatePutRequestAsync(string commandText, Stream stream, string contentType, bool optimisticConcurrency, IDictionary<string, string> headers = null);
 
-	}
+    }
 }

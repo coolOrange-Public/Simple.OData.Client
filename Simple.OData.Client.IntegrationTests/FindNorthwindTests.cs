@@ -58,26 +58,32 @@ namespace Simple.OData.Client.Tests
     {
         protected FindNorthwindTests(string serviceUri, ODataPayloadFormat payloadFormat) : base(serviceUri, payloadFormat) {}
 
-        protected override async Task DeleteTestData()
+        protected async override Task DeleteTestData()
         {
             var products = await _client.For("Products").Select("ProductID", "ProductName").FindEntriesAsync();
             foreach (var product in products)
             {
                 if (product["ProductName"].ToString().StartsWith("Test"))
-                    await _client.DeleteEntryAsync("Products", product);
-            }
+				{
+					await _client.DeleteEntryAsync("Products", product);
+				}
+			}
             var categories = await _client.For("Categories").Select("CategoryID", "CategoryName").FindEntriesAsync();
             foreach (var category in categories)
             {
                 if (category["CategoryName"].ToString().StartsWith("Test"))
-                    await _client.DeleteEntryAsync("Categories", category);
-            }
+				{
+					await _client.DeleteEntryAsync("Categories", category);
+				}
+			}
             var employees = await _client.For("Employees").Select("EmployeeID", "LastName").FindEntriesAsync();
             foreach (var employee in employees)
             {
                 if (employee["LastName"].ToString().StartsWith("Test"))
-                    await _client.DeleteEntryAsync("Employees", employee);
-            }
+				{
+					await _client.DeleteEntryAsync("Employees", employee);
+				}
+			}
         }
 
         [Fact]

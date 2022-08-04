@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Spatial;
-using System.Xml;
-using Microsoft.Data.Edm;
-using Microsoft.Data.Edm.Csdl;
-using Microsoft.Data.OData;
-using Microsoft.Data.OData.Query;
-using Simple.OData.Client.Adapter;
-using Simple.OData.Client.Extensions;
 
-#pragma warning disable 1591
+using Microsoft.Data.Edm;
+
+using Simple.OData.Client.Adapter;
 
 namespace Simple.OData.Client
 {
@@ -21,8 +13,6 @@ namespace Simple.OData.Client
         public static void Reference() { }
     }
 }
-
-#pragma warning disable 1591
 
 namespace Simple.OData.Client.V3.Adapter
 {
@@ -46,12 +36,12 @@ namespace Simple.OData.Client.V3.Adapter
 
         public ODataAdapter(ISession session, IODataModelAdapter modelAdapter)
         {
-	        _session = session;
-	        ProtocolVersion = modelAdapter.ProtocolVersion;
-	        Model = modelAdapter.Model as IEdmModel;
+            _session = session;
+            ProtocolVersion = modelAdapter.ProtocolVersion;
+            Model = modelAdapter.Model as IEdmModel;
 
-	        CustomConverters.RegisterTypeConverter(typeof(GeographyPoint), TypeConverters.CreateGeographyPoint);
-	        CustomConverters.RegisterTypeConverter(typeof(GeometryPoint), TypeConverters.CreateGeometryPoint);
+            session.TypeCache.Converter.RegisterTypeConverter(typeof(GeographyPoint), TypeConverters.CreateGeographyPoint);
+            session.TypeCache.Converter.RegisterTypeConverter(typeof(GeometryPoint), TypeConverters.CreateGeometryPoint);
         }
 
         public override string GetODataVersionString()

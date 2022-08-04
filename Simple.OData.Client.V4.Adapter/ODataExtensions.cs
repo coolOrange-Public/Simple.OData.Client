@@ -2,7 +2,7 @@
 
 namespace Simple.OData.Client.V4.Adapter
 {
-    static class ODataExtensions
+	internal static class ODataExtensions
     {
         public static ODataMessageReaderSettings ToReaderSettings(this ISession session)
         {
@@ -14,8 +14,11 @@ namespace Simple.OData.Client.V4.Adapter
             var readerSettings = new ODataMessageReaderSettings();
             // TODO ODataLib7
             if (settings.IgnoreUnmappedProperties)
-                readerSettings.Validations &= ~Microsoft.OData.ValidationKinds.ThrowOnUndeclaredPropertyForNonOpenType;
-            readerSettings.MessageQuotas.MaxReceivedMessageSize = int.MaxValue;
+			{
+				readerSettings.Validations &= ~Microsoft.OData.ValidationKinds.ThrowOnUndeclaredPropertyForNonOpenType;
+			}
+
+			readerSettings.MessageQuotas.MaxReceivedMessageSize = int.MaxValue;
             readerSettings.ShouldIncludeAnnotation = x => settings.IncludeAnnotationsInResults;
 
             if (!settings.ReadUntypedAsString)

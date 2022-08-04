@@ -4,8 +4,6 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client
 {
     public class ODataRequest
@@ -26,7 +24,7 @@ namespace Simple.OData.Client
         {
             get
             {
-                bool isMetadataRequest = this.RequestMessage.RequestUri.LocalPath.EndsWith(ODataLiteral.Metadata);
+                var isMetadataRequest = this.RequestMessage.RequestUri.LocalPath.EndsWith(ODataLiteral.Metadata);
                 if (!isMetadataRequest && (this.ReturnsScalarResult || !this.ResultRequired))
                     return null;
 

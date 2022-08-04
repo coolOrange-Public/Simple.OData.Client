@@ -9,7 +9,7 @@ namespace WebApiOData.V3.Samples
 {
     public class NonBindableActionRoutingConvention : IODataRoutingConvention
     {
-        private string _controllerName;
+        private readonly string _controllerName;
 
         public NonBindableActionRoutingConvention(string controllerName)
         {
@@ -34,8 +34,8 @@ namespace WebApiOData.V3.Samples
             {
                 if (odataPath.PathTemplate == "~/action")
                 {
-                    ActionPathSegment actionSegment = odataPath.Segments.First() as ActionPathSegment;
-                    IEdmFunctionImport action = actionSegment.Action;
+                    var actionSegment = odataPath.Segments.First() as ActionPathSegment;
+                    var action = actionSegment.Action;
 
                     if (!action.IsBindable && actionMap.Contains(action.Name))
                     {

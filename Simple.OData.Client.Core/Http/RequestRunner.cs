@@ -67,7 +67,7 @@ namespace Simple.OData.Client
                     throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session);
                 else
                     throw;
-            }
+                }
             finally
             {
                 if (httpConnection != null && _session.Settings.RenewHttpConnection)
@@ -90,6 +90,7 @@ namespace Simple.OData.Client
             if (request.CheckOptimisticConcurrency &&
                 (request.Method == RestVerbs.Put ||
                  request.Method == RestVerbs.Patch ||
+                 request.Method == RestVerbs.Merge ||
                  request.Method == RestVerbs.Delete))
             {
                 request.RequestMessage.Headers.IfMatch.Add(EntityTagHeaderValue.Any);
@@ -115,4 +116,4 @@ namespace Simple.OData.Client
                 throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session).ConfigureAwait(false);
         }
     }
-}
+    }

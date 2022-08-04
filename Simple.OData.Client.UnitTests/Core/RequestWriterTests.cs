@@ -17,7 +17,7 @@ namespace Simple.OData.Client.Tests.Core
 	        get { return new ODataV3Format(); }
         }
 
-        protected override async Task<IRequestWriter> CreateRequestWriter()
+        protected async override Task<IRequestWriter> CreateRequestWriter()
         {
             return new V3.Adapter.RequestWriter(_session, await _client.GetMetadataAsync<Microsoft.Data.Edm.IEdmModel>(), null);
         }
@@ -35,7 +35,7 @@ namespace Simple.OData.Client.Tests.Core
 	        get { return new ODataV4Format(); }
         }
 
-        protected override async Task<IRequestWriter> CreateRequestWriter()
+        protected async override Task<IRequestWriter> CreateRequestWriter()
         {
             return new V4.Adapter.RequestWriter(_session, await _client.GetMetadataAsync<Microsoft.OData.Edm.IEdmModel>(), null);
         }

@@ -31,10 +31,10 @@ namespace Simple.OData.Client
         {
             var list = functionCaller.Value as IEnumerable;
             if (list == null)
-            {
-                throw new ArgumentException("Function caller should have a value");
-            }
-            var listAsString = new StringBuilder();
+			{
+				throw new ArgumentException("Function caller should have a value");
+			}
+			var listAsString = new StringBuilder();
             var delimiter = string.Empty;
             listAsString.Append("(");
             foreach (var item in list)

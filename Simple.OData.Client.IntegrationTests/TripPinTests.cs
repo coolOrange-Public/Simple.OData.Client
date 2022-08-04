@@ -27,7 +27,7 @@ namespace Simple.OData.Client.Tests
             });
             var annotations = new ODataFeedAnnotations();
 
-            int count = 0;
+            var count = 0;
             var people = await client
                 .For<PersonWithAnnotations>("Person")
                 .FindEntriesAsync(annotations);
@@ -604,7 +604,7 @@ namespace Simple.OData.Client.Tests
                 .For<Person>("Me")
                 .FindEntryAsync();
             Assert.Equal("aprilcline", person.UserName);
-            Assert.Equal(2, person.Emails.Count());
+            Assert.Equal(2, person.Emails.Length);
             Assert.Equal("Lander", person.AddressInfo.Single().City.Name);
             Assert.Equal(PersonGender.Female, person.Gender);
         }
@@ -1026,7 +1026,7 @@ namespace Simple.OData.Client.Tests
             Assert.Equal(byteCount, photo.Media.Length);
         }
 
-        private Event CreateTestEvent()
+        private static Event CreateTestEvent()
         {
             return new Event
             {

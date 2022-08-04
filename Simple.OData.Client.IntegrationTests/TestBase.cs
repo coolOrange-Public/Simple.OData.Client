@@ -9,17 +9,20 @@ namespace Simple.OData.Client.Tests
 {
     public abstract class TestBase : IDisposable
     {
-        protected const string ODataV2ReadWriteUri = "http://services.odata.org/V2/%28S%28readwrite%29%29/OData/OData.svc/";
-        protected const string ODataV3ReadOnlyUri = "http://services.odata.org/V3/OData/OData.svc/";
-        protected const string ODataV3ReadWriteUri = "http://services.odata.org/V3/%28S%28readwrite%29%29/OData/OData.svc/";
-        protected const string ODataV4ReadOnlyUri = "http://services.odata.org/V4/OData/OData.svc/";
-        protected const string ODataV4ReadWriteUri = "http://services.odata.org/V4/OData/%28S%28readwrite%29%29/OData.svc/";
+        private static readonly HttpClient metadataHttpClient = new();
 
-        protected const string NorthwindV2ReadOnlyUri = "http://services.odata.org/V2/Northwind/Northwind.svc/";
-        protected const string NorthwindV3ReadOnlyUri = "http://services.odata.org/V3/Northwind/Northwind.svc/";
-        protected const string NorthwindV4ReadOnlyUri = "http://services.odata.org/V4/Northwind/Northwind.svc/";
+        protected const string ODataV2ReadWriteUri = "https://services.odata.org/V2/%28S%28readwrite%29%29/OData/OData.svc/";
+        protected const string ODataV3ReadOnlyUri = "https://services.odata.org/V3/OData/OData.svc/";
+        protected const string ODataV3ReadWriteUri = "https://services.odata.org/V3/%28S%28readwrite%29%29/OData/OData.svc/";
+        protected const string ODataV4ReadOnlyUri = "https://services.odata.org/V4/OData/OData.svc/";
+        protected const string ODataV4ReadWriteUri = "https://services.odata.org/V4/OData/%28S%28readwrite%29%29/OData.svc/";
 
-        protected const string TripPinV4ReadWriteUri = "http://services.odata.org/V4/TripPinServiceRW/";
+        protected const string NorthwindV2ReadOnlyUri = "https://services.odata.org/V2/Northwind/Northwind.svc/";
+        protected const string NorthwindV3ReadOnlyUri = "https://services.odata.org/V3/Northwind/Northwind.svc/";
+        protected const string NorthwindV4ReadOnlyUri = "https://services.odata.org/V4/Northwind/Northwind.svc/";
+
+        protected const string TripPinV4ReadWriteUri = "https://services.odata.org/V4/TripPinServiceRW/";
+        protected const string TripPinV4RESTierUri = "https://services.odata.org/TripPinRESTierService/";
 
         protected readonly Uri _serviceUri;
         protected readonly ODataPayloadFormat _payloadFormat;
@@ -27,9 +30,12 @@ namespace Simple.OData.Client.Tests
 
         protected TestBase(string serviceUri, ODataPayloadFormat payloadFormat)
         {
+            //services.odata.org only works with Tls 1.2
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+
             if (serviceUri.Contains("%28readwrite%29") || serviceUri == TripPinV4ReadWriteUri)
             {
-                serviceUri = GetReadWriteUri(serviceUri).Result;
+                serviceUri = GetReadWriteUri(serviceUri).GetAwaiter().GetResult();
             }
 
             _serviceUri = new Uri(serviceUri);
@@ -37,10 +43,9 @@ namespace Simple.OData.Client.Tests
             _client = CreateClientWithDefaultSettings();
         }
 
-        private async Task<string> GetReadWriteUri(string serviceUri)
+        private async static Task<string> GetReadWriteUri(string serviceUri)
         {
-            var client = new HttpClient();
-            var response = await client.GetAsync(serviceUri);
+            var response = await metadataHttpClient.GetAsync(serviceUri).ConfigureAwait(false);
             var uri = response.RequestMessage.RequestUri.AbsoluteUri;
             if (serviceUri == ODataV2ReadWriteUri)
             {
@@ -51,14 +56,39 @@ namespace Simple.OData.Client.Tests
             return uri;
         }
 
-        protected IODataClient CreateClientWithDefaultSettings()
+        protected ODataClientSettings CreateDefaultSettings(Action<ODataClientSettings> configure = null)
         {
-            return new ODataClient(new ODataClientSettings(_serviceUri)
+            var settings = new ODataClientSettings(_serviceUri)
             {
                 PayloadFormat = _payloadFormat,
                 IgnoreResourceNotFoundException = true,
                 OnTrace = (x, y) => Console.WriteLine(string.Format(x, y)),
-            });
+            };
+
+            configure?.Invoke(settings);
+
+            return settings;
+        }
+
+        protected ODataClientSettings CreateDefaultSettingsWithNameResolver(INameMatchResolver nameMatchResolver)
+        {
+            return new ODataClientSettings(_serviceUri)
+            {
+                PayloadFormat = _payloadFormat,
+                IgnoreResourceNotFoundException = true,
+                OnTrace = (x, y) => Console.WriteLine(string.Format(x, y)),
+                NameMatchResolver = nameMatchResolver,
+            };
+        }
+
+        protected IODataClient CreateClientWithDefaultSettings()
+        {
+            return new ODataClient(CreateDefaultSettings());
+        }
+
+        protected IODataClient CreateClientWithNameResolver(INameMatchResolver nameMatchResolver)
+        {
+            return new ODataClient(CreateDefaultSettingsWithNameResolver(nameMatchResolver));
         }
 
         public void Dispose()
@@ -76,7 +106,7 @@ namespace Simple.OData.Client.Tests
             try
             {
                 await testCode();
-                throw new Exception(string.Format("Expected exception: {0}", typeof (T)));
+                throw new Exception($"Expected exception: {typeof(T)}");
             }
             catch (T)
             {

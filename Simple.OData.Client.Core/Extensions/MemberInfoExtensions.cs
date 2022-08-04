@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client.Extensions
 {
     public static class MemberInfoExtensions
@@ -87,8 +85,10 @@ namespace Simple.OData.Client.Extensions
                     {
                         var propertyValue = nameProperty.GetValueEx(mappingAttribute);
                         if (propertyValue != null)
-                            return propertyValue.ToString();
-                    }
+						{
+							return propertyValue.ToString();
+						}
+					}
                 }
             }
 

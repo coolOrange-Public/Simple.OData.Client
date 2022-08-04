@@ -4,13 +4,11 @@ using System.Linq;
 
 using Simple.OData.Client.Extensions;
 
-#pragma warning disable 1591
-
 namespace Simple.OData.Client
 {
 	public class ResolvedCommand
 	{
-		private ISession _sesson;
+		private readonly ISession _sesson;
 
 		internal ResolvedCommand(FluentCommand command, ISession session)
 		{
@@ -295,7 +293,7 @@ namespace Simple.OData.Client
 				ok = expression.ExtractLookupColumns(namedKeyValues);
 			}
 			if (!ok)
-				return null;	
+				return null;
 
 			IEnumerable<KeyValuePair<string, object>> matchingNamedKeyValues;
 			if (NamedKeyValuesMatchAnyKey(namedKeyValues, out matchingNamedKeyValues, out isAlternateKey))

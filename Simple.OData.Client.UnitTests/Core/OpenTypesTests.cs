@@ -38,7 +38,7 @@ namespace Simple.OData.Client.Tests.Core
             Assert.Equal("some string", entry.Data["StringProperty"]);
         }
 
-        private new IODataResponseMessageAsync SetUpResourceMock(string resourceName)
+        private static new IODataResponseMessageAsync SetUpResourceMock(string resourceName)
         {
             var document = GetResourceAsString(resourceName);
             var mock = new Mock<IODataResponseMessageAsync>();

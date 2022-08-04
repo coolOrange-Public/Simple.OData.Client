@@ -4,7 +4,7 @@ using Microsoft.Data.OData;
 
 namespace Simple.OData.Client.V3.Adapter
 {
-    static class ODataExtensions
+	internal static class ODataExtensions
     {
         public static ODataMessageReaderSettings ToReaderSettings(this ISession session)
         {
@@ -15,8 +15,11 @@ namespace Simple.OData.Client.V3.Adapter
         {
             var readerSettings = new ODataMessageReaderSettings();
             if (settings.IgnoreUnmappedProperties)
-                readerSettings.UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty;
-            readerSettings.MessageQuotas.MaxReceivedMessageSize = Int32.MaxValue;
+			{
+				readerSettings.UndeclaredPropertyBehaviorKinds = ODataUndeclaredPropertyBehaviorKinds.IgnoreUndeclaredValueProperty;
+			}
+
+			readerSettings.MessageQuotas.MaxReceivedMessageSize = Int32.MaxValue;
             readerSettings.ShouldIncludeAnnotation = x => settings.IncludeAnnotationsInResults;
             return readerSettings;
         }

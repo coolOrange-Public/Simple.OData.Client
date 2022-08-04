@@ -12,12 +12,11 @@ namespace ActionProviderImplementation
 {
     public class ActionProvider : IDataServiceActionProvider
     {
-        static Dictionary<Type, List<ServiceAction>> _cache = new Dictionary<Type, List<ServiceAction>>();
-        static Dictionary<string, ServiceAction> _actionsByName = new Dictionary<string, ServiceAction>();
-
-        Type _instanceType;
-        object _context;
-        IParameterMarshaller _marshaller;
+		private static readonly Dictionary<Type, List<ServiceAction>> _cache = new();
+		private static readonly Dictionary<string, ServiceAction> _actionsByName = new();
+		private readonly Type _instanceType;
+		private readonly object _context;
+		private readonly IParameterMarshaller _marshaller;
 
         public ActionProvider(Object context, IParameterMarshaller marshaller)
         {
@@ -57,18 +56,22 @@ namespace ActionProviderImplementation
             {
                 serviceAction = GetActions(operationContext).SingleOrDefault(a => a.Name == serviceActionName);
                 if (serviceAction != null)
-                    _actionsByName[serviceActionName] = serviceAction;
-            }
+				{
+					_actionsByName[serviceActionName] = serviceAction;
+				}
+			}
             return serviceAction != null;
         }
 
         private List<ServiceAction> GetActions(DataServiceOperationContext context)
         {
             if (_cache.ContainsKey(_instanceType))
-                return _cache[_instanceType];
+			{
+				return _cache[_instanceType];
+			}
 
-            IDataServiceMetadataProvider metadata = context.GetService(typeof(IDataServiceMetadataProvider)) as IDataServiceMetadataProvider;
-            ActionFactory factory = new ActionFactory(metadata);
+			var metadata = context.GetService(typeof(IDataServiceMetadataProvider)) as IDataServiceMetadataProvider;
+            var factory = new ActionFactory(metadata);
 
             var actions = factory.GetActions(_instanceType).ToList();
             _cache[_instanceType] = actions;

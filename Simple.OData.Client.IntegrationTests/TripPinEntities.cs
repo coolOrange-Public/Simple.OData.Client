@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-#if ODATA_V4
-using Microsoft.Spatial;
-#else
-using System.Spatial;
-#endif
+using System.Runtime.Serialization;
 
 namespace Simple.OData.Client.Tests
 {
-    enum PersonGender
+	internal enum PersonGender
     {
         Male,
         Female,
         Unknown,
     }
 
-    class PersonBase
+	internal class PersonBase
     {
         public string UserName { get; set; }
         public string FirstName { get; set; }
@@ -26,31 +22,37 @@ namespace Simple.OData.Client.Tests
         public long Concurrency { get; set; }
     }
 
-    class Person : PersonBase
+    [DataContract(Name = "Person")]
+	internal class PersonWithDataContract : PersonBase
+    {
+    }
+
+	internal class Person : PersonBase
     {
         public IEnumerable<Person> Friends { get; set; }
         public IEnumerable<Trip> Trips { get; set; }
-        public IEnumerable<Photo> Photos { get; set; }
+        public Photo Photo { get; set; }
     }
 
-    class PersonWithDateTime : PersonBase
+	internal class PersonWithDateTime : PersonBase
     {
         public IEnumerable<PersonWithDateTime> Friends { get; set; }
         public IEnumerable<TripWithDateTime> Trips { get; set; }
         public IEnumerable<Photo> Photos { get; set; }
     }
 
-    class PersonWithOpenTypeField : Person
+	internal class PersonWithOpenTypeFields : Person
     {
-        public string OpenTypeField { get; set; }
+        public string OpenTypeString { get; set; }
+        public int OpenTypeInt { get; set; }
     }
 
-    class PersonWithOpenTypeContainer : Person
+	internal class PersonWithOpenTypeContainer : Person
     {
         public IDictionary<string, object> Properties { get; set; }
     }
 
-    class PersonWithSets
+	internal class PersonWithSets
     {
         public string UserName { get; set; }
         public string FirstName { get; set; }
@@ -65,16 +67,16 @@ namespace Simple.OData.Client.Tests
         public HashSet<Photo> Photos { get; set; }
     }
 
-    class PersonWithAnnotations : Person
+	internal class PersonWithAnnotations : Person
     {
         public ODataEntryAnnotations Annotations { get; set; }
     }
 
-    class Me : Person
+	internal class Me : Person
     {
     }
 
-    class TripBase
+	internal class TripBase
     {
         public int TripId { get; set; }
         public Guid ShareId { get; set; }
@@ -88,24 +90,24 @@ namespace Simple.OData.Client.Tests
         public IEnumerable<Photo> Photos { get; set; }
     }
 
-    class Trip : TripBase
+	internal class Trip : TripBase
     {
         public IEnumerable<PlanItem> PlanItems { get; set; }
     }
 
-    class TripWithDateTime : TripBase
+	internal class TripWithDateTime : TripBase
     {
         public IEnumerable<PlanItemWithDateTime> PlanItems { get; set; }
     }
 
-    class Photo
+	internal class Photo
     {
         public long Id { get; set; }
         public string Name { get; set; }
         public byte[] Media { get; set; }
     }
 
-    class PlanItem
+	internal class PlanItem
     {
         public int PlanItemId { get; set; }
         public string ConfirmationCode { get; set; }
@@ -114,7 +116,7 @@ namespace Simple.OData.Client.Tests
         public TimeSpan Duration { get; set; }
     }
 
-    class PlanItemWithDateTime
+	internal class PlanItemWithDateTime
     {
         public int PlanItemId { get; set; }
         public string ConfirmationCode { get; set; }
@@ -123,12 +125,12 @@ namespace Simple.OData.Client.Tests
         public TimeSpan Duration { get; set; }
     }
 
-    class PublicTransportation : PlanItem
+	internal class PublicTransportation : PlanItem
     {
         public string SeatNumber { get; set; }
     }
 
-    class Flight : PublicTransportation
+	internal class Flight : PublicTransportation
     {
         public string FlightNumber { get; set; }
         public Airport From { get; set; }
@@ -136,19 +138,19 @@ namespace Simple.OData.Client.Tests
         public Airline Airline { get; set; }
     }
 
-    class Event : PlanItem
+	internal class Event : PlanItem
     {
         public string Description { get; set; }
         public EventLocation OccursAt { get; set; }
     }
 
-    class Airline
+	internal class Airline
     {
         public string AirlineCode { get; set; }
         public string Name { get; set; }
     }
 
-    class Airport
+	internal class Airport
     {
         public string IcaoCode { get; set; }
         public string IataCode { get; set; }
@@ -156,7 +158,7 @@ namespace Simple.OData.Client.Tests
         public AirportLocation Location { get; set; }
     }
 
-    class Location
+	internal class Location
     {
         public class LocationCity
         {
@@ -169,12 +171,12 @@ namespace Simple.OData.Client.Tests
         public LocationCity City { get; set; }
     }
 
-    class AirportLocation : Location
+	internal class AirportLocation : Location
     {
-        public GeographyPoint Loc { get; set; }
+        public Microsoft.Spatial.GeographyPoint Loc { get; set; }
     }
 
-    class EventLocation : Location
+	internal class EventLocation : Location
     {
         public string BuildingInfo { get; set; }
     }

@@ -158,38 +158,5 @@ namespace Simple.OData.Client
 			var request = new ODataRequest(RestVerbs.Get, this, ODataLiteral.Metadata);
 			return await new RequestRunner(this).ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
 		}
-
-		//private EdmMetadataCache InitializeStaticMetadata(string metadata)
-		//{
-		//	return EdmMetadataCache.GetOrAdd(
-		//		Settings.BaseUri.AbsoluteUri,
-		//		uri => CreateMdc(uri, metadata));
-		//}
-
-		//private async Task<EdmMetadataCache> InitializeMetadataCache(CancellationToken cancellationToken)
-		//{
-		//	return await EdmMetadataCache.GetOrAddAsync(
-		//		Settings.BaseUri.AbsoluteUri,
-		//		async uri =>
-		//		{
-		//			var metadata = await ResolveMetadataAsync(cancellationToken).ConfigureAwait(false);
-		//			return CreateMdc(uri, metadata);
-		//		}).ConfigureAwait(false);
-		//}
-
-		//private async Task<string> ResolveMetadataAsync(CancellationToken cancellationToken)
-		//{
-		//	if (!string.IsNullOrEmpty(Settings.MetadataDocument))
-		//		return Settings.MetadataDocument;
-
-		//	var response = await SendMetadataRequestAsync(cancellationToken).ConfigureAwait(false);
-		//	var metadataDocument = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-		//	return metadataDocument;
-		//}
-
-		//private EdmMetadataCache CreateMdc(string key, string metadata)
-		//{
-		//	return new EdmMetadataCache(key, metadata, TypeCaches.TypeCache(key, Settings.NameMatchResolver));
-		//}
 	}
 }

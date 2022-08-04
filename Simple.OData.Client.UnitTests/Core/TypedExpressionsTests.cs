@@ -83,17 +83,19 @@ namespace Simple.OData.Client.Tests.Core
 
     public abstract class TypedExpressionTests : CoreTestBase
     {
-        class DataAttribute : Attribute
+		private class DataAttribute : Attribute
         {
             public string Name { get; set; }
             public string PropertyName { get; set; }
         }
-        class DataMemberAttribute : Attribute
+
+		private class DataMemberAttribute : Attribute
         {
             public string Name { get; set; }
             public string PropertyName { get; set; }
         }
-        class OtherAttribute : Attribute
+
+		private class OtherAttribute : Attribute
         {
             public string Name { get; set; }
             public string PropertyName { get; set; }
@@ -569,7 +571,7 @@ namespace Simple.OData.Client.Tests.Core
                 ODataExpression.FromLinqExpression(filter).AsString(_session));
         }
 
-        private AddressType addressType = AddressType.Corporate;
+        private readonly AddressType addressType = AddressType.Corporate;
 
         [Fact]
         public void FilterWithEnum_MemberVar()
