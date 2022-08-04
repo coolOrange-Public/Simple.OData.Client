@@ -27,8 +27,7 @@
     </dependencies>
   </metadata>
   <files>
-    <!-- NET40 -->
-    <file src="bin\Release\Simple.OData.Client.Net40.dll" target="lib\net45\Simple.OData.Client.Net40.dll" />
-    <file src="bin\Release\Simple.OData.Client.Net40.xml" target="lib\net45\Simple.OData.Client.Net40.xml" />
+    <file src="bin\Release\Simple.OData.Client.Net.dll" target="lib\net45\Simple.OData.Client.Net.dll" />
+    <file src="bin\Release\Simple.OData.Client.Net.xml" target="lib\net45\Simple.OData.Client.Net.xml" />
   </files>
 </package>

@@ -1,0 +1,523 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Solutions\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props" Condition="Exists('..\Solutions\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{898FFD08-B7FC-45FE-A6DD-5AE9C2280D28}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Simple.OData.Client.Tests</RootNamespace>
+    <AssemblyName>Simple.OData.Client.Net.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET461;MOCK_HTTP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>NET461;MOCK_HTTP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\sn.snk</AssemblyOriginatorKeyFile>
+    <StrongNamePublicKey>PublicKey=00240000048000009400000006020000002400005253413100040000010001002d608f5bce35f3eff1c1102fc3a90c0c1fb48a69491aa396dc6f2b3214374645179700266ff7c64b35de02956afd8e0f29a6de4d4a32660d2ac7c531901daf5e1130944b1ca1e9a95cb7abcadca5aab49507e5673c1d0315e41157c0daf720fca9a7bfa78a264648bedc83ddb75792c607dda0b84e48ff577db2898566a470c2</StrongNamePublicKey>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Castle.Core.4.2.1\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Edm, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Data.Edm.5.8.5\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.OData, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Data.OData.5.8.5\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Services, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Data.Services.5.8.5\lib\net40\Microsoft.Data.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Services.Client, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Data.Services.Client.5.8.5\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.OData.Core, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.OData.Core.7.8.3\lib\net45\Microsoft.OData.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.OData.Edm, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.OData.Edm.7.8.3\lib\net45\Microsoft.OData.Edm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Spatial, Version=7.8.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Spatial.7.8.3\lib\net45\Microsoft.Spatial.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq, Version=4.7.145.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Moq.4.7.145\lib\net45\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Extensions, Version=2.2.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Spatial, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\System.Spatial.5.8.5\lib\net40\System.Spatial.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\xunit.assert.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.assert.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.0.0.2929, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\xunit.extensibility.core.2.0.0\lib\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\BasicApi\ClientReadOnlyTests.cs">
+      <Link>BasicApi\ClientReadOnlyTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\BasicApi\ClientReadWriteTests.cs">
+      <Link>BasicApi\ClientReadWriteTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\BasicApi\ClientSettingsTests.cs">
+      <Link>BasicApi\ClientSettingsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\BasicApi\ODataSchemaTests.cs">
+      <Link>BasicApi\ODataSchemaTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\ActionWithEnumTests.cs">
+      <Link>Core\ActionWithEnumTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\AdapterTests.cs">
+      <Link>Core\AdapterTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\AggregationTests.cs">
+      <Link>Core\AggregationTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\CoreTestBase.cs">
+      <Link>Core\CoreTestBase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\DynamicContainerTests.cs">
+      <Link>Core\DynamicContainerTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\DynamicExpressionTests.cs">
+      <Link>Core\DynamicExpressionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\DynamicFilterAsKeyTests.cs">
+      <Link>Core\DynamicFilterAsKeyTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\ExpansionTests.cs">
+      <Link>Core\ExpansionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\FormatSettings.cs">
+      <Link>Core\FormatSettings.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\KeyTests.cs">
+      <Link>Core\KeyTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\ODataExpandAssociationTests.cs">
+      <Link>Core\ODataExpandAssociationTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\OpenTypesTests.cs">
+      <Link>Core\OpenTypesTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\PluralizerTests.cs">
+      <Link>Core\PluralizerTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\RequestWriterActionTests.cs">
+      <Link>Core\RequestWriterActionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\RequestWriterBatchTests.cs">
+      <Link>Core\RequestWriterBatchTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\RequestWriterTests.cs">
+      <Link>Core\RequestWriterTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\ResponseReaderV3Tests.cs">
+      <Link>Core\ResponseReaderV3Tests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\ResponseReaderV4Tests.cs">
+      <Link>Core\ResponseReaderV4Tests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\SettingsRegistrationTests.cs">
+      <Link>Core\SettingsRegistrationTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\SettingsTests.cs">
+      <Link>Core\SettingsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\StreamTests.cs">
+      <Link>Core\StreamTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\TypeCacheValueConversionTests.cs">
+      <Link>Core\TypeCacheValueConversionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\TypeConverterCacheTests.cs">
+      <Link>Core\TypeConverterCacheTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\TypedDataAggregationTests.cs">
+      <Link>Core\TypedDataAggregationTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\TypedExpressionsTests.cs">
+      <Link>Core\TypedExpressionsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\TypedFilterAsKeyTests.cs">
+      <Link>Core\TypedFilterAsKeyTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Core\UtilsTests.cs">
+      <Link>Core\UtilsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Activity.cs">
+      <Link>Entities\Activity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Address.cs">
+      <Link>Entities\Address.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\AddressType.cs">
+      <Link>Entities\AddressType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Animal.cs">
+      <Link>Entities\Animal.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Category.cs">
+      <Link>Entities\Category.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\CustomAttributes.cs">
+      <Link>Entities\CustomAttributes.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Customer.cs">
+      <Link>Entities\Customer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Employee.cs">
+      <Link>Entities\Employee.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\IAddress.cs">
+      <Link>Entities\IAddress.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Mammal.cs">
+      <Link>Entities\Mammal.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Order.cs">
+      <Link>Entities\Order.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\OrderDetail.cs">
+      <Link>Entities\OrderDetail.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\PrimitiveType.cs">
+      <Link>Entities\PrimitiveType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Product.cs">
+      <Link>Entities\Product.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\QueryOptions.cs">
+      <Link>Entities\QueryOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Ship.cs">
+      <Link>Entities\Ship.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\Transport.cs">
+      <Link>Entities\Transport.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\TypeWithGuidKey.cs">
+      <Link>Entities\TypeWithGuidKey.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Entities\TypeWithIndexer.cs">
+      <Link>Entities\TypeWithIndexer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Extensions\DictionaryExtensionsTests.cs">
+      <Link>Extensions\DictionaryExtensionsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Extensions\StringExtensionTests.cs">
+      <Link>Extensions\StringExtensionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Extensions\TypeCacheTests.cs">
+      <Link>Extensions\TypeCacheTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Extensions\TypeExtensionTests.cs">
+      <Link>Extensions\TypeExtensionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Extensions\XElementExtensionsTests.cs">
+      <Link>Extensions\XElementExtensionsTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\BatchDynamicTests.cs">
+      <Link>FluentApi\BatchDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\BatchTests.cs">
+      <Link>FluentApi\BatchTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\BatchTypedTests.cs">
+      <Link>FluentApi\BatchTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\DeleteDynamicTests.cs">
+      <Link>FluentApi\DeleteDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\DeleteTests.cs">
+      <Link>FluentApi\DeleteTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\DeleteTypedTests.cs">
+      <Link>FluentApi\DeleteTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\FindDynamicTests.cs">
+      <Link>FluentApi\FindDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\FindTests.cs">
+      <Link>FluentApi\FindTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\FindTypedTests.cs">
+      <Link>FluentApi\FindTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\FunctionTests.cs">
+      <Link>FluentApi\FunctionTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\InsertDynamicTests.cs">
+      <Link>FluentApi\InsertDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\InsertTests.cs">
+      <Link>FluentApi\InsertTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\InsertTypedTests.cs">
+      <Link>FluentApi\InsertTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\LinkDynamicTests.cs">
+      <Link>FluentApi\LinkDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\LinkTests.cs">
+      <Link>FluentApi\LinkTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\LinkTypedTests.cs">
+      <Link>FluentApi\LinkTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\UpdateDynamicTests.cs">
+      <Link>FluentApi\UpdateDynamicTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\UpdateTests.cs">
+      <Link>FluentApi\UpdateTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\FluentApi\UpdateTypedTests.cs">
+      <Link>FluentApi\UpdateTypedTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\HelperExtensions.cs">
+      <Link>Resources\HelperExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\MetadataResolver.cs">
+      <Link>MetadataResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\MockingRequestExecutor.cs">
+      <Link>MockingRequestExecutor.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\Reflection\MemberAccessorTests.cs">
+      <Link>Refletction\MemberAccessorTests.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\TestBase.cs">
+      <Link>TestBase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Simple.Odata.Client\Simple.OData.Client.UnitTests\TestService.cs">
+      <Link>TestService.cs</Link>
+    </Compile>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="AdapterV3\MetadataTests.cs" />
+    <Compile Include="AdapterV4\MetadataTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\XmlSamples.Designer.cs">
+      <DependentUpon>XmlSamples.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\AccountTasksAndLink.json">
+      <Link>Resources\AccountTasksAndLink.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\AccountTasksOnlyLink.json">
+      <Link>Resources\AccountTasksOnlyLink.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\ActionWithDerivedType.xml">
+      <Link>Resources\ActionWithDerivedType.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\ActionWithEnum.xml">
+      <Link>Resources\ActionWithEnum.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\ArrayOfNested.edmx">
+      <Link>Resources\ArrayOfNested.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Artifacts.edmx">
+      <Link>Resources\Artifacts.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\ClientProductSku.xml">
+      <Link>Resources\ClientProductSku.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Colors.edmx">
+      <Link>Resources\Colors.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\DynamicsCRM.xml">
+      <Link>Resources\DynamicsCRM.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Northwind4WithAlternateKeys.xml">
+      <Link>Resources\Northwind4WithAlternateKeys.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\OpenTypes.xml">
+      <Link>Resources\OpenTypes.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\OpenTypeV401.json">
+      <Link>Resources\OpenTypeV401.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\ExampleActionComplexType.json">
+      <Link>Resources\ExampleActionComplexType.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Facebook.edmx">
+      <Link>Resources\Facebook.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Flickr.edmx">
+      <Link>Resources\Flickr.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\GoogleMaps.edmx">
+      <Link>Resources\GoogleMaps.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Insight.edmx">
+      <Link>Resources\Insight.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\iPhone.edmx">
+      <Link>Resources\iPhone.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Marathon.edmx">
+      <Link>Resources\Marathon.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\MultipleCategoriesWithProducts.xml">
+      <Link>Resources\MultipleCategoriesWithProducts.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\MultipleProducts.xml">
+      <Link>Resources\MultipleProducts.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\MultipleProductsWithCategory.xml">
+      <Link>Resources\MultipleProductsWithCategory.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Nested.edmx">
+      <Link>Resources\Nested.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Northwind.xml">
+      <Link>Resources\Northwind.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Northwind3.xml">
+      <Link>Resources\Northwind3.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Northwind4.xml">
+      <Link>Resources\Northwind4.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\QAS.Multiplatform.Demo.edmx">
+      <Link>Resources\QAS.Multiplatform.Demo.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Russian.xml">
+      <Link>Resources\Russian.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleCategoryWithProducts.xml">
+      <Link>Resources\SingleCategoryWithProducts.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleCustomerWithAddress.xml">
+      <Link>Resources\SingleCustomerWithAddress.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProduct.xml">
+      <Link>Resources\SingleProduct.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProductWithCategory.xml">
+      <Link>Resources\SingleProductWithCategory.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProductWithCollectionOfComplexProperties.xml">
+      <Link>Resources\SingleProductWithCollectionOfComplexProperties.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProductWithCollectionOfPrimitiveProperties.xml">
+      <Link>Resources\SingleProductWithCollectionOfPrimitiveProperties.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProductWithComplexProperty.xml">
+      <Link>Resources\SingleProductWithComplexProperty.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\SingleProductWithEmptyCollectionOfComplexProperties.xml">
+      <Link>Resources\SingleProductWithEmptyCollectionOfComplexProperties.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\KeyDemo.xml">
+      <Link>Resources\KeyDemo.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\TripPin.xml">
+      <Link>Resources\TripPin.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\Twitter.edmx">
+      <Link>Resources\Twitter.edmx</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\WorkTaskModel.xml">
+      <Link>Resources\WorkTaskModel.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\WorkTaskModelWithNulls.xml">
+      <Link>Resources\WorkTaskModelWithNulls.xml</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Simple.OData.Client.UnitTests\Resources\YouTube.edmx">
+      <Link>Resources\YouTube.edmx</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <EmbeddedResource Include="Properties\XmlSamples.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>XmlSamples.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Simple.OData.Client.Net\Simple.OData.Client.Net.csproj">
+      <Project>{c20a3959-4895-41f8-86e2-7ded294fd904}</Project>
+      <Name>Simple.OData.Client.Net</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\Solutions\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Solutions\packages\xunit.core.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props'))" />
+  </Target>
+  <Import Project="..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\Solutions\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+</Project>

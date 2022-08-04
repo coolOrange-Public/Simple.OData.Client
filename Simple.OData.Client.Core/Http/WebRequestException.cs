@@ -10,9 +10,7 @@ namespace Simple.OData.Client
     /// <summary>
     /// The exception that is thrown when the service failed to process the Web request
     /// </summary>
-#if NET40
     [Serializable]
-#endif
     public class WebRequestException : Exception
     {
         private readonly Uri _requestUri;
@@ -78,7 +76,6 @@ namespace Simple.OData.Client
         {
         }
 
-#if NET40
         /// <summary>
         /// Initializes a new instance of the <see cref="WebRequestException"/> class.
         /// </summary>
@@ -89,7 +86,6 @@ namespace Simple.OData.Client
             StreamingContext context) : base(info, context)
         {
         }
-#endif
 
         public HttpStatusCode StatusCode { get; private set; }
         public string RawResponse { get; private set; }

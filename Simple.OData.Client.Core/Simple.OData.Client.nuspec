@@ -17,8 +17,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Simple.OData.Client.Net40\bin\Release\Simple.OData.Client.Net40.dll" target="lib\net40\Simple.OData.Client.Net40.dll" />
-    <file src="Simple.OData.Client.Net40\bin\Release\Simple.OData.Client.Net40.dll" target="lib\net45\Simple.OData.Client.Net40.dll" />
+    <file src="Simple.OData.Client.Net\bin\Release\Simple.OData.Client.Net.dll" target="lib\net40\Simple.OData.Client.Net.dll" />
+    <file src="Simple.OData.Client.Net\bin\Release\Simple.OData.Client.Net.dll" target="lib\net45\Simple.OData.Client.Net.dll" />
     <file src="Simple.OData.Client.Core\bin\Release\Simple.OData.Client.Core.dll" target="lib\net40+sl5+win8+wp8\Simple.OData.Client.Core.dll" />
   </files>
 </package>
