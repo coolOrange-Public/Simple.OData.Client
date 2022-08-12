@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
@@ -13,15 +15,13 @@ namespace Simple.OData.Client
 	[Serializable]
 	public class WebRequestException : Exception
 	{
-		private readonly Uri _requestUri;
-
 		public static async Task<WebRequestException> CreateFromResponseMessageAsync(HttpResponseMessage response,
 			ISession session, Exception innerException = null)
 		{
 			var requestUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
 			var exception = new WebRequestException(response.ReasonPhrase, response.StatusCode, requestUri,
-				response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : null,
-				innerException);
+					response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : null, innerException)
+				{ Headers = response.Headers };
 			try
 			{
 				var responseReader = session.Adapter.GetResponseReader();
@@ -41,7 +41,8 @@ namespace Simple.OData.Client
 			if (response == null)
 				return new WebRequestException(ex);
 
-			return CreateFromResponseMessageAsync(new HttpResponseMessage(response.StatusCode) {
+			return CreateFromResponseMessageAsync(new HttpResponseMessage(response.StatusCode)
+			{
 				ReasonPhrase = ex.Message,
 				Content = new StringContent(Utils.StreamToString(response.GetResponseStream(), true)),
 				RequestMessage = new HttpRequestMessage(new HttpMethod(response.Method), response.ResponseUri)
@@ -51,7 +52,8 @@ namespace Simple.OData.Client
 		public static WebRequestException CreateFromResponse(ODataResponse response)
 		{
 			return new WebRequestException(response.StatusCode.ToString(), (HttpStatusCode)response.StatusCode, null,
-				null, null) {
+				null, null)
+			{
 				ODataResponse = response
 			};
 		}
@@ -68,7 +70,7 @@ namespace Simple.OData.Client
 		{
 			StatusCode = statusCode;
 			RawResponse = responseContent;
-			_requestUri = requestUri;
+			RequestUri = requestUri;
 		}
 
 		/// <summary>
@@ -91,19 +93,17 @@ namespace Simple.OData.Client
 		{
 		}
 
-		public HttpStatusCode StatusCode { get; private set; }
-		public string RawResponse { get; private set; }
-		public ODataResponse ODataResponse { get; protected set; }
-
 		/// <summary>
 		/// Gets the HTTP Uri
 		/// </summary>
 		/// <value>
 		/// The original request URI, or the resulting URI if a redirect took place.
 		/// </value>
-		public Uri RequestUri
-		{
-			get { return _requestUri; }
-		}
+		public Uri RequestUri { get; private set; }
+
+		public HttpStatusCode StatusCode { get; private set; }
+		public HttpResponseHeaders Headers { get; private set; }
+		public string RawResponse { get; private set; }
+		public ODataResponse ODataResponse { get; protected set; }
 	}
 }

@@ -117,12 +117,11 @@ namespace Simple.OData.Client
 	public class ODataResponse
 	{
 		public int StatusCode { get; private set; }
-		public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
 		public AnnotatedFeed Feed { get; private set; }
 		public IList<ODataResponse> Batch { get; private set; }
-
 		public ODataErrorDetails ErrorDetails { get; private set; }
 		public Exception Exception { get; private set; }
+		public IEnumerable<KeyValuePair<string, string>> Headers { get; internal set; }
 
 		public string Location
 		{
