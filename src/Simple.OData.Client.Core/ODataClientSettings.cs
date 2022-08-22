@@ -306,6 +306,9 @@ namespace Simple.OData.Client
 		/// </summary>
 		public ODataClientSettings()
 		{
+			Validations = ValidationKinds.All;
+			BatchPayloadUriOption = BatchPayloadUriOption.AbsoluteUri;
+			ReadUntypedAsString = true;
 		}
 
 		/// <summary>
