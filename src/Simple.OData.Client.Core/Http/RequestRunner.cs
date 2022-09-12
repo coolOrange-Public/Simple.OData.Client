@@ -65,16 +65,16 @@ namespace Simple.OData.Client
 			}
 			catch (HttpRequestException ex)
 			{
-				if (ex.GetBaseException() is WebException)
-					throw WebRequestException.CreateFromWebException(ex.GetBaseException() as WebException, _session, request.RequestMessage);
+				if (ex.InnerException is WebException)
+					throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session, request.RequestMessage);
 				throw;
 			}
 			catch (AggregateException ex)
 			{
 				if (ex.InnerException is WebException)
 					throw WebRequestException.CreateFromWebException(ex.InnerException as WebException, _session, request.RequestMessage);
-				else if (ex.InnerException is HttpRequestException && ex.InnerException.GetBaseException() is WebException)
-					throw WebRequestException.CreateFromWebException(ex.InnerException.GetBaseException() as WebException, _session, request.RequestMessage);
+				else if (ex.InnerException is HttpRequestException && ex.InnerException.InnerException is WebException)
+					throw WebRequestException.CreateFromWebException(ex.InnerException.InnerException as WebException, _session, request.RequestMessage);
 				else
 					throw;
 			}
