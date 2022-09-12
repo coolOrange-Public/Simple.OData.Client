@@ -32,11 +32,12 @@ namespace Simple.OData.Client
 			return exception;
 		}
 
-		public static WebRequestException CreateFromWebException(WebException ex, ISession session)
+		public static WebRequestException CreateFromWebException(WebException ex, ISession session,
+			HttpRequestMessage request)
 		{
 			var response = ex.Response as HttpWebResponse;
 			if (response == null)
-				return new WebRequestException(ex);
+				return new WebRequestException(ex) { RequestUri = request.RequestUri };
 
 			return CreateFromResponseMessageAsync(new HttpResponseMessage(response.StatusCode)
 			{
