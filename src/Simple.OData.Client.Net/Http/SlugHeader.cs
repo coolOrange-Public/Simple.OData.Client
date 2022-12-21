@@ -93,7 +93,7 @@ namespace Simple.OData.Client.Http
 
 		public static SlugHeader ToSlugHeader(this Microsoft.OData.ODataResource entry)
 		{
-			return ToSlugHeader(entry, writer => new V4.Adapter.JsonWriter(writer, true));
+			return ToSlugHeader(entry, writer => new V4.Adapter.JsonWriter(writer));
 		}
 
 		static SlugHeader ToSlugHeader(dynamic entry, Func<TextWriter, IJsonWriter> getJsonWriter)
