@@ -49,7 +49,7 @@ namespace Simple.OData.Client.V4.Adapter
 		private async Task WriteEntryPropertiesAsync(ODataWriter entryWriter, ODataResource entry,
 			IDictionary<string, List<ReferenceLink>> links)
 		{
-			await entryWriter.WriteStartAsync(entry).ConfigureAwait(false);
+			await entryWriter.WriteStartAsync(entry);
 			ResourceProperties resourceEntry;
 			if (_resourceEntryMap.TryGetValue(entry, out resourceEntry))
 			{
@@ -59,7 +59,7 @@ namespace Simple.OData.Client.V4.Adapter
 					{
 						if (prop.Value != null)
 						{
-							await WriteNestedCollectionAsync(entryWriter, prop.Key, prop.Value).ConfigureAwait(false);
+							await WriteNestedCollectionAsync(entryWriter, prop.Key, prop.Value);
 						}
 					}
 				}
@@ -70,7 +70,7 @@ namespace Simple.OData.Client.V4.Adapter
 					{
 						if (prop.Value != null)
 						{
-							await WriteNestedEntryAsync(entryWriter, prop.Key, prop.Value).ConfigureAwait(false);
+							await WriteNestedEntryAsync(entryWriter, prop.Key, prop.Value);
 						}
 					}
 				}
@@ -82,12 +82,12 @@ namespace Simple.OData.Client.V4.Adapter
 				{
 					if (link.Value.Any(x => x.LinkData != null))
 					{
-						await WriteLinkAsync(entryWriter, entry.TypeName, link.Key, link.Value).ConfigureAwait(false);
+						await WriteLinkAsync(entryWriter, entry.TypeName, link.Key, link.Value);
 					}
 				}
 			}
 
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+			await entryWriter.WriteEndAsync();
 		}
 
 		private async Task WriteNestedCollectionAsync(ODataWriter entryWriter, string entryName,
@@ -96,7 +96,7 @@ namespace Simple.OData.Client.V4.Adapter
 			await entryWriter.WriteStartAsync(new ODataNestedResourceInfo() {
 				Name = entryName,
 				IsCollection = true,
-			}).ConfigureAwait(false);
+			});
 
 			await entryWriter.WriteStartAsync(new ODataResourceSet());
 			foreach (var item in collection.Items)
@@ -104,9 +104,9 @@ namespace Simple.OData.Client.V4.Adapter
 				await WriteEntryPropertiesAsync(entryWriter, item as ODataResource, null);
 			}
 
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+			await entryWriter.WriteEndAsync();
 
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+			await entryWriter.WriteEndAsync();
 		}
 
 		private async Task WriteNestedEntryAsync(ODataWriter entryWriter, string entryName, ODataResource entry)
@@ -114,11 +114,11 @@ namespace Simple.OData.Client.V4.Adapter
 			await entryWriter.WriteStartAsync(new ODataNestedResourceInfo() {
 				Name = entryName,
 				IsCollection = false,
-			}).ConfigureAwait(false);
+			});
 
-			await WriteEntryPropertiesAsync(entryWriter, entry, null).ConfigureAwait(false);
+			await WriteEntryPropertiesAsync(entryWriter, entry, null);
 
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+			await entryWriter.WriteEndAsync();
 		}
 
 		protected override async Task<Stream> WriteEntryContentAsync(string method, string collection,
@@ -145,14 +145,14 @@ namespace Simple.OData.Client.V4.Adapter
 				var entityCollection = _session.Metadata.NavigateToCollection(collection);
 				var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
 
-				var entryWriter = await messageWriter.CreateODataResourceWriterAsync().ConfigureAwait(false);
+				var entryWriter = await messageWriter.CreateODataResourceWriterAsync();
 				var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties, null);
 
-				await entryWriter.WriteStartAsync(entry).ConfigureAwait(false);
-				await WriteNavigationLinks(entryDetails, entry, deep, entryWriter).ConfigureAwait(false);
-				await entryWriter.WriteEndAsync().ConfigureAwait(false);
+				await entryWriter.WriteStartAsync(entry);
+				await WriteNavigationLinks(entryDetails, entry, deep, entryWriter);
+				await entryWriter.WriteEndAsync();
 
-				return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+				return IsBatch ? null : await message.GetStreamAsync();
 			}
 		}
 
@@ -173,7 +173,7 @@ namespace Simple.OData.Client.V4.Adapter
 		protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
 		{
 			var message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, null, null, commandText, false).ConfigureAwait(false)
+				? await CreateBatchOperationMessageAsync(method, null, null, commandText, false)
 				: new ODataRequestMessage();
 
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), _model))
@@ -181,8 +181,8 @@ namespace Simple.OData.Client.V4.Adapter
 				var link = new ODataEntityReferenceLink {
 					Url = Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, linkIdent)
 				};
-				await messageWriter.WriteEntityReferenceLinkAsync(link).ConfigureAwait(false);
-				return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+				await messageWriter.WriteEntityReferenceLinkAsync(link);
+				return IsBatch ? null : await message.GetStreamAsync();
 			}
 		}
 
@@ -190,7 +190,7 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (IsBatch)
 			{
-				await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false);
+				await CreateBatchOperationMessageAsync(method, null, null, commandText, true);
 			}
 
 			return null;
@@ -200,7 +200,7 @@ namespace Simple.OData.Client.V4.Adapter
 			string actionName, string boundTypeName, IDictionary<string, object> parameters)
 		{
 			var message = IsBatch
-				? await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false)
+				? await CreateBatchOperationMessageAsync(method, null, null, commandText, true)
 				: new ODataRequestMessage();
 
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), _model))
@@ -221,9 +221,9 @@ namespace Simple.OData.Client.V4.Adapter
 							     ((IEdmAction)x).Parameters.FirstOrDefault(p => p.Name == "bindingParameter"),
 							     _model.FindDeclaredType(boundTypeName)),
 						x => x.Name, actionName, _session.Settings.NameMatchResolver) as IEdmAction;
-				var parameterWriter = await messageWriter.CreateODataParameterWriterAsync(action).ConfigureAwait(false);
+				var parameterWriter = await messageWriter.CreateODataParameterWriterAsync(action);
 
-				await parameterWriter.WriteStartAsync().ConfigureAwait(false);
+				await parameterWriter.WriteStartAsync();
 
 				foreach (var parameter in parameters)
 				{
@@ -233,11 +233,11 @@ namespace Simple.OData.Client.V4.Adapter
 						throw new UnresolvableObjectException(parameter.Key,
 							string.Format("Parameter [{0}] not found for action [{1}]", parameter.Key, actionName));
 					await WriteOperationParameterAsync(parameterWriter, operationParameter, parameter.Key,
-						parameter.Value).ConfigureAwait(false);
+						parameter.Value);
 				}
 
-				await parameterWriter.WriteEndAsync().ConfigureAwait(false);
-				return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+				await parameterWriter.WriteEndAsync();
+				return IsBatch ? null : await message.GetStreamAsync();
 			}
 		}
 
@@ -248,23 +248,21 @@ namespace Simple.OData.Client.V4.Adapter
 			{
 				case EdmTypeKind.Primitive:
 					var value = GetPropertyValue(operationParameter.Type, paramValue, null);
-					await parameterWriter.WriteValueAsync(paramName, value).ConfigureAwait(false);
+					await parameterWriter.WriteValueAsync(paramName, value);
 					break;
 
 				case EdmTypeKind.Enum:
-					await parameterWriter.WriteValueAsync(paramName, new ODataEnumValue(paramValue.ToString()))
-						.ConfigureAwait(false);
+					await parameterWriter.WriteValueAsync(paramName, new ODataEnumValue(paramValue.ToString()));
 					break;
 
 				case EdmTypeKind.Untyped:
 					await parameterWriter
-						.WriteValueAsync(paramName, new ODataUntypedValue { RawValue = paramValue.ToString() })
-						.ConfigureAwait(false);
+						.WriteValueAsync(paramName, new ODataUntypedValue { RawValue = paramValue.ToString() });
 					break;
 
 				case EdmTypeKind.Entity:
 				{
-					var entryWriter = await parameterWriter.CreateResourceWriterAsync(paramName).ConfigureAwait(false);
+					var entryWriter = await parameterWriter.CreateResourceWriterAsync(paramName);
 					var paramValueDict = paramValue.ToDictionary(TypeCache);
 					var contentId = _deferredBatchWriter != null
 						? _deferredBatchWriter.Value.GetContentId(paramValueDict, null)
@@ -281,13 +279,13 @@ namespace Simple.OData.Client.V4.Adapter
 					var entry = CreateODataEntry(typeName, entryDetails.Properties, null);
 
 					RegisterRootEntry(entry);
-					await WriteEntryPropertiesAsync(entryWriter, entry, entryDetails.Links).ConfigureAwait(false);
+					await WriteEntryPropertiesAsync(entryWriter, entry, entryDetails.Links);
 					UnregisterRootEntry(entry);
 				}
 					break;
 				case EdmTypeKind.Complex:
 				{
-					var entryWriter = await parameterWriter.CreateResourceWriterAsync(paramName).ConfigureAwait(false);
+					var entryWriter = await parameterWriter.CreateResourceWriterAsync(paramName);
 					var paramValueDict = paramValue.ToDictionary(TypeCache);
 
 					var typeName = operationParameter.Type.Definition.FullTypeName();
@@ -300,8 +298,7 @@ namespace Simple.OData.Client.V4.Adapter
 					var entry = CreateODataEntry(typeName, paramValueDict, null);
 
 					RegisterRootEntry(entry);
-					await WriteEntryPropertiesAsync(entryWriter, entry, new Dictionary<string, List<ReferenceLink>>())
-						.ConfigureAwait(false);
+					await WriteEntryPropertiesAsync(entryWriter, entry, new Dictionary<string, List<ReferenceLink>>());
 					UnregisterRootEntry(entry);
 				}
 					break;
@@ -311,34 +308,32 @@ namespace Simple.OData.Client.V4.Adapter
 					var elementType = collectionType.ElementType;
 					if (elementType.Definition.TypeKind == EdmTypeKind.Entity)
 					{
-						var feedWriter = await parameterWriter.CreateResourceSetWriterAsync(paramName)
-							.ConfigureAwait(false);
+						var feedWriter = await parameterWriter.CreateResourceSetWriterAsync(paramName);
 						var feed = new ODataResourceSet();
-						await feedWriter.WriteStartAsync(feed).ConfigureAwait(false);
+						await feedWriter.WriteStartAsync(feed);
 						foreach (var item in (IEnumerable)paramValue)
 						{
 							var feedEntry = CreateODataEntry(elementType.Definition.FullTypeName(),
 								item.ToDictionary(TypeCache), null);
 
 							RegisterRootEntry(feedEntry);
-							await feedWriter.WriteStartAsync(feedEntry).ConfigureAwait(false);
-							await feedWriter.WriteEndAsync().ConfigureAwait(false);
+							await feedWriter.WriteStartAsync(feedEntry);
+							await feedWriter.WriteEndAsync();
 							UnregisterRootEntry(feedEntry);
 						}
 
-						await feedWriter.WriteEndAsync().ConfigureAwait(false);
+						await feedWriter.WriteEndAsync();
 					}
 					else
 					{
-						var collectionWriter = await parameterWriter.CreateCollectionWriterAsync(paramName)
-							.ConfigureAwait(false);
-						await collectionWriter.WriteStartAsync(new ODataCollectionStart()).ConfigureAwait(false);
+						var collectionWriter = await parameterWriter.CreateCollectionWriterAsync(paramName);
+						await collectionWriter.WriteStartAsync(new ODataCollectionStart());
 						foreach (var item in (IEnumerable)paramValue)
 						{
-							await collectionWriter.WriteItemAsync(item).ConfigureAwait(false);
+							await collectionWriter.WriteItemAsync(item);
 						}
 
-						await collectionWriter.WriteEndAsync().ConfigureAwait(false);
+						await collectionWriter.WriteEndAsync();
 					}
 
 					break;
@@ -355,8 +350,8 @@ namespace Simple.OData.Client.V4.Adapter
 			using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(ODataFormat.RawValue), _model))
 			{
 				var value = writeAsText ? (object)Utils.StreamToString(stream) : Utils.StreamToByteArray(stream);
-				await messageWriter.WriteValueAsync(value).ConfigureAwait(false);
-				return await message.GetStreamAsync().ConfigureAwait(false);
+				await messageWriter.WriteValueAsync(value);
+				return await message.GetStreamAsync();
 			}
 		}
 
@@ -390,7 +385,7 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			var message = (await _deferredBatchWriter.Value.CreateOperationMessageAsync(
 				Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, commandText),
-				method, collection, entryData, resultRequired).ConfigureAwait(false)) as IODataRequestMessageAsync;
+				method, collection, entryData, resultRequired)) as IODataRequestMessageAsync;
 
 			return message;
 		}
@@ -405,9 +400,9 @@ namespace Simple.OData.Client.V4.Adapter
 				if (link.Value.Any(x => x.LinkData != null))
 				{
 					if (deep)
-						await WriteEntryAsync(entryWriter, entry, link.Key, link.Value).ConfigureAwait(false);
+						await WriteEntryAsync(entryWriter, entry, link.Key, link.Value);
 					else
-						await WriteLinkAsync(entryWriter, entry.TypeName, link.Key, link.Value).ConfigureAwait(false);
+						await WriteLinkAsync(entryWriter, entry.TypeName, link.Key, link.Value);
 				}
 		}
 
@@ -416,9 +411,9 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			IEdmEntityType linkType;
 			var navigationLink = CreateNavigationLink(entry, linkName, out linkType);
-			await entryWriter.WriteStartAsync(navigationLink).ConfigureAwait(false);
+			await entryWriter.WriteStartAsync(navigationLink);
 			if (navigationLink.IsCollection != null ? navigationLink.IsCollection.Value : false)
-				await entryWriter.WriteStartAsync(new ODataResourceSet()).ConfigureAwait(false);
+				await entryWriter.WriteStartAsync(new ODataResourceSet());
 
 			foreach (var referenceLink in links)
 			{
@@ -432,14 +427,14 @@ namespace Simple.OData.Client.V4.Adapter
 						IEdmEntityType;
 				var linkEntry = CreateODataEntry(navigationEntityType.FullName(), linkEntryDetails.Properties, null);
 
-				await entryWriter.WriteStartAsync(linkEntry).ConfigureAwait(false);
-				await WriteNavigationLinks(linkEntryDetails, linkEntry, true, entryWriter).ConfigureAwait(false);
-				await entryWriter.WriteEndAsync().ConfigureAwait(false);
+				await entryWriter.WriteStartAsync(linkEntry);
+				await WriteNavigationLinks(linkEntryDetails, linkEntry, true, entryWriter);
+				await entryWriter.WriteEndAsync();
 			}
 
 			if (navigationLink.IsCollection != null ? navigationLink.IsCollection.Value : false)
-				await entryWriter.WriteEndAsync().ConfigureAwait(false);
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+				await entryWriter.WriteEndAsync();
+			await entryWriter.WriteEndAsync();
 		}
 
 		private async Task WriteLinkAsync(ODataWriter entryWriter, string typeName, string linkName,
@@ -460,7 +455,7 @@ namespace Simple.OData.Client.V4.Adapter
 				Name = linkName,
 				IsCollection = isCollection,
 				Url = new Uri(ODataNamespace.Related + linkType, UriKind.Absolute),
-			}).ConfigureAwait(false);
+			});
 
 			foreach (var referenceLink in links)
 			{
@@ -486,10 +481,10 @@ namespace Simple.OData.Client.V4.Adapter
 					Url = Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, linkUri)
 				};
 
-				await entryWriter.WriteEntityReferenceLinkAsync(link).ConfigureAwait(false);
+				await entryWriter.WriteEntityReferenceLinkAsync(link);
 			}
 
-			await entryWriter.WriteEndAsync().ConfigureAwait(false);
+			await entryWriter.WriteEndAsync();
 		}
 
 		ODataNestedResourceInfo CreateNavigationLink(ODataResource entry, string linkName,

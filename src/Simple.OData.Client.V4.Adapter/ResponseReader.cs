@@ -55,7 +55,7 @@ namespace Simple.OData.Client.V4.Adapter
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Batch))
 				{
-					return await ReadResponse(messageReader.CreateODataBatchReader()).ConfigureAwait(false);
+					return await ReadResponse(messageReader.CreateODataBatchReader());
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.ResourceSet))
 				{

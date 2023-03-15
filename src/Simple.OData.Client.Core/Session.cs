@@ -85,7 +85,7 @@ namespace Simple.OData.Client
 		public async Task Initialize(CancellationToken cancellationToken)
 		{
 			// Just allow one schema request at a time, unlikely to be much contention but avoids multiple requests for same endpoint.
-			await _initializeSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+			await _initializeSemaphore.WaitAsync(cancellationToken);
 
 			try
 			{
@@ -93,9 +93,8 @@ namespace Simple.OData.Client
 				{
 					if (string.IsNullOrEmpty(this.Settings.MetadataDocument))
 					{
-						var response = await SendMetadataRequestAsync(cancellationToken).ConfigureAwait(false);
-						this.MetadataCache.SetMetadataDocument(await response.Content.ReadAsStringAsync()
-							.ConfigureAwait(false));
+						var response = await SendMetadataRequestAsync(cancellationToken);
+						this.MetadataCache.SetMetadataDocument(await response.Content.ReadAsStringAsync());
 					}
 					else
 					{
@@ -120,7 +119,7 @@ namespace Simple.OData.Client
 
 		public async Task<IODataAdapter> ResolveAdapterAsync(CancellationToken cancellationToken)
 		{
-			await Initialize(cancellationToken).ConfigureAwait(false);
+			await Initialize(cancellationToken);
 
 			if (Settings.PayloadFormat == ODataPayloadFormat.Unspecified)
 				Settings.PayloadFormat = Adapter.DefaultPayloadFormat;
@@ -157,7 +156,7 @@ namespace Simple.OData.Client
 		private async Task<HttpResponseMessage> SendMetadataRequestAsync(CancellationToken cancellationToken)
 		{
 			var request = new ODataRequest(RestVerbs.Get, this, ODataLiteral.Metadata);
-			return await new RequestRunner(this).ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+			return await new RequestRunner(this).ExecuteRequestAsync(request, cancellationToken);
 		}
 	}
 }

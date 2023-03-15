@@ -23,8 +23,8 @@ namespace Simple.OData.Client.V4.Adapter
 			_requestMessage = new ODataRequestMessage() { Url = _session.Settings.BaseUri };
 			_messageWriter = new ODataMessageWriter(_requestMessage,
 				new ODataMessageWriterSettings { BaseUri = _session.Settings.BaseUri });
-			_batchWriter = await _messageWriter.CreateODataBatchWriterAsync().ConfigureAwait(false);
-			await _batchWriter.WriteStartBatchAsync().ConfigureAwait(false);
+			_batchWriter = await _messageWriter.CreateODataBatchWriterAsync();
+			await _batchWriter.WriteStartBatchAsync();
 			this.HasOperations = true;
 		}
 
@@ -32,11 +32,11 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (_pendingChangeSet)
 			{
-				await _batchWriter.WriteEndChangesetAsync().ConfigureAwait(false);
+				await _batchWriter.WriteEndChangesetAsync();
 			}
 
-			await _batchWriter.WriteEndBatchAsync().ConfigureAwait(false);
-			var stream = await _requestMessage.GetStreamAsync().ConfigureAwait(false);
+			await _batchWriter.WriteEndBatchAsync();
+			var stream = await _requestMessage.GetStreamAsync();
 			return CreateMessageFromStream(stream, _requestMessage.Url, _requestMessage.GetHeader);
 		}
 
@@ -44,10 +44,10 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (_batchWriter == null)
 			{
-				await StartBatchAsync().ConfigureAwait(false);
+				await StartBatchAsync();
 			}
 
-			await _batchWriter.WriteStartChangesetAsync().ConfigureAwait(false);
+			await _batchWriter.WriteStartChangesetAsync();
 		}
 
 		protected override Task EndChangesetAsync()
@@ -60,18 +60,17 @@ namespace Simple.OData.Client.V4.Adapter
 		{
 			if (_batchWriter == null)
 			{
-				await StartBatchAsync().ConfigureAwait(false);
+				await StartBatchAsync();
 			}
 
-			return await CreateBatchOperationMessageAsync(uri, method, collection, contentId, resultRequired)
-				.ConfigureAwait(false);
+			return await CreateBatchOperationMessageAsync(uri, method, collection, contentId, resultRequired);
 		}
 
 		private async Task<ODataBatchOperationRequestMessage> CreateBatchOperationMessageAsync(
 			Uri uri, string method, string collection, string contentId, bool resultRequired)
 		{
 			var message = await _batchWriter.CreateOperationRequestMessageAsync(method, uri, contentId,
-				(Microsoft.OData.BatchPayloadUriOption)_session.Settings.BatchPayloadUriOption).ConfigureAwait(false);
+				(Microsoft.OData.BatchPayloadUriOption)_session.Settings.BatchPayloadUriOption);
 
 			if (method == RestVerbs.Post || method == RestVerbs.Put || method == RestVerbs.Patch ||
 			    method == RestVerbs.Merge)

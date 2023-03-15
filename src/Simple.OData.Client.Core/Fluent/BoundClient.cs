@@ -106,7 +106,6 @@ namespace Simple.OData.Client
 		private BoundClient<ODataEntry> CreateClientForODataEntry()
 		{
 			return new BoundClient<ODataEntry>(_client, _session, _parentCommand, this.Command, true);
-			;
 		}
 	}
 }

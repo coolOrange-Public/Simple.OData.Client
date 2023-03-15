@@ -24,20 +24,20 @@ namespace Simple.OData.Client
 			HttpConnection httpConnection = null;
 			try
 			{
-				await PreExecuteAsync(request).ConfigureAwait(false);
+				await PreExecuteAsync(request);
 
 				_session.Trace("{0} request: {1}", request.Method, request.RequestMessage.RequestUri.AbsoluteUri);
 				if (request.RequestMessage.Content != null &&
 				    (_session.Settings.TraceFilter & ODataTrace.RequestContent) != 0)
 				{
-					var content = await request.RequestMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					var content = await request.RequestMessage.Content.ReadAsStringAsync();
 					_session.Trace("Request content:{0}{1}", Environment.NewLine, content);
 				}
 
 				HttpResponseMessage response;
 				if (_session.Settings.RequestExecutor != null)
 				{
-					response = await _session.Settings.RequestExecutor(request.RequestMessage).ConfigureAwait(false);
+					response = await _session.Settings.RequestExecutor(request.RequestMessage);
 				}
 				else
 				{
@@ -52,11 +52,11 @@ namespace Simple.OData.Client
 				_session.Trace("Request completed: {0}", response.StatusCode);
 				if (response.Content != null && (_session.Settings.TraceFilter & ODataTrace.ResponseContent) != 0)
 				{
-					var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+					var content = await response.Content.ReadAsStringAsync();
 					_session.Trace("Response content:{0}{1}", Environment.NewLine, content);
 				}
 
-				await PostExecuteAsync(response).ConfigureAwait(false);
+				await PostExecuteAsync(response);
 				return response;
 			}
 			catch (WebException ex)
@@ -124,8 +124,7 @@ namespace Simple.OData.Client
 				_session.Settings.AfterResponse(responseMessage);
 
 			if (!responseMessage.IsSuccessStatusCode)
-				throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session)
-					.ConfigureAwait(false);
+				throw await WebRequestException.CreateFromResponseMessageAsync(responseMessage, _session);
 		}
 	}
 }

@@ -51,7 +51,7 @@ namespace Simple.OData.Client
 
 			var result = _client.FindEntriesAsync(command.Format(), annotations, command.Details.Headers, cancellationToken);
 			return await FilterAndTypeColumnsAsync(
-				result, _command.SelectedColumns, _command.DynamicPropertiesContainerName).ConfigureAwait(false);
+				result, _command.SelectedColumns, _command.DynamicPropertiesContainerName);
 		}
 
 		public Task<IEnumerable<T>> FindEntriesAsync(Uri annotatedUri, ODataFeedAnnotations annotations)
@@ -70,7 +70,7 @@ namespace Simple.OData.Client
 
 			var result = _client.FindEntriesAsync(commandText, annotations, cancellationToken);
 			return await FilterAndTypeColumnsAsync(
-				result, _command.SelectedColumns, _command.DynamicPropertiesContainerName).ConfigureAwait(false);
+				result, _command.SelectedColumns, _command.DynamicPropertiesContainerName);
 		}
 
 		public Task<T> FindEntryAsync()
@@ -92,7 +92,7 @@ namespace Simple.OData.Client
 
 		public async Task<U> FindScalarAsync<U>(CancellationToken cancellationToken)
 		{
-			var result = await _client.FindScalarAsync(_command, cancellationToken).ConfigureAwait(false);
+			var result = await _client.FindScalarAsync(_command, cancellationToken);
 			return _client.IsBatchRequest
 				? default(U)
 				: _session.TypeCache.Convert<U>(result);
@@ -115,8 +115,7 @@ namespace Simple.OData.Client
 
 		public async Task<T> InsertEntryAsync(bool resultRequired, CancellationToken cancellationToken)
 		{
-			var result = await _client.InsertEntryAsync(_command, resultRequired, cancellationToken)
-				.ConfigureAwait(false);
+			var result = await _client.InsertEntryAsync(_command, resultRequired, cancellationToken);
 			if (!string.IsNullOrEmpty(_command.DynamicPropertiesContainerName))
 			{
 				TypeCache.Register<T>(_command.DynamicPropertiesContainerName);
@@ -144,15 +143,14 @@ namespace Simple.OData.Client
 		{
 			if (_command.Details.HasFilter)
 			{
-				var result = await UpdateEntriesAsync(resultRequired, cancellationToken).ConfigureAwait(false);
+				var result = await UpdateEntriesAsync(resultRequired, cancellationToken);
 				return resultRequired
 					? result != null ? result.First() : null
 					: null;
 			}
 			else
 			{
-				var result = await _client.UpdateEntryAsync(_command, resultRequired, cancellationToken)
-					.ConfigureAwait(false);
+				var result = await _client.UpdateEntryAsync(_command, resultRequired, cancellationToken);
 				if (!string.IsNullOrEmpty(_command.DynamicPropertiesContainerName))
 				{
 					TypeCache.Register<T>(_command.DynamicPropertiesContainerName);
@@ -181,8 +179,7 @@ namespace Simple.OData.Client
 
 		public async Task<IEnumerable<T>> UpdateEntriesAsync(bool resultRequired, CancellationToken cancellationToken)
 		{
-			var result = await _client.UpdateEntriesAsync(_command, resultRequired, cancellationToken)
-				.ConfigureAwait(false);
+			var result = await _client.UpdateEntriesAsync(_command, resultRequired, cancellationToken);
 			if (!string.IsNullOrEmpty(_command.DynamicPropertiesContainerName))
 			{
 				TypeCache.Register<T>(_command.DynamicPropertiesContainerName);

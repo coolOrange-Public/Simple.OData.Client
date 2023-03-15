@@ -41,8 +41,7 @@ namespace Simple.OData.Client
 						exceptions.Add(WebRequestException.CreateFromResponse(actionResponse));
 					else
 					{
-						await actions[actionIndex](new ODataClient(client as ODataClient, actionResponse))
-							.ConfigureAwait(false);
+						await actions[actionIndex](new ODataClient(client as ODataClient, actionResponse));
 					}
 				}
 			}

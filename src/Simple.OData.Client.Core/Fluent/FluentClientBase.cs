@@ -704,7 +704,7 @@ namespace Simple.OData.Client
 		/// <returns>The command text.</returns>
 		public async Task<string> GetCommandTextAsync(CancellationToken cancellationToken)
 		{
-			await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
+			await _session.ResolveAdapterAsync(cancellationToken);
 			if (cancellationToken.IsCancellationRequested)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
@@ -717,7 +717,7 @@ namespace Simple.OData.Client
 			Task<IEnumerable<IDictionary<string, object>>> entries, IList<string> selectedColumns,
 			string dynamicPropertiesContainerName)
 		{
-			var result = FilterColumns(await entries.ConfigureAwait(false), selectedColumns);
+			var result = FilterColumns(await entries, selectedColumns);
 			return result != null ? result.Select(z => ConvertResult(z, dynamicPropertiesContainerName)) : null;
 		}
 
@@ -725,7 +725,7 @@ namespace Simple.OData.Client
 			Task<IDictionary<string, object>> entry, IList<string> selectedColumns,
 			string dynamicPropertiesContainerName)
 		{
-			return ConvertResult(FilterColumns(await entry.ConfigureAwait(false), selectedColumns),
+			return ConvertResult(FilterColumns(await entry, selectedColumns),
 				dynamicPropertiesContainerName);
 		}
 
@@ -733,7 +733,7 @@ namespace Simple.OData.Client
 			Task<Tuple<IEnumerable<IDictionary<string, object>>, int>> entries, IList<string> selectedColumns,
 			string dynamicPropertiesContainerName)
 		{
-			var result = await entries.ConfigureAwait(false);
+			var result = await entries;
 			return new Tuple<IEnumerable<T>, int>(
 				FilterColumns(result.Item1, selectedColumns)
 					.Select(y => ConvertResult(y, dynamicPropertiesContainerName)),

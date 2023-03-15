@@ -16,7 +16,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var product = await client
 				.For("Products")
 				.Set(new Entry() { { "ProductName", "Test1" }, { "UnitPrice", 18m } })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test1", product["ProductName"]);
 		}
@@ -28,7 +28,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var product = await client
 				.For("Products")
 				.Set(new Entry() { { "ProductName", "Test1" }, { "UnitPrice", 18.0d } })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test1", product["ProductName"]);
 		}
@@ -40,7 +40,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var product = await client
 				.For("Products")
 				.Set(new { ProductName = "Test1", UnitPrice = 18m })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.True((int)product["ProductID"] > 0);
 			Assert.Equal("Test1", product["ProductName"]);
@@ -57,7 +57,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var product = await ((Task<IDictionary<string, object>>)client
 				.For("Products")
 				.Set(expando)
-				.InsertEntryAsync()).ConfigureAwait(false);
+				.InsertEntryAsync());
 
 			Assert.True((int)product["ProductID"] > 0);
 		}
@@ -69,11 +69,11 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var category = await client
 				.For("Categories")
 				.Set(new { CategoryName = "Test3" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 			var product = await client
 				.For("Products")
 				.Set(new { ProductName = "Test4", UnitPrice = 18m, CategoryID = category["CategoryID"] })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test4", product["ProductName"]);
 			Assert.Equal(category["CategoryID"], product["CategoryID"]);
@@ -81,7 +81,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 				.For("Categories")
 				.Expand("Products")
 				.Filter("CategoryName eq 'Test3'")
-				.FindEntryAsync().ConfigureAwait(false);
+				.FindEntryAsync();
 			Assert.True((category["Products"] as IEnumerable<object>).Count() == 1);
 		}
 
@@ -93,11 +93,11 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var category = await client
 				.For("Categories")
 				.Set(new { CategoryName = "Test3" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 			var product = await client
 				.For("Products")
 				.Set(new { ProductName = "Test4", UnitPrice = 18m, CategoryID = category["CategoryID"] })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test4", product["ProductName"]);
 			Assert.Equal(category["CategoryID"], product["CategoryID"]);
@@ -105,7 +105,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 				.For("Categories")
 				.Expand("Products")
 				.Filter("CategoryName eq 'Test3'")
-				.FindEntryAsync().ConfigureAwait(false);
+				.FindEntryAsync();
 			Assert.True((category["Products"] as IEnumerable<object>).Count() == 1);
 		}
 
@@ -116,11 +116,11 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var category = await client
 				.For("Categories")
 				.Set(new { CategoryName = "Test5" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 			var product = await client
 				.For("Products")
 				.Set(new { ProductName = "Test6", UnitPrice = 18m, Category = category })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test6", product["ProductName"]);
 			Assert.Equal(category["CategoryID"], product["CategoryID"]);
@@ -128,7 +128,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 				.For("Categories")
 				.Expand("Products")
 				.Filter("CategoryName eq 'Test5'")
-				.FindEntryAsync().ConfigureAwait(false);
+				.FindEntryAsync();
 			Assert.True((category["Products"] as IEnumerable<object>).Count() == 1);
 		}
 
@@ -140,7 +140,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 				.For("Transport")
 				.As("Ship")
 				.Set(new { ShipName = "Test1" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			Assert.Equal("Test1", ship["ShipName"]);
 		}

@@ -16,21 +16,21 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var category = await client
 				.For<Category>()
 				.Set(new { CategoryName = "Test4" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 			var product = await client
 				.For<Product>()
 				.Set(new { ProductName = "Test5" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			await client
 				.For<Product>()
 				.Key(product)
-				.LinkEntryAsync(category).ConfigureAwait(false);
+				.LinkEntryAsync(category);
 
 			product = await client
 				.For<Product>()
 				.Filter(x => x.ProductName == "Test5")
-				.FindEntryAsync().ConfigureAwait(false);
+				.FindEntryAsync();
 			Assert.NotNull(product.CategoryID);
 			Assert.Equal(category.CategoryID, product.CategoryID);
 		}
@@ -46,21 +46,21 @@ namespace Simple.OData.Client.Tests.FluentApi
 			var category = await client
 				.For<Category>()
 				.Set(new { CategoryName = "Test4" })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 			var product = await client
 				.For<Product>()
 				.Set(new { ProductName = "Test5", CategoryID = category.CategoryID })
-				.InsertEntryAsync().ConfigureAwait(false);
+				.InsertEntryAsync();
 
 			await client
 				.For<Product>()
 				.Key(product)
-				.UnlinkEntryAsync<Category>().ConfigureAwait(false);
+				.UnlinkEntryAsync<Category>();
 
 			product = await client
 				.For<Product>()
 				.Filter(x => x.ProductName == "Test5")
-				.FindEntryAsync().ConfigureAwait(false);
+				.FindEntryAsync();
 			Assert.Null(product.CategoryID);
 		}
 	}

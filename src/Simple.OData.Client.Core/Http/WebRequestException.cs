@@ -16,13 +16,13 @@ namespace Simple.OData.Client
 		public async static Task<WebRequestException> CreateFromResponseMessageAsync(HttpResponseMessage response, ISession session, Exception innerException = null)
 		{
 			var requestUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
-			var responseContent = response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : null;
+			var responseContent = response.Content != null ? await response.Content.ReadAsStringAsync() : null;
 			var exception = new WebRequestException(response.ReasonPhrase, response.StatusCode, requestUri, responseContent, innerException) { HttpResponse = response };
 
 			try
 			{
 				var responseReader = session.Adapter.GetResponseReader();
-				exception.ODataResponse = await responseReader.GetResponseAsync(response).ConfigureAwait(false);
+				exception.ODataResponse = await responseReader.GetResponseAsync(response);
 			}
 			catch (Exception)
 			{

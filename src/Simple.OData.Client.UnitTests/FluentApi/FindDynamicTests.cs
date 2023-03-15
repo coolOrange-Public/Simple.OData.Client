@@ -229,7 +229,7 @@ namespace Simple.OData.Client.Tests.FluentApi
 			await AssertThrowsAsync<WebRequestException>(async () => await client
 				.For(x.Categories)
 				.Key(-1)
-				.FindEntryAsync()).ConfigureAwait(false);
+				.FindEntryAsync());
 		}
 
 		[Fact]

@@ -21,7 +21,7 @@ namespace Simple.OData.Client.Tests.BasicApi
 			Assert.NotNull(concreteClient.Session.Settings.BeforeRequest);
 
 			// Make sure we can still execute a request
-			await concreteClient.GetMetadataDocumentAsync().ConfigureAwait(false);
+			await concreteClient.GetMetadataDocumentAsync();
 		}
 	}
 }

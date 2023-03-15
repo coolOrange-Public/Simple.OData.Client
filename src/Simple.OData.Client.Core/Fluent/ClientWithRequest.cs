@@ -36,8 +36,7 @@ namespace Simple.OData.Client
 		public async Task<IClientWithResponse<T>> RunAsync(CancellationToken cancellationToken)
 		{
 			var response = await _requestRunner
-				.ExecuteRequestAsync(_request, cancellationToken)
-				.ConfigureAwait(false);
+				.ExecuteRequestAsync(_request, cancellationToken);
 			if (cancellationToken.IsCancellationRequested)
 			{
 				cancellationToken.ThrowIfCancellationRequested();

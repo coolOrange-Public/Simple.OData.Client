@@ -84,7 +84,7 @@ namespace Simple.OData.Client
 			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
-				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
+				var response = await responseReader.GetResponseAsync(_responseMessage);
 				if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
 				if (annotations != null && response.Feed != null)
@@ -109,7 +109,7 @@ namespace Simple.OData.Client
 			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
-				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
+				var response = await responseReader.GetResponseAsync(_responseMessage);
 				if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
 				var result = response.AsEntries(_session.Settings.IncludeAnnotationsInResults);
@@ -132,7 +132,7 @@ namespace Simple.OData.Client
 			    (_request.Method == RestVerbs.Get || _request.ResultRequired))
 			{
 				var responseReader = _session.Adapter.GetResponseReader();
-				var response = await responseReader.GetResponseAsync(_responseMessage).ConfigureAwait(false);
+				var response = await responseReader.GetResponseAsync(_responseMessage);
 				if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
 				var result = response.AsEntries(_session.Settings.IncludeAnnotationsInResults);

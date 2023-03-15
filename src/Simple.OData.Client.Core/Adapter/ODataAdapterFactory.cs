@@ -28,7 +28,7 @@ namespace Simple.OData.Client
 		public async virtual Task<IODataModelAdapter> CreateModelAdapterAsync(HttpResponseMessage response,
 			ITypeCache typeCache)
 		{
-			var protocolVersions = (await GetSupportedProtocolVersionsAsync(response).ConfigureAwait(false)).ToArray();
+			var protocolVersions = (await GetSupportedProtocolVersionsAsync(response)).ToArray();
 
 			foreach (var protocolVersion in protocolVersions)
 			{
@@ -83,7 +83,7 @@ namespace Simple.OData.Client
 			{
 				try
 				{
-					var metadataString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+					var metadataString = await response.Content.ReadAsStringAsync();
 					var protocolVersion = GetMetadataProtocolVersion(metadataString);
 					return new[] { protocolVersion };
 				}

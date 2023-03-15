@@ -58,14 +58,14 @@ namespace Simple.OData.Client.V3.Adapter
 					}
 					else
 					{
-						var stream = await responseMessage.GetStreamAsync().ConfigureAwait(false);
+						var stream = await responseMessage.GetStreamAsync();
 						return ODataResponse.FromValueStream(TypeCache, stream,
 							responseMessage is ODataBatchOperationResponseMessage);
 					}
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Batch))
 				{
-					return await ReadResponse(messageReader.CreateODataBatchReader()).ConfigureAwait(false);
+					return await ReadResponse(messageReader.CreateODataBatchReader());
 				}
 				else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Feed))
 				{
@@ -114,7 +114,7 @@ namespace Simple.OData.Client.V3.Adapter
 							batch.Add(ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode));
 						else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
 						{
-							var responseStream = await operationMessage.GetStreamAsync().ConfigureAwait(false);
+							var responseStream = await operationMessage.GetStreamAsync();
 							var exception = WebRequestException.CreateFromBatchResponse((HttpStatusCode)operationMessage.StatusCode, responseStream);
 							var errorResponse = ODataResponse.FromErrorResponse(TypeCache, operationMessage.StatusCode, null, exception);
 							batch.Add(errorResponse);

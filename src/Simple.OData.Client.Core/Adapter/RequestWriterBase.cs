@@ -38,7 +38,7 @@ namespace Simple.OData.Client
 			IDictionary<string, string> headers = null)
 		{
 			await WriteEntryContentAsync(
-				RestVerbs.Get, Utils.ExtractCollectionName(commandText), commandText, null, true).ConfigureAwait(false);
+				RestVerbs.Get, Utils.ExtractCollectionName(commandText), commandText, null, true);
 
 			var request = new ODataRequest(RestVerbs.Get, _session, commandText, headers) {
 				ReturnsScalarResult = scalarResult,
@@ -59,8 +59,7 @@ namespace Simple.OData.Client
 			}
 
 			var entryContent =
-				await WriteEntryContentAsync(RestVerbs.Post, collection, commandText, entryData, resultRequired, deep)
-					.ConfigureAwait(false);
+				await WriteEntryContentAsync(RestVerbs.Post, collection, commandText, entryData, resultRequired, deep);
 
 			var request = new ODataRequest(RestVerbs.Post, _session, commandText, entryData, entryContent,
 				headers: headers) {
@@ -96,7 +95,7 @@ namespace Simple.OData.Client
 				entryData = entryKey.Concat(entryData).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
 
 			var entryContent = await WriteEntryContentAsync(
-				updateMethod, collection, entryIdent, entryData, resultRequired).ConfigureAwait(false);
+				updateMethod, collection, entryIdent, entryData, resultRequired);
 
 			var checkOptimisticConcurrency =
 				_session.Metadata.EntityCollectionRequiresOptimisticConcurrencyCheck(collection);
@@ -113,7 +112,7 @@ namespace Simple.OData.Client
 			IDictionary<string, string> headers = null)
 		{
 			await WriteEntryContentAsync(
-				RestVerbs.Delete, collection, entryIdent, null, false).ConfigureAwait(false);
+				RestVerbs.Delete, collection, entryIdent, null, false);
 
 			var request = new ODataRequest(RestVerbs.Delete, _session, entryIdent, headers) {
 				CheckOptimisticConcurrency =
@@ -132,7 +131,7 @@ namespace Simple.OData.Client
 				: RestVerbs.Put;
 
 			var commandText = FormatLinkPath(entryIdent, associationName);
-			var linkContent = await WriteLinkContentAsync(linkMethod, commandText, linkIdent).ConfigureAwait(false);
+			var linkContent = await WriteLinkContentAsync(linkMethod, commandText, linkIdent);
 			var request = new ODataRequest(linkMethod, _session, commandText, null, linkContent, headers: headers) {
 				IsLink = true,
 			};
@@ -146,7 +145,7 @@ namespace Simple.OData.Client
 			var associationName = _session.Metadata.GetNavigationPropertyExactName(collection, linkName);
 			var commandText = FormatLinkPath(entryIdent, associationName, linkIdent);
 
-			await WriteEntryContentAsync(RestVerbs.Delete, collection, commandText, null, false).ConfigureAwait(false);
+			await WriteEntryContentAsync(RestVerbs.Delete, collection, commandText, null, false);
 
 			var request = new ODataRequest(RestVerbs.Delete, _session, commandText, headers) {
 				IsLink = true,
@@ -160,7 +159,7 @@ namespace Simple.OData.Client
 		{
 			var verb = _session.Metadata.GetFunctionVerb(functionName);
 
-			await WriteFunctionContentAsync(verb, commandText).ConfigureAwait(false);
+			await WriteFunctionContentAsync(verb, commandText);
 
 			var request = new ODataRequest(verb, _session, commandText, headers) {
 				ResultRequired = true,
@@ -180,13 +179,12 @@ namespace Simple.OData.Client
 			if (parameters != null && parameters.Any())
 			{
 				entryContent =
-					await WriteActionContentAsync(RestVerbs.Post, commandText, actionName, boundTypeName, parameters)
-						.ConfigureAwait(false);
+					await WriteActionContentAsync(RestVerbs.Post, commandText, actionName, boundTypeName, parameters);
 				usePayloadFormat = ODataPayloadFormat.Json;
 			}
 			else
 			{
-				await WriteFunctionContentAsync(verb, commandText).ConfigureAwait(false);
+				await WriteFunctionContentAsync(verb, commandText);
 			}
 
 			var request = new ODataRequest(verb, _session, commandText, parameters, entryContent, headers: headers) {
@@ -212,7 +210,7 @@ namespace Simple.OData.Client
 		public async Task<ODataRequest> CreateInsertRequestAsync(string collection,
 			IDictionary<string, object> entryData, Stream stream, bool resultRequired, string mediaType = null)
 		{
-			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType)).ConfigureAwait(false);
+			var entryContent = await WriteStreamContentAsync(stream, IsTextMediaType(mediaType));
 			var request = new ODataRequest(RestVerbs.Post, _session, collection, entryData, entryContent, mediaType) {
 				ResultRequired = resultRequired
 			};

@@ -107,7 +107,6 @@ namespace Simple.OData.Client
 		private UnboundClient<ODataEntry> CreateClientForODataEntry()
 		{
 			return new UnboundClient<ODataEntry>(_client, _session, this.Command, true);
-			;
 		}
 	}
 }
